@@ -54,7 +54,7 @@
 \newcommand{\nombreDocumento}{\textit{TEST DOCUMENT} (TD)}
 \newcommand{\fechasesion}{12 de noviembre de 2026}
 \newcommand{\fechasesionanterior}{11 de noviembre de 2026}
-\newcommand{\fechasesionmunera}{13 de noviembre de 2026}
+\newcommand{\fechasesionmunera}{12 de noviembre de 2026}
 \newcommand{\director}{Ing. Cécile Gauthier Umaña}
 \newcommand{\juradoUno}{Ing. Nombre del Primer Jurado}
 \newcommand{\juradoDos}{Ing. Nombre del Segundo Jurado}
@@ -719,9 +719,9 @@ Cada sesión es individual y la conduce un moderador del equipo. El participante
 
 \textbf{Sesión anterior.} La primera sesión se hizo de forma remota el \fechasesionanterior{}, duró unos 60 minutos y se completó con éxito. Participó Jonathan Muñoz, investigador externo al Laboratorio de Electrofisiología, quien revisó y aprobó los cambios hechos sobre Gamma Lab 1.0. El participante descargó la aplicación desde la página de descarga, la instaló por sí mismo y la abrió por primera vez sin ningún error (caso UT-01). La sesión fue semidirigida: el participante exploró libremente la herramienta mientras el equipo le explicaba lo que se había desarrollado y los cambios respecto a la versión 1.0.
 
-\textbf{Sesión realizada.} La segunda sesión se hizo de forma remota por Microsoft Teams el \fechasesion{} y duró unos 63 minutos. Participó Alejandro Múnera, profesor del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia. En esta sesión se presentaron algunas fallas del sistema, que se describen en los casos UT-08 y UT-10 y en la Tabla~\ref{tab:td_ut_solicitudes}. Por la disponibilidad del participante, la sesión fue guiada: dos integrantes del equipo operaron la aplicación compartiendo pantalla, y el participante indicó qué probar, hizo preguntas y comentó los resultados. Por eso no se midieron el tiempo, los errores ni las solicitudes de ayuda del participante en cada tarea, como preveía el procedimiento. El tiempo de cada caso es la duración aproximada del tramo de la grabación en que se trató, y en los campos de errores y ayudas se registran las preguntas del participante y los problemas del sistema observados. Los casos que no se trataron en esta sesión se evaluaron después, en la sesión complementaria. La remoción de un artefacto (UT-04) se hizo en un tramo que no quedó grabado y se registra a partir de las notas del equipo.
+\textbf{Sesión realizada.} La segunda sesión se hizo de forma remota por Microsoft Teams el \fechasesion{} y duró unos 63 minutos. Participó Francisco Alejandro Múnera Galarza, profesor del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia. En esta sesión se presentaron algunas fallas del sistema, que se describen en los casos UT-08 y UT-10 y en la Tabla~\ref{tab:td_ut_solicitudes}. Por la disponibilidad del participante, la sesión fue guiada: dos integrantes del equipo operaron la aplicación compartiendo pantalla, y el participante indicó qué probar, hizo preguntas y comentó los resultados. Por eso no se midieron el tiempo, los errores ni las solicitudes de ayuda del participante en cada tarea, como preveía el procedimiento. El tiempo de cada caso es la duración aproximada del tramo de la grabación en que se trató, y en los campos de errores y ayudas se registran las preguntas del participante y los problemas del sistema observados. Los casos que no se trataron en esta sesión se evaluaron después, en la sesión complementaria. La remoción de un artefacto (UT-04) se hizo en un tramo que no quedó grabado y se registra a partir de las notas del equipo.
 
-\textbf{Sesión complementaria.} El \fechasesionmunera{} se hizo una nueva sesión con el mismo participante, Francisco Alejandro Munera Galarza, para evaluar lo que no se alcanzó a tratar en la sesión del \fechasesion{}: los casos UT-07 y UT-09 y los 26 requisitos funcionales pendientes de la Sección~\ref{sec:td_uat}. Con un registro de dos canales neuronales se revisaron los análisis entre canales y PPC. Todos los casos y requisitos se aprobaron sin errores, y al participante le pareció bien el funcionamiento de la aplicación.
+\textbf{Sesión complementaria.} Ese mismo día, el \fechasesionmunera{}, se hizo una sesión complementaria con el mismo participante, Francisco Alejandro Múnera Galarza, para evaluar lo que no se alcanzó a tratar en la sesión guiada: los casos UT-07 y UT-09 y los 26 requisitos funcionales pendientes de la Sección~\ref{sec:td_uat}. Con un registro de dos canales neuronales se revisaron los análisis entre canales y PPC. Todos los casos y requisitos se aprobaron sin errores, y al participante le pareció bien el funcionamiento de la aplicación.
 
 \subsection{Entorno de la prueba}
 
@@ -1105,7 +1105,7 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & En la sesión del \fechasesion{} no se evaluó, porque no se contaba con un registro con dos canales neuronales. En la sesión del \fechasesionmunera{} se completaron las acciones del caso con un registro de dos canales: se generaron los \textit{trials} de ambos canales, se calculó \textit{PAC Psel inter-canal} eligiendo el canal de amplitud y se calculó PPC sobre el mismo par de canales. El resultado coincidió con lo esperado, sin errores. \\
+\textbf{Resultado obtenido} & En la sesión del \fechasesion{} no se evaluó, porque no se contaba con un registro con dos canales neuronales. En la sesión complementaria de ese mismo día se completaron las acciones del caso con un registro de dos canales: se generaron los \textit{trials} de ambos canales, se calculó \textit{PAC Psel inter-canal} eligiendo el canal de amplitud y se calculó PPC sobre el mismo par de canales. El resultado coincidió con lo esperado, sin errores. \\
 \hline
 \textbf{Tiempo empleado (min)} & No registrado \\
 \hline
@@ -1117,7 +1117,7 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \textbf{Fecha de ejecución} & \fechasesionmunera \\
 \hline
-\textbf{Observaciones} & Sesión con el investigador Francisco Alejandro Munera Galarza, a quien le pareció bien el funcionamiento de los dos análisis. PAC Psel entre canales ofrece el selector del canal de amplitud y PPC deja en blanco las celdas que no pueden medirse (\textit{test\_pac\_intercanal\_plugin}, \textit{test\_pac\_intercanal}, \textit{test\_ppc\_core}, \textit{test\_ppc\_plugin\_orquestado}). \\
+\textbf{Observaciones} & Sesión con el investigador Francisco Alejandro Múnera Galarza, a quien le pareció bien el funcionamiento de los dos análisis. PAC Psel entre canales ofrece el selector del canal de amplitud y PPC deja en blanco las celdas que no pueden medirse (\textit{test\_pac\_intercanal\_plugin}, \textit{test\_pac\_intercanal}, \textit{test\_ppc\_core}, \textit{test\_ppc\_plugin\_orquestado}). \\
 \hline
 \end{longtable}
 \end{center}
@@ -1201,7 +1201,7 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & En la sesión del \fechasesion{} solo se mostró la barra de progreso durante un cálculo. En la sesión del \fechasesionmunera{} se completaron las acciones del caso: se lanzó un cálculo pesado, se canceló desde la barra de progreso y se cambió de módulo con un cálculo en curso; la aplicación volvió a su estado anterior sin resultados parciales y sin errores. \\
+\textbf{Resultado obtenido} & En la sesión del \fechasesion{} solo se mostró la barra de progreso durante un cálculo. En la sesión complementaria de ese mismo día se completaron las acciones del caso: se lanzó un cálculo pesado, se canceló desde la barra de progreso y se cambió de módulo con un cálculo en curso; la aplicación volvió a su estado anterior sin resultados parciales y sin errores. \\
 \hline
 \textbf{Tiempo empleado (min)} & No registrado \\
 \hline
@@ -1213,7 +1213,7 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \textbf{Fecha de ejecución} & \fechasesionmunera \\
 \hline
-\textbf{Observaciones} & Sesión con el investigador Francisco Alejandro Munera Galarza, a quien le pareció bien el funcionamiento. La barra de progreso permite cancelar, la cancelación es cooperativa, un resultado tardío se descarta y cambiar de módulo cancela las tareas del módulo abandonado (\textit{test\_task\_service}, \textit{test\_run\_task}, \textit{test\_cancelacion\_al\_cambiar\_seccion}). \\
+\textbf{Observaciones} & Sesión con el investigador Francisco Alejandro Múnera Galarza, a quien le pareció bien el funcionamiento. La barra de progreso permite cancelar, la cancelación es cooperativa, un resultado tardío se descarta y cambiar de módulo cancela las tareas del módulo abandonado (\textit{test\_task\_service}, \textit{test\_run\_task}, \textit{test\_cancelacion\_al\_cambiar\_seccion}). \\
 \hline
 \end{longtable}
 \end{center}
@@ -1296,11 +1296,11 @@ UT-05 & Sí & $\approx$3 & N/A & N/A & Vista previa y filtro correctos. \\
 \hline
 UT-06 & Sí & $\approx$4 & N/A & N/A & Valorado positivamente por el participante. \\
 \hline
-UT-07 & Sí & No registrado & --- & --- & Análisis entre dos canales sin errores (sesión del \fechasesionmunera{}). \\
+UT-07 & Sí & No registrado & --- & --- & Análisis entre dos canales sin errores (sesión complementaria del \fechasesionmunera{}). \\
 \hline
 UT-08 & Con dificultad & $\approx$13 & N/A & N/A & Fallas en las medidas sobre todos los \textit{trials}, corregidas el 15/11. \\
 \hline
-UT-09 & Sí & No registrado & --- & --- & Cancelación y cambio de módulo sin errores (sesión del \fechasesionmunera{}). \\
+UT-09 & Sí & No registrado & --- & --- & Cancelación y cambio de módulo sin errores (sesión complementaria del \fechasesionmunera{}). \\
 \hline
 UT-10 & Con dificultad & $\approx$6 & N/A & N/A & Error de carga al abrir el proyecto, corregido después. \\
 \hline
@@ -1309,7 +1309,7 @@ UT-10 & Con dificultad & $\approx$6 & N/A & N/A & Error de carga al abrir el pro
 
 \subsection{Atención de las solicitudes de la sesión}
 \label{sec:td_ut_solicitudes}
-La Tabla~\ref{tab:td_ut_solicitudes} recoge las fallas y solicitudes que surgieron en las sesiones con el usuario y su estado a la fecha de este documento, según la verificación del equipo. Las dos primeras filas provienen de la sesión anterior; las demás, de la sesión del \fechasesion{}.
+La Tabla~\ref{tab:td_ut_solicitudes} recoge las fallas y solicitudes que surgieron en las sesiones con el usuario y su estado a la fecha de este documento, según la verificación del equipo. Las dos primeras filas y la del instructivo de instalación provienen de la sesión anterior, del \fechasesionanterior{}; las demás, de la sesión del \fechasesion{}.
 
 \begin{center}
 \footnotesize
@@ -1451,7 +1451,7 @@ El Laboratorio de Electrofisiología, cliente del proyecto, compartió la siguie
 Las necesidades de análisis de un laboratorio de electrofisiología son tan diversas que difícilmente un solo programa logra cubrirlas. Gamma Lab 2.0 reúne en una misma herramienta los análisis que el laboratorio requiere, en los dominios del tiempo, la frecuencia y el tiempo-frecuencia. Incluye además el estudio de las relaciones entre bandas y canales mediante el acoplamiento entre frecuencias, y la toma de medidas sobre las señales. Su mayor aporte es su carácter semiautomático: el investigador conserva las decisiones que exigen su criterio, como la selección de canales, \textit{trials}, bandas e intervalos, mientras la herramienta automatiza los procedimientos repetitivos que antes se hacían a mano. Así, un análisis que tomaba semanas puede completarse en minutos. A esto se suman una interfaz amigable e intuitiva, un procesamiento rápido y la posibilidad de exportar los resultados para su uso posterior, así como la posibilidad de guardar el progreso. Gamma Lab 2.0 es una herramienta flexible que responde de manera integral a las necesidades del laboratorio.
 \end{quote}
 
-Entre la sesión guiada del \fechasesion{}, la sesión anterior y la sesión complementaria del \fechasesionmunera{} se trataron los diez casos de prueba. La instalación y el primer arranque, la carga de la señal, la segmentación en \textit{trials}, la remoción de artefactos, el filtrado con vista previa, el análisis PAC, los análisis entre dos canales y la cancelación de un cálculo funcionaron sin fallas, y el participante de la sesión guiada valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials} (UT-08) y en un error de carga al abrir un proyecto (UT-10); las primeras se corrigieron después de la sesión y quedaron cubiertas por pruebas automáticas, y el error de carga también se corrigió (Tabla~\ref{tab:td_ut_solicitudes}). La puntuación SUS de 87,5 y 92,5 confirma una valoración alta del sistema.
+Entre la sesión anterior, la sesión guiada del \fechasesion{} y la sesión complementaria de ese mismo día se trataron los diez casos de prueba. La instalación y el primer arranque, la carga de la señal, la segmentación en \textit{trials}, la remoción de artefactos, el filtrado con vista previa, el análisis PAC, los análisis entre dos canales y la cancelación de un cálculo funcionaron sin fallas, y el participante de la sesión guiada valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials} (UT-08) y en un error de carga al abrir un proyecto (UT-10); las primeras se corrigieron después de la sesión y quedaron cubiertas por pruebas automáticas, y el error de carga también se corrigió (Tabla~\ref{tab:td_ut_solicitudes}). La puntuación SUS de 87,5 y 92,5 confirma una valoración alta del sistema.
 
 Estos resultados tienen dos limitaciones: provienen de pocos participantes y, en su mayoría, de una sesión guiada en la que el equipo operó la aplicación, por lo que no miden del todo la autonomía del investigador frente a la interfaz.
 \capitulo{PRUEBAS DE ACEPTACIÓN DEL USUARIO (UAT)}
@@ -1705,7 +1705,7 @@ FR-IO-06 (R09) & Una sola columna X en el CSV & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la exportación con ejes iguales y distintos (\textit{test\_export}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la exportación con ejes iguales y distintos (\textit{test\_export}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-IO-06 (R09)}
@@ -1746,7 +1746,7 @@ FR-IO-07 (R28) & Nombre de exportación descriptivo & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). El nombre propuesto combina la señal, el canal, la extensión y la fecha (\textit{señal\_canal\_extensión\_fecha}), según \textit{core/services/export\_service.py}.} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). El nombre propuesto combina la señal, el canal, la extensión y la fecha (\textit{señal\_canal\_extensión\_fecha}), según \textit{core/services/export\_service.py}.} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-IO-07 (R28)}
@@ -1828,7 +1828,7 @@ FR-UI-02 (R24) & Modificar un \textit{trial} ya creado & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de los conjuntos derivados, que dejan el original intacto (\textit{test\_trials\_derivados}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de los conjuntos derivados, que dejan el original intacto (\textit{test\_trials\_derivados}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-02 (R24)}
@@ -1869,7 +1869,7 @@ FR-UI-03 (R25) & Restablecer parámetros por defecto & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Prueba automática del Clear de \textit{Trials} y verificación manual en las demás extensiones (\textit{test\_correcciones\_interaccion}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Prueba automática del Clear de \textit{Trials} y verificación manual en las demás extensiones (\textit{test\_correcciones\_interaccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-03 (R25)}
@@ -1910,7 +1910,7 @@ FR-UI-04 (R26) & Valores X/Y bajo el cursor & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la conversión de píxeles a datos, del formato de la lectura y del punto más cercano (\textit{test\_indicadores\_ui}, \textit{test\_correcciones\_interaccion}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la conversión de píxeles a datos, del formato de la lectura y del punto más cercano (\textit{test\_indicadores\_ui}, \textit{test\_correcciones\_interaccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-04 (R26)}
@@ -1951,7 +1951,7 @@ FR-UI-05 (R27) & Elegir los \textit{trials} de cada análisis & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la selección y de los descartes (\textit{test\_average\_seleccion}, \textit{test\_indicadores\_ui}, \textit{test\_correcciones\_interaccion}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la selección y de los descartes (\textit{test\_average\_seleccion}, \textit{test\_indicadores\_ui}, \textit{test\_correcciones\_interaccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-05 (R27)}
@@ -2033,7 +2033,7 @@ FR-UI-07 (R30) & \textit{Zoom} en todas las direcciones & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de los ejes del \textit{zoom} y verificación manual en cada gráfica (\textit{test\_correcciones\_interaccion}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de los ejes del \textit{zoom} y verificación manual en cada gráfica (\textit{test\_correcciones\_interaccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-07 (R30)}
@@ -2074,7 +2074,7 @@ FR-UI-08 (R31) & Mostrar el umbral en \textit{mV} & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la conversión de unidades y verificación manual del campo (\textit{test\_trials}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la conversión de unidades y verificación manual del campo (\textit{test\_trials}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-08 (R31)}
@@ -2156,7 +2156,7 @@ FR-UI-10 (R36) & Promediar todos los \textit{trials} & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del promedio (\textit{test\_average\_plugin}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del promedio (\textit{test\_average\_plugin}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-10 (R36)}
@@ -2197,7 +2197,7 @@ FR-UI-11 (R37) & Indicar el \textit{trial} actual & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del estado y del texto del indicador (\textit{test\_indicadores\_ui}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del estado y del texto del indicador (\textit{test\_indicadores\_ui}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-11 (R37)}
@@ -2238,7 +2238,7 @@ FR-UI-12 (R38) & Indicar qué \textit{trials} participan & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la descripción de los \textit{trials} y de la selección de \textit{Average} (\textit{test\_indicadores\_ui}, \textit{test\_average\_seleccion}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la descripción de los \textit{trials} y de la selección de \textit{Average} (\textit{test\_indicadores\_ui}, \textit{test\_average\_seleccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-12 (R38)}
@@ -2320,7 +2320,7 @@ FR-UI-14 (R41) & Promediar los \textit{trials} seleccionados & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la selección y del promedio (\textit{test\_average\_seleccion}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la selección y del promedio (\textit{test\_average\_seleccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-14 (R41)}
@@ -2361,7 +2361,7 @@ FR-UI-15 (R68) & \textit{Trials} identificados por archivo y canal & Investigado
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la consulta de \textit{trials} por canal (\textit{test\_trials\_por\_canal}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la consulta de \textit{trials} por canal (\textit{test\_trials\_por\_canal}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-15 (R68)}
@@ -2484,7 +2484,7 @@ FR-WV-03 (R35) & Exportar el escalograma en EMF & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del archivo EMF (\textit{test\_emf\_export}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del archivo EMF (\textit{test\_emf\_export}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-WV-03 (R35)}
@@ -2566,7 +2566,7 @@ FR-PAC-02 (R14) & Banda de la fase & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del cálculo de PAC (\textit{test\_pac\_core}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del cálculo de PAC (\textit{test\_pac\_core}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-02 (R14)}
@@ -2853,7 +2853,7 @@ FR-PAC-09 (R21) & Exportar los números de PAC & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la exportación y de los ángulos en grados (\textit{test\_export}, \textit{test\_pac\_grados}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la exportación y de los ángulos en grados (\textit{test\_export}, \textit{test\_pac\_grados}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-09 (R21)}
@@ -2894,7 +2894,7 @@ FR-PAC-10 (R22) & Exportar las gráficas de PAC & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la exportación de imágenes y de EMF (\textit{test\_export}, \textit{test\_emf\_export}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la exportación de imágenes y de EMF (\textit{test\_export}, \textit{test\_emf\_export}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-10 (R22)}
@@ -2935,7 +2935,7 @@ FR-PAC-11 (R23) & Guardar los parámetros de cada ejecución & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Prueba automática de la restauración de análisis al abrir un proyecto (\textit{test\_apertura\_proyecto}). El error al abrir un proyecto con parámetros de PAC, observado en la sesión del \fechasesion{} (FR-IO-04), se corrigió después.} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Prueba automática de la restauración de análisis al abrir un proyecto (\textit{test\_apertura\_proyecto}). El error al abrir un proyecto con parámetros de PAC, observado en la sesión del \fechasesion{} (FR-IO-04), se corrigió después.} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-11 (R23)}
@@ -2976,7 +2976,7 @@ FR-PAC-12 (R60) & Elegir el canal de fase y el de amplitud & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del selector y de su comportamiento (\textit{test\_pac\_intercanal\_plugin}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del selector y de su comportamiento (\textit{test\_pac\_intercanal\_plugin}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-12 (R60)}
@@ -3017,7 +3017,7 @@ FR-PAC-13 (R61) & Mapa de acoplamiento entre canales & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del cálculo entre canales (\textit{test\_pac\_intercanal}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del cálculo entre canales (\textit{test\_pac\_intercanal}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-13 (R61)}
@@ -3058,7 +3058,7 @@ FR-PAC-14 (R62) & Mismas visualizaciones que PAC de un canal & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de que ambos modos dibujan los mismos paneles (\textit{test\_pac\_intercanal\_plugin}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de que ambos modos dibujan los mismos paneles (\textit{test\_pac\_intercanal\_plugin}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-14 (R62)}
@@ -3099,7 +3099,7 @@ FR-PAC-15 (R63) & PPC: dos canales y rango de frecuencias & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del cálculo de \textit{PPC} y de su ejecución en el servicio de tareas (\textit{test\_ppc\_core}, \textit{test\_ppc\_plugin\_orquestado}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del cálculo de \textit{PPC} y de su ejecución en el servicio de tareas (\textit{test\_ppc\_core}, \textit{test\_ppc\_plugin\_orquestado}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-15 (R63)}
@@ -3140,7 +3140,7 @@ FR-PAC-16 (R64) & PPC: mapa de frecuencia y tiempo & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del cálculo y de la transformada de Gabor compartida (\textit{test\_ppc\_core}, \textit{test\_gabor\_en\_core}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas del cálculo y de la transformada de Gabor compartida (\textit{test\_ppc\_core}, \textit{test\_gabor\_en\_core}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-16 (R64)}
@@ -3181,7 +3181,7 @@ FR-PAC-17 (R65) & Exportar los números de PPC y del PAC entre canales & Investi
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas que exportan archivos reales de PAC entre canales (\textit{test\_pac\_intercanal\_exportacion}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas que exportan archivos reales de PAC entre canales (\textit{test\_pac\_intercanal\_exportacion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-17 (R65)}
@@ -3222,7 +3222,7 @@ FR-PAC-18 (R66) & Exportar las gráficas de PPC y del PAC entre canales & Invest
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la exportación de imágenes y de EMF; no hay prueba específica del modo entre canales (\textit{test\_emf\_export}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la exportación de imágenes y de EMF; no hay prueba específica del modo entre canales (\textit{test\_emf\_export}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-18 (R66)}
@@ -3263,7 +3263,7 @@ FR-PAC-19 (R75) & PAC Psel segmenta por ciclo de la onda lenta & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión del \fechasesionmunera{} con el investigador Francisco Alejandro Munera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la selección de ciclos y de la transformada de Gabor (\textit{test\_pac\_core}, \textit{test\_gabor\_en\_core}).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión complementaria del \fechasesionmunera{} con el investigador Francisco Alejandro Múnera Galarza (Sección~\ref{sec:td_usabilidad}). Pruebas automáticas de la selección de ciclos y de la transformada de Gabor (\textit{test\_pac\_core}, \textit{test\_gabor\_en\_core}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-19 (R75)}
@@ -3336,10 +3336,10 @@ No evaluados & 0 & 0\,\% \\
 \label{tab:td_uat_consolidado}
 \end{center}
 
-FR-IO-02 se aceptó parcialmente porque no se probó un archivo EDF, y FR-IO-04 se probó con fallas porque al abrir el proyecto apareció un error de carga, que se corrigió después de la sesión. Los 26 requisitos que no se alcanzaron a tratar en la sesión del \fechasesion{} se evaluaron en la sesión complementaria del \fechasesionmunera{} y se aceptaron todos. Solo se marcan como aceptados los requisitos que se demostraron sin fallas.
+FR-IO-02 se aceptó parcialmente porque no se probó un archivo EDF, y FR-IO-04 se probó con fallas porque al abrir el proyecto apareció un error de carga, que se corrigió después de la sesión. Los 26 requisitos que no se alcanzaron a tratar en la sesión del \fechasesion{} se evaluaron ese mismo día en la sesión complementaria y se aceptaron todos. Solo se marcan como aceptados los requisitos que se demostraron sin fallas.
 
 \subsection{Conclusiones de las pruebas de aceptación}
-De los 45 requisitos funcionales, 43 (95,6\,\%) se aceptaron. En la sesión guiada del \fechasesion{} se aceptaron 17: la persistencia de la señal, el guardado de proyectos y la exportación de resultados (FR-IO-01, FR-IO-03 y FR-IO-05); la segmentación en \textit{trials}, el ajuste manual de la frecuencia de muestreo, el \textit{Butterfly} y la remoción de artefactos (FR-UI-01, FR-UI-06, FR-UI-09 y FR-UI-13); el rango de color y la normalización del escalograma (FR-WV-01 y FR-WV-02), y el análisis PAC de un canal junto con el filtro Butterworth (FR-PAC-01, FR-PAC-03 a FR-PAC-08 y FR-PAC-20). Los 26 restantes, que no se alcanzaron a tratar por el tiempo disponible, se aceptaron en la sesión complementaria del \fechasesionmunera{}; entre ellos están los siete del análisis entre canales y de PPC, que requerían un registro con dos canales neuronales. Además, todos cuentan con pruebas automáticas (Tabla~\ref{tab:td_trazabilidad}). Ningún requisito se rechazó.
+De los 45 requisitos funcionales, 43 (95,6\,\%) se aceptaron. En la sesión guiada del \fechasesion{} se aceptaron 17: la persistencia de la señal, el guardado de proyectos y la exportación de resultados (FR-IO-01, FR-IO-03 y FR-IO-05); la segmentación en \textit{trials}, el ajuste manual de la frecuencia de muestreo, el \textit{Butterfly} y la remoción de artefactos (FR-UI-01, FR-UI-06, FR-UI-09 y FR-UI-13); el rango de color y la normalización del escalograma (FR-WV-01 y FR-WV-02), y el análisis PAC de un canal junto con el filtro Butterworth (FR-PAC-01, FR-PAC-03 a FR-PAC-08 y FR-PAC-20). Los 26 restantes, que no se alcanzaron a tratar por el tiempo disponible, se aceptaron ese mismo día en la sesión complementaria; entre ellos están los siete del análisis entre canales y de PPC, que requerían un registro con dos canales neuronales. Además, todos cuentan con pruebas automáticas (Tabla~\ref{tab:td_trazabilidad}). Ningún requisito se rechazó.
 
 La carga de formatos se aceptó parcialmente, porque no se probó un archivo EDF, y la apertura de proyectos se probó con fallas por un error de carga, que se corrigió después de la sesión.
 
@@ -3531,7 +3531,7 @@ NFR-S-05 & R77 & Nuevo \textit{plugin} sin modificar el núcleo & Pruebas autom�
 La suite automática de Gamma Lab 2.0 consta de 921 pruebas, de las cuales 916 se aprobaron y 5 se mantienen como fallos esperados con su causa documentada; ninguna falla. Frente a la versión 1.0, cuyo TD reportó 60 pruebas unitarias \cite{td2025}, la cobertura se amplió a todos los servicios del núcleo, a los módulos nuevos de análisis y a los requisitos no funcionales.
 La validación frente a BOARD-FTD-PACC confirma la equivalencia de \textit{Average}, ERP, FFT, \textit{FFT Average} y PSD. En la transformada \textit{wavelet} las diferencias se explican por una convención de amplitud distinta, medida y documentada, y no por errores de cálculo. En \textit{PSD Average} la corrección de la tendencia acercó el resultado a la referencia, pero queda una diferencia entre 1 y 3\,Hz debida al método de cálculo de cada herramienta (SciPy en Gamma Lab 2.0 y MATLAB en BOARD-FTD-PACC). Los requisitos de rendimiento se cumplen con dos matices: el peor cuadro durante la interacción con tres canales y la primera apertura del módulo PAC.
 
-Las pruebas con el usuario se hicieron en una sesión anterior con Jonathan Muñoz, investigador externo al laboratorio, el \fechasesionanterior{}; en una sesión guiada con Alejandro Múnera, profesor del Laboratorio de Electrofisiología, el \fechasesion{}, y en una sesión complementaria con el mismo participante, el \fechasesionmunera{}. Se trataron los diez casos de usabilidad, ocho de ellos sin fallas; las puntuaciones SUS fueron de 87,5 y 92,5, y 43 de los 45 requisitos funcionales se aceptaron y uno más de forma parcial, sin que ninguno se rechazara. Las fallas observadas en las medidas sobre todos los \textit{trials} y en la apertura de proyectos se corrigieron después de la sesión. El cliente describió Gamma Lab 2.0 como una herramienta que reúne en un solo programa los análisis que el laboratorio requiere y automatiza los procedimientos repetitivos que antes se hacían a mano.
+Las pruebas con el usuario se hicieron en una sesión anterior con Jonathan Muñoz, investigador externo al laboratorio, el \fechasesionanterior{}; en una sesión guiada con Francisco Alejandro Múnera Galarza, profesor del Laboratorio de Electrofisiología, el \fechasesion{}, y en una sesión complementaria con el mismo participante, ese mismo día. Se trataron los diez casos de usabilidad, ocho de ellos sin fallas; las puntuaciones SUS fueron de 87,5 y 92,5, y 43 de los 45 requisitos funcionales se aceptaron y uno más de forma parcial, sin que ninguno se rechazara. Las fallas observadas en las medidas sobre todos los \textit{trials} y en la apertura de proyectos se corrigieron después de la sesión. El cliente describió Gamma Lab 2.0 como una herramienta que reúne en un solo programa los análisis que el laboratorio requiere y automatiza los procedimientos repetitivos que antes se hacían a mano.
 
 Los resultados con el usuario tienen, sin embargo, límites: provienen de pocos participantes, en la sesión principal la aplicación la operó el equipo y un requisito funcional se probó con fallas, aunque el error se corrigió después. Se recomienda una sesión no guiada que mida la autonomía del investigador frente a la interfaz.
 

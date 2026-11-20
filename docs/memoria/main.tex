@@ -1483,13 +1483,13 @@ Estas pruebas valoran la facilidad con que los investigadores completan las tare
 
 Las sesiones son individuales y las conduce un moderador del equipo. El participante realiza cada tarea sin instrucciones adicionales y expresa en voz alta lo que piensa. El moderador solo interviene si se le solicita ayuda, y registra cada solicitud. Por caso se consignan cuatro métricas: finalización, tiempo, errores y solicitudes de ayuda. Al final, el participante responde el cuestionario SUS (\textit{System Usability Scale}), con puntuación entre 0 y 100.
 
-Por la disponibilidad de los participantes, las sesiones fueron remotas y guiadas. Los integrantes del equipo operaron la aplicación compartiendo pantalla, mientras el participante indicaba qué probar, hacía preguntas y comentaba los resultados. Por ello no se midieron el tiempo, los errores ni las solicitudes de ayuda de cada tarea; el tiempo de cada caso se estimó a partir de la grabación. 
+Las sesiones fueron remotas. La primera fue semidirigida: el participante exploró libremente la herramienta mientras el equipo le explicaba los cambios respecto a la versión anterior. Por la disponibilidad del participante, la segunda fue guiada: los integrantes del equipo operaron la aplicación compartiendo pantalla, mientras el participante indicaba qué probar, hacía preguntas y comentaba los resultados. Por ello no se midieron el tiempo, los errores ni las solicitudes de ayuda de cada tarea; el tiempo de cada caso se estimó a partir de la grabación. 
 
 \subsubsection{Pruebas de aceptación del usuario}
 
-Estas pruebas buscan confirmar que Gamma Lab 2.0 satisface los requisitos funcionales y las expectativas del usuario en condiciones reales de uso. Se realizaron en la misma sesión guiada de usabilidad y se completaron en una sesión posterior: con señales del laboratorio, el participante indicó qué funcionalidades revisar entre las asociadas a los 45 requisitos funcionales del SRS, mientras el equipo operaba la aplicación. Por cada requisito se diligenció un cuadro que contrasta el comportamiento de la versión anterior (\textit{Antes}) con el observado en la versión 2.0 (\textit{Después}) y que registra la retroalimentación del usuario y el resultado: \textit{aceptado}, \textit{aceptado parcialmente} o \textit{no aceptado}.
+Estas pruebas buscan confirmar que Gamma Lab 2.0 satisface los requisitos funcionales y las expectativas del usuario en condiciones reales de uso. Se realizaron en la misma sesión guiada de usabilidad y se completaron ese mismo día en una sesión complementaria: con señales del laboratorio, el participante indicó qué funcionalidades revisar entre las asociadas a los 45 requisitos funcionales del SRS, mientras el equipo operaba la aplicación. Por cada requisito se diligenció un cuadro que contrasta el comportamiento de la versión anterior (\textit{Antes}) con el observado en la versión 2.0 (\textit{Después}) y que registra la retroalimentación del usuario y el resultado: \textit{aceptado}, \textit{aceptado parcialmente} o \textit{no aceptado}.
 
-Solo se marca como aceptado un requisito que se demostró sin fallas durante una sesión. Los que presentaron fallas se registran como \textit{probados con fallas}. Los requisitos que no alcanzaron a tratarse en la primera sesión se evaluaron en una sesión posterior con otro investigador del laboratorio.
+Solo se marca como aceptado un requisito que se demostró sin fallas durante una sesión. Los que presentaron fallas se registran como \textit{probados con fallas}. Los requisitos que no alcanzaron a tratarse en la sesión guiada se evaluaron en una sesión complementaria con el mismo participante.
 
 Las sesiones de usabilidad y de aceptación se realizaron entre el 11 y el 18 de noviembre de 2026, con tres participantes (Tabla~\ref{tab:pruebas_sesiones}).
 
@@ -1501,11 +1501,11 @@ Las sesiones de usabilidad y de aceptación se realizaron entre el 11 y el 18 de
 \hline
 \textbf{Participante} & \textbf{Rol en el laboratorio} & \textbf{Tipo de sesión} & \textbf{Fecha} \\
 \hline
-Jonathan Muñoz & Investigador y profesor & Usabilidad y aceptación & 11 de noviembre de 2026 \\
+Jonathan Muñoz & Investigador externo al laboratorio & Usabilidad, sesión semidirigida & 11 de noviembre de 2026 \\
 \hline
-Francisco Alejandro Munera Galarza & Investigador y profesor & Usabilidad y aceptación & 13 de noviembre de 2026 \\
+Francisco Alejandro Múnera Galarza & Profesor del Laboratorio de Electrofisiología & Usabilidad y aceptación, sesión guiada y sesión complementaria & 12 de noviembre de 2026 \\
 \hline
-Cécile Gauthier Umaña & Directora del trabajo de grado & Usabilidad y aceptación & 13 y 18 de noviembre de 2026 \\
+Cécile Gauthier Umaña & Directora del trabajo de grado & Usabilidad y aceptación & 12 y 18 de noviembre de 2026 \\
 \hline
 \end{tabularx}
 \caption{Sesiones de pruebas con el usuario}
@@ -1677,7 +1677,7 @@ En memoria, liberar las ventanas gráficas de cada módulo redujo el consumo de 
 
 \subsection{Validación con el usuario}
 
-En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan Muñoz y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen principalmente de la sesión guiada con un profesor investigador, en la que el equipo operó la aplicación, y se complementan con una sesión anterior con otro investigador y con la sesión de Francisco Alejandro Munera Galarza, en la que se evaluaron los casos y requisitos que habían quedado pendientes.
+En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan Muñoz, investigador externo al laboratorio; Francisco Alejandro Múnera Galarza, profesor del Laboratorio de Electrofisiología, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen principalmente de la sesión guiada con Francisco Alejandro Múnera Galarza, en la que el equipo operó la aplicación, y se complementan con la sesión anterior, semidirigida, con Jonathan Muñoz y con una sesión complementaria con el mismo profesor, en la que se evaluaron los casos y requisitos que habían quedado pendientes.
 
 En usabilidad, \textbf{se trataron los diez casos, ocho de ellos sin fallas} (Tabla~\ref{tab:resultados_usabilidad}). La instalación y el primer arranque, la carga de la señal, la segmentación en \textit{trials}, la remoción de artefactos, el filtrado con vista previa, el análisis PAC, los análisis entre dos canales y la cancelación de un cálculo funcionaron correctamente, y el participante de la sesión guiada valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials} y en un error de carga al abrir un proyecto, ambos corregidos después de la sesión.
 
@@ -1700,7 +1700,7 @@ No evaluados & --- & 0 \\
 \label{tab:resultados_usabilidad}
 \end{table}
 
-El cuestionario SUS lo respondieron dos profesores investigadores del laboratorio, que otorgaron \textbf{87,5 y 92,5 puntos sobre 100}. Ambos valores superan el que Bangor, Kortum y Miller asocian con una usabilidad ``excelente'' (85,6) \cite{bangor2009}.
+El cuestionario SUS lo respondieron Jonathan Muñoz y Cécile Gauthier Umaña, que otorgaron \textbf{87,5 y 92,5 puntos sobre 100}, respectivamente. Ambos valores superan el que Bangor, Kortum y Miller asocian con una usabilidad ``excelente'' (85,6) \cite{bangor2009}.
 
 En aceptación, \textbf{43 de los 45 requisitos funcionales se aceptaron, uno más se aceptó parcialmente y ninguno se rechazó} (Tabla~\ref{tab:resultados_aceptacion}). En la sesión guiada se aceptaron 17, que cubren la persistencia de la señal, el guardado de proyectos, la exportación, la segmentación en \textit{trials}, el ajuste de la frecuencia de muestreo, el \textit{Butterfly}, la remoción de artefactos, el escalograma y el análisis PAC de un canal. La carga de formatos se aceptó parcialmente, porque no se probó un archivo EDF, y la apertura de proyectos se probó con fallas, por el error de carga, que se corrigió después de la sesión.
 
@@ -1729,7 +1729,7 @@ No evaluados & 0 & 0\,\% \\
 \label{tab:resultados_aceptacion}
 \end{table}
 
-Los 26 requisitos que no alcanzaron a tratarse en la sesión guiada, entre ellos los del análisis entre canales y PPC, que requerían un registro con dos canales neuronales, se evaluaron en la sesión con Francisco Alejandro Munera Galarza. Todos se aceptaron sin errores, y al participante le pareció bien su funcionamiento.
+Los 26 requisitos que no alcanzaron a tratarse en la sesión guiada, entre ellos los del análisis entre canales y PPC, que requerían un registro con dos canales neuronales, se evaluaron en la sesión complementaria con Francisco Alejandro Múnera Galarza. Todos se aceptaron sin errores, y al participante le pareció bien su funcionamiento.
 
 De las trece solicitudes y observaciones surgidas en las sesiones, once se atendieron: entre ellas, la línea de la pendiente, la medida por derivada (\textit{Difference}), las medidas sobre todos los \textit{trials}, la posibilidad de tener varios proyectos abiertos, el error de carga al abrir un proyecto con parámetros de PAC y el aviso de la señal anterior que seguía visible. Una se resolvió de forma manual por acuerdo con la directora y una se dejó como trabajo futuro.
 
