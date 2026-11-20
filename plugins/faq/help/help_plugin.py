@@ -53,10 +53,10 @@ class HelpPlugin(IPlugin):
 
     def init_buttons(self):
         self.ui.repoButton.clicked.connect(
-            lambda: webbrowser.open("https://github.com/GAMMA-BOARD-FTD-PACC/gamma-lab-desktop-app")
+            lambda: webbrowser.open("https://github.com/garzonlj/Gamma-Lab-2.0/")
         )
         self.ui.docsButton.clicked.connect(
-            lambda: webbrowser.open("https://github.com/GAMMA-BOARD-FTD-PACC/Documentos")
+            lambda: webbrowser.open("https://github.com/garzonlj/Gamma-Lab-2.0/tree/main/docs")
         )
         self.ui.videosButton.clicked.connect(
             lambda: webbrowser.open("https://youtube.com/playlist?list=PLSRjfDRrG__0&si=_BHL58ZS9uqzWxLg")
