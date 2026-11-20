@@ -1,6 +1,6 @@
 # Gamma Lab – Installation Guide (Windows)
 
-This document explains how to install and run **Gamma Lab** on Windows using Python 3.11, 3.12, or 3.13 and the included `run.bat` launcher.
+This document explains how to install and run **Gamma Lab** on Windows using Python 3.11, 3.12, or 3.13 and the included `gamma_lab.bat` launcher.
 ---
 
 ## 📦 Download the latest project release
@@ -23,8 +23,8 @@ python --version
 
 Gamma Lab is compatible with:
 
-- **Python 3.11** (recommended)
-- **Python 3.12**
+- **Python 3.11**
+- **Python 3.12** (recommended)
 - **Python 3.13**
 
 These versions ensure compatibility with PyQt5, QtWebEngine, VTK, SciPy, and other scientific libraries.

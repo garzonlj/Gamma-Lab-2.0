@@ -124,10 +124,10 @@ LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
 \providecommand{\ciudad}{BOGOTÁ, D.C.}
 \providecommand{\anio}{2026}
 \providecommand{\fechaLarga}{Noviembre, 2026}
-\providecommand{\rector}{Nombre del Rector, S.J.}
-\providecommand{\decano}{Ing. Nombre del Decano de la Facultad}
-\providecommand{\directorDepto}{Ing. Nombre del Director de Departamento, Ph.D.}
-\providecommand{\directorCarrera}{Ing. Nombre de la Directora de Carrera}
+\providecommand{\rector}{P. Luis Fernando Múnera Congote, S.J.}
+\providecommand{\decano}{Ing. Diego Alejandro Patiño Guevara, Ph.D.}
+\providecommand{\directorDepto}{Ing. César Julio Bustacara Medina, Ph.D.}
+\providecommand{\directorCarrera}{Ing. Andrea del Pilar Rueda Olarte}
 
 \pagenumbering{alph}% la caratula no comparte destino PDF con la pagina 1
 \begingroup\setlength{\parskip}{0pt}% sin espacio extra entre parrafos en la portada
@@ -313,7 +313,7 @@ Para cerrar las brechas observadas en la primera versión, esta segunda versión
 
 \item \textbf{Kernel de procesamiento asíncrono:} Desacoplamiento de la interfaz de usuario mediante un servicio de tareas basado en hilos trabajadores, que ejecuta el análisis matemático pesado en segundo plano sin congelar la GUI.
 
-\item \textbf{Módulo de análisis PAC:} Incorporación de un plugin que cuantifica el acoplamiento fase-amplitud (\textit{phase-amplitude coupling}) en un canal o entre dos canales, y la consistencia de fase por pares (PPC).
+\item \textbf{Módulo de análisis PAC:} Incorporación de un plugin que cuantifica el acoplamiento fase-amplitud (\textit{phase-amplitude coupling}) en un canal o entre dos canales, y el acoplamiento fase-fase (\textit{phase-phase coupling}, PPC).
 
 \item \textbf{Optimización visual y gráfica vectorial:} Inclusión de técnicas de submuestreo de señal dinámica para navegación fluida (>= 24 FPS) y soporte de exportación gráfica en alta calidad mediante el formato EMF.
 
@@ -437,7 +437,7 @@ The pandas Development Team, ``pandas: Python data analysis library,'' 2025. Ava
 G. R. Lee, R. Gommers, F. Wasilewski, K. Wohlfahrt, and A. O'Leary, ``PyWavelets: A Python package for wavelet analysis,'' \textit{Journal of Open Source Software}, vol. 4, no. 36, p. 1237, 2019. Available: \url{https://doi.org/10.21105/joss.01237}.
 
 \bibitem{ref9}
-S. W. Harden, ``pyabf 2.3.5,'' 2022. Available: \url{https://pypi.org/project/pyabf/}.
+S. W. Harden, ``pyabf 2.3.8,'' 2022. Available: \url{https://pypi.org/project/pyabf/}.
 
 \bibitem{ref10}
 Teunis van Beelen, ``pyEDFlib,'' 2025. Available: \url{https://pypi.org/project/pyEDFlib/}. Accessed: 2025.
@@ -496,7 +496,7 @@ de análisis basado en acoplamiento cruzado de frecuencias
 
 El nuevo módulo incluye el análisis de acoplamiento fase-amplitud
 (\textit{Phase-Amplitude Coupling}, PAC) sobre un canal, PAC entre dos
-canales y consistencia de fase por pares (PPC). Gamma Lab 2.0 es compatible con los
+canales y acoplamiento fase-fase (PPC). Gamma Lab 2.0 es compatible con los
 archivos y flujos de trabajo de su versión original.
 
 \subsubsection{Interfaces con el Sistema}
@@ -532,14 +532,15 @@ técnicas:
 
     \item \textbf{Pantalla.} Visualización de la interfaz, pestañas y
     gráficos generados por cada módulo. Especificaciones: resolución mínima
-    1920 x 1080 px; tamaño recomendado mayor o igual a 14 pulgadas.
+    1366 x 768 px y recomendada 1920 x 1080 px o superior; tamaño
+    recomendado mayor o igual a 14 pulgadas.
 
     \item \textbf{Interfaz gráfica (GUI).} Desarrollada en Python con
     PyQt5 y los componentes Qt. Está organizada en módulos navegables con
     barras laterales para la selección de la señal activa, la configuración
     de parámetros por plugin, la ejecución de análisis y la visualización
     de resultados. Gamma Lab 2.0 incorpora las vistas de PAC de un canal, PAC
-    inter-canal y consistencia de fase por pares.
+    inter-canal y acoplamiento fase-fase (PPC).
 
     \item \textbf{Interfaz de entrada de archivos EEG.} Permite al usuario
     seleccionar y cargar archivos de señales adquiridos externamente en los
@@ -568,7 +569,8 @@ las tareas de procesamiento pueden distribuirse entre varios núcleos.
     \cite{ref1}.
 
     \item \textbf{Python.} Es el lenguaje de programación base del sistema.
-    Se utiliza la versión 3.11--3.13 \cite{ref2}.
+    Se desarrolla y empaqueta con la versión 3.12, y es compatible con las
+    versiones 3.11 a 3.13 \cite{ref2}.
 
     \item \textbf{PyQt5.} Es el framework sobre el que se construye la
     interfaz gráfica del sistema, manejando widgets, layouts, navegación y
@@ -587,9 +589,11 @@ las tareas de procesamiento pueden distribuirse entre varios núcleos.
     procesamiento de señales, incluyendo el cálculo de densidad espectral de
     potencia, interpolaciones y filtros como Butterworth \cite{ref6}.
 
-    \item \textbf{Pandas.} Gestiona la organización y exportación de
-    resultados en formatos tabulares como \texttt{.csv}, \texttt{.xlsx} y
-    \texttt{.json} \cite{ref7}.
+    \item \textbf{Pandas.} Se emplea en las pruebas automáticas para leer y
+    verificar los archivos exportados; la exportación de resultados en
+    \texttt{.csv}, \texttt{.xlsx} y \texttt{.json} se realiza con los módulos
+    estándar \texttt{csv} y \texttt{json} y con un escritor propio de
+    \texttt{.xlsx} \cite{ref7}.
 
     \item \textbf{PyWavelets.} Provee los algoritmos para el cálculo de la
     transformada wavelet y su promedio en el dominio tiempo-frecuencia \cite{ref8}.
@@ -633,11 +637,11 @@ intercambio de datos con sistemas externos.
 \begin{itemize}
 
     \item \textbf{Entorno Python.} Gamma Lab 2.0 se desarrolla en Python
-    3.11+, requiriendo espacio en disco para el entorno base y sus
+    3.12 (compatible con 3.11 a 3.13), requiriendo espacio en disco para el entorno base y sus
     dependencias.
 
-    \item \textbf{Librerías Científicas.} El uso de NumPy, SciPy,
-    Pandas y PyWavelets genera un consumo adicional de memoria
+    \item \textbf{Librerías Científicas.} El uso de NumPy, SciPy
+    y PyWavelets genera un consumo adicional de memoria
     durante el procesamiento de señales EEG, dependiendo del tamaño de los
     arreglos manipulados y del número de trials seleccionados.
 
@@ -711,7 +715,7 @@ operaciones principales:
 
     \item \textbf{Análisis.} Procesar la señal en los dominios de tiempo,
     frecuencia y tiempo-frecuencia, incluyendo FFT, PSD, Wavelet, ERP,
-    análisis PAC de un canal, PAC inter-canal y consistencia de fase por pares (PPC).
+    análisis PAC de un canal, PAC inter-canal y acoplamiento fase-fase (PPC).
 
     \item \textbf{Análisis PAC.} Seleccionar bandas de fase y amplitud,
     seleccionar un trial o un promedio de trials, calcular el
@@ -719,7 +723,7 @@ operaciones principales:
 
     \item \textbf{Análisis inter-canal.} Seleccionar un canal como fuente de
     fase y otro como fuente de amplitud para calcular PAC inter-canal o
-    consistencia de fase por pares (PPC).
+    acoplamiento fase-fase (PPC).
 
     \item \textbf{Visualización y exportación.} Visualizar los resultados del
     procesamiento y exportarlos en formatos numéricos y gráficos como
@@ -785,7 +789,9 @@ visualización de señales y la ejecución de tareas en segundo plano:
     implementado sobre NumPy y SciPy a partir de los algoritmos de referencia
     en MATLAB, sin una librería externa dedicada.
 
-    \item \textbf{Pandas:} manipulación estructurada y exportación de datos.
+    \item \textbf{Exportación de datos:} módulos estándar \texttt{csv} y
+    \texttt{json} y un escritor propio de archivos \texttt{.xlsx}; Pandas solo
+    se usa en las pruebas automáticas.
 
     \item \textbf{PyWavelets:} análisis tiempo-frecuencia mediante
     transformadas wavelet.
@@ -835,8 +841,8 @@ navegación existentes, mejoras en la experiencia de usuario, persistencia y
 restauración de proyectos, y un nuevo módulo de análisis basado en
 acoplamiento cruzado de frecuencias.
 
-El nuevo módulo incluye PAC de un canal, PAC inter-canal y consistencia de fase por pares
-PPC. Además, los cálculos pesados de los plugins se ejecutan en segundo plano
+El nuevo módulo incluye PAC de un canal, PAC inter-canal y acoplamiento fase-fase
+(PPC). Además, los cálculos pesados de los plugins se ejecutan en segundo plano
 a través del servicio de tareas del Kernel, una tarea a la vez, de modo que la
 interfaz no se bloquea y el usuario puede cancelar un cálculo en curso.
 
@@ -899,12 +905,14 @@ de la barra de funcionalidades:
 
     \begin{itemize}
 
-        \item \textit{Slope}, con las subopciones \textit{Slope 2 Trials} y
-        \textit{Slope All Trials}.
+        \item \textit{Slope}, con las subopciones \textit{Slope (2 points)} y
+        \textit{Slope (all trials)}.
 
-        \item \textit{Difference}.
+        \item \textit{Difference}, con las subopciones \textit{Difference (2 points)}
+        y \textit{Difference (all trials)}.
 
-        \item \textit{Amplitude}.
+        \item \textit{Amplitude}, con las subopciones \textit{Amplitude (2 points)}
+        y \textit{Amplitude (all trials)}.
 
         \item Eliminar la última medición o la totalidad de las mediciones.
 
@@ -999,8 +1007,8 @@ tiempo-frecuencia.
     acoplamiento fase-frecuencia, el histograma de fase y el vector de
     acoplamiento medio.
 
-    \item \textbf{Consistencia de fase por pares (PPC).} Permite seleccionar dos canales
-    y calcular la consistencia de fase por pares entre ellos. El resultado puede
+    \item \textbf{Acoplamiento fase-fase (PPC).} Permite seleccionar dos canales
+    y calcular el acoplamiento fase-fase entre ellos. El resultado puede
     visualizarse y exportarse junto con sus datos numéricos.
 
 \end{itemize}
@@ -1080,7 +1088,7 @@ El sistema mantiene una arquitectura modular orientada a plugins, donde el
 Kernel orquesta la ejecución y permite incorporar nuevas capacidades sin
 modificar los plugins existentes.
 
-El sistema se desarrolla en Python 3.11--3.13 y se distribuye como
+El sistema se desarrolla en Python 3.12 (compatible con 3.11--3.13) y se distribuye como
 aplicación ejecutable localmente en Windows; alternativamente puede
 ejecutarse directamente desde el código fuente del repositorio oficial.
 
@@ -1300,7 +1308,7 @@ Y|
 Entidad encargada de almacenar los resultados generados por el módulo de
 análisis de acoplamiento cruzado de frecuencias
 (\textit{Cross-Frequency Coupling}). Incluye resultados de PAC de un canal,
-PAC inter-canal y consistencia de fase por pares (PPC).
+PAC inter-canal y acoplamiento fase-fase (PPC).
 \\ \hline
 
 \textbf{Atributos principales}
@@ -1440,7 +1448,7 @@ comprender terminología científica y nombres de librerías.
 \begin{itemize}
 
 \item El sistema depende de bibliotecas científicas externas como NumPy,
-SciPy, PyWavelets, PyEDFlib, PyABF y Pandas.
+SciPy, PyWavelets, PyEDFlib, PyABF y h5py.
 
 \item La interfaz gráfica depende del framework PyQt5 y de los componentes
 Qt.
@@ -1480,7 +1488,7 @@ A partir de esta clasificación, los requerimientos funcionales se organizan en 
     \item \textbf{IO}: Entrada/Salida: agrupa los requerimientos relacionados con la carga y persistencia de señales, así como el guardado y la apertura de proyectos, consolidando el manejo de datos como base funcional de la herramienta.
     \item \textbf{UI}: Interacción general: agrupa los requerimientos orientados a mejorar la experiencia de usuario, la edición de la señal y la gestión de trials.
     \item \textbf{WV}: Wavelet/Escalograma: agrupa los requerimientos que expanden y ajustan las capacidades de esta representación tiempo-frecuencia.
-    \item \textbf{PAC}: Acoplamiento fase-amplitud: agrupa los requerimientos del nuevo módulo de análisis incorporado en esta iteración, e incluye tanto el acoplamiento intra-canal como el inter-canal y la consistencia de fase por pares.
+    \item \textbf{PAC}: Acoplamiento fase-amplitud: agrupa los requerimientos del nuevo módulo de análisis incorporado en esta iteración, e incluye tanto el acoplamiento intra-canal como el inter-canal y el acoplamiento fase-fase (PPC).
 \end{itemize}
 
 Los requerimientos no funcionales se identifican mediante el prefijo \textbf{NFR-X-YY}, donde \textit{X} corresponde a la categoría del modelo FURPS+ \cite{eeles2001} y \textit{YY} es el número consecutivo dentro de dicha categoría. Estos requisitos concentran, en particular, los lineamientos orientados a la estabilización y el fortalecimiento arquitectónico de la herramienta. Se identificaron requisitos en cuatro de las categorías del modelo:
@@ -1642,13 +1650,13 @@ FR-PAC-13 & R61 & El sistema debe calcular el mapa de acoplamiento fase-frecuenc
 \hline
 FR-PAC-14 & R62 & El sistema debe representar los resultados del análisis PAC inter-canal con las mismas visualizaciones que el PAC de un canal. \\
 \hline
-FR-PAC-15 & R63 & El sistema debe permitir seleccionar dos canales y un rango de frecuencias para calcular la consistencia de fase por pares entre ellos. \\
+FR-PAC-15 & R63 & El sistema debe permitir seleccionar dos canales y un rango de frecuencias para calcular el acoplamiento fase-fase (PPC) entre ellos. \\
 \hline
-FR-PAC-16 & R64 & El sistema debe representar la consistencia de fase por pares mediante un mapa tiempo-frecuencia. \\
+FR-PAC-16 & R64 & El sistema debe representar el acoplamiento fase-fase (PPC) mediante un mapa tiempo-frecuencia. \\
 \hline
-FR-PAC-17 & R65 & El sistema debe exportar los resultados numéricos del análisis PAC inter-canal y de consistencia de fase por pares (PPC). \\
+FR-PAC-17 & R65 & El sistema debe exportar los resultados numéricos del análisis PAC inter-canal y de acoplamiento fase-fase (PPC). \\
 \hline
-FR-PAC-18 & R66 & El sistema debe exportar las representaciones gráficas del análisis PAC inter-canal y de consistencia de fase por pares (PPC) como imagen. \\
+FR-PAC-18 & R66 & El sistema debe exportar las representaciones gráficas del análisis PAC inter-canal y de acoplamiento fase-fase (PPC) como imagen. \\
 \hline
 FR-PAC-19 & R75 & El sistema debe segmentar la señal filtrada en la banda de frecuencia rápida tomando cada ciclo de la onda lenta como una época, y superponer todas las épocas en una misma gráfica de tipo butterfly con la fase del ciclo lento en el eje X. \\
 \hline
@@ -2039,7 +2047,7 @@ señales de comportamiento conocido.
 Módulo PAC: Acoplamiento fase-amplitud &
 Validación del comodulograma contra resultados de referencia conocidos y revisión
 de la gráfica por parte del cliente, cubriendo el acoplamiento intra-canal, el
-inter-canal y la consistencia de fase por pares.
+inter-canal y el acoplamiento fase-fase (PPC).
 \\ \hline
 
 \multicolumn{2}{|l|}{\cellcolor{headergray}\textbf{Requerimientos No Funcionales \textnormal{(NFR-X-YY, modelo FURPS+, 36 requisitos)}}}

@@ -73,10 +73,10 @@ LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
 \providecommand{\ciudad}{BOGOTÁ, D.C.}
 \providecommand{\anio}{2026}
 \providecommand{\fechaLarga}{Noviembre, 2026}
-\providecommand{\rector}{Nombre del Rector, S.J.}
-\providecommand{\decano}{Ing. Nombre del Decano de la Facultad}
-\providecommand{\directorDepto}{Ing. Nombre del Director de Departamento, Ph.D.}
-\providecommand{\directorCarrera}{Ing. Nombre de la Directora de Carrera}
+\providecommand{\rector}{P. Luis Fernando Múnera Congote, S.J.}
+\providecommand{\decano}{Ing. Diego Alejandro Patiño Guevara, Ph.D.}
+\providecommand{\directorDepto}{Ing. César Julio Bustacara Medina, Ph.D.}
+\providecommand{\directorCarrera}{Ing. Andrea del Pilar Rueda Olarte}
 
 \pagenumbering{alph}% la caratula no comparte destino PDF con la pagina 1
 \begingroup\setlength{\parskip}{0pt}% sin espacio extra entre parrafos en la portada
@@ -547,13 +547,6 @@ El usuario final confirma en la Fase~4 que el sistema es intuitivo, que los resu
 Usabilidad, Confiabilidad
 &
 Se requiere retroalimentación visual del progreso, mensajes diferenciados por severidad, ayudas contextuales y resultados mostrados en la misma pantalla en que se solicitaron (NFR-U-01 a NFR-U-09).
-\\[0.2cm]
-
-Cobertura de pruebas unitarias de al menos 80\,\%.
-&
-Soporte
-&
-La lógica de negocio debe poder verificarse sin la interfaz gráfica: servicios compartidos con una única instancia inyectada desde el núcleo (NFR-S-03) y plugins que no acceden a estructuras internas de otros módulos (NFR-S-02).
 \\
 
 \end{longtable}
@@ -794,11 +787,11 @@ No se garantiza el instalador ni la portabilidad prevista (NFR-S-01).
 \\[0.15cm]
 
 A-02 &
-El equipo cuenta con arquitectura multinúcleo (más de cuatro núcleos) para el procesamiento en segundo plano.
+El equipo cuenta con arquitectura multinúcleo (cuatro núcleos o más) para el procesamiento en segundo plano.
 &
 Equipo
 &
-La mejora de rendimiento esperada por la paralelización (20--30\,\%) puede no alcanzarse.
+La aceleración medida al repartir los ensayos entre hilos (de 1,8 a 2,7 veces en PPC) puede no alcanzarse.
 \\[0.15cm]
 
 A-03 &
@@ -1075,7 +1068,7 @@ ADR-06 & \texttt{DataStore} con un único escritor, el hilo de la interfaz, y de
 \hline
 ADR-07 & Representación submuestreada para la visualización y mapas de tiempo-frecuencia en precisión simple. & D6 & Carga perezosa o memoria mapeada, que depende del formato de cada archivo. & Menor consumo de memoria al visualizar. La precisión se valida contra las referencias de MATLAB. \\
 \hline
-ADR-08 & Liberación de la ventana OpenGL al salir de un módulo y de todas las ventanas de VTK al cerrar. & D8 & Conservar en caché todas las vistas instanciadas. & Consumo acotado de memoria de video: recorrer los módulos de análisis deja el proceso en 913~MB en lugar de 3.118~MB. Recrear la ventana al regresar cuesta entre 60 y 460~ms. \\
+ADR-08 & Liberación de la ventana OpenGL al salir de un módulo y de todas las ventanas de VTK al cerrar. & D8 & Conservar en caché todas las vistas instanciadas. & Consumo acotado de memoria de video: recorrer los módulos de análisis deja el proceso en 2.585~MB en lugar de 3.118~MB, con las diez extensiones que conservan su ventana (\texttt{free\_graphics: false}) para no superar el tiempo de regreso. Recrear la ventana al regresar cuesta entre 60 y 460~ms. \\
 \hline
 ADR-09 & TaskOrchestrator basado en hilos: una cola que ejecuta una tarea a la vez en un hilo trabajador, con cancelación cooperativa y reparto interno de ensayos en hasta cuatro hilos. & D9--D11 & Ejecución en el hilo de la interfaz; concurrencia local en cada plugin. & Interfaz responsiva y un único punto que limita las tareas simultáneas. Al cancelar, la interfaz se libera en a lo sumo dos segundos y el resultado de la tarea se descarta. \\
 \hline
@@ -1083,7 +1076,7 @@ ADR-10 & Número de hilos internos acotado por la memoria estimada por ensayo y 
 \hline
 ADR-11 & Captura de las excepciones en los trabajadores con notificación a la interfaz. & D13 & Manejo local en cada extensión. & Un error en un cómputo no cierra la aplicación y se informa al usuario. \\
 \hline
-ADR-12 & Servicio común de alertas con tres severidades y un centro de notificaciones no modal en la ventana principal; mensajes de consola con severidad y extensión de origen. & D14 & Que cada extensión informe con sus propios diálogos y llamadas a \texttt{print}, como en 1.0. & El usuario distingue la gravedad de cada mensaje y solo los errores interrumpen su trabajo. Los mensajes de consola no se persisten. \\
+ADR-12 & Servicio común de alertas con tres severidades y un centro de notificaciones no modal en la ventana principal; mensajes de consola con severidad y extensión de origen. & D14 & Que cada extensión informe con sus propios diálogos y llamadas a \texttt{print}, como en 1.0. & El usuario distingue la gravedad de cada mensaje y solo los errores interrumpen su trabajo. Los mensajes de consola solo se conservan en la versión instalada, que los redirige al archivo \texttt{gamma\_lab.log} de la carpeta de datos del usuario, sin marca de tiempo ni rotación. \\
 \hline
 \caption{Decisiones arquitectónicas de Gamma Lab 2.0} \label{tab:adrs} \\
 \end{longtable}
@@ -1141,7 +1134,7 @@ D1 & P1 & ADR-01, ADR-02 & CU-011, CU-022 \\
 \hline
 D2 & P2 & ADR-03 & CU-003, CU-004 \\
 \hline
-D3 & P3 & ADR-04 & Escenario 1; métrica de mantenibilidad (cobertura) \\
+D3 & P3 & ADR-04 & Escenario 1 \\
 \hline
 D4 & P4 & ADR-05 & CU-011; Escenario 1 \\
 \hline
@@ -1328,7 +1321,7 @@ El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'o
         \hline
         CU-001 & An\'alisis PAC de un canal & Calcula el acoplamiento fase-amplitud entre dos bandas de frecuencia de un mismo canal, sobre un trial \'unico o el promedio de trials. \\
         \hline
-        CU-002 & An\'alisis PAC de dos canales / PPC & Calcula el acoplamiento fase-amplitud entre dos canales distintos, o la consistencia de fase por pares entre ellos. \\
+        CU-002 & An\'alisis PAC de dos canales / PPC & Calcula el acoplamiento fase-amplitud entre dos canales distintos, o el acoplamiento fase-fase (PPC) entre ellos. \\
         \hline
         CU-013 & Calcular Wavelet & Calcula la transformada wavelet de la se\~nal con normalizaci\'on y escala configurables, y presenta el escalograma tiempo-frecuencia. \\
         \hline
@@ -1339,7 +1332,7 @@ El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'o
 
 En el diagrama, todos los casos de uso concretos del subsistema mantienen una relaci\'on de inclusi\'on con el orquestador del n\'ucleo (CU-020). Esto es consecuente con la naturaleza del subsistema, que re\'une los c\'omputos m\'as costosos del sistema. Delegar su ejecuci\'on en el n\'ucleo permite que la interfaz siga respondiendo durante el c\'alculo, que el usuario pueda cancelarlo y que los resultados se publiquen en el estado compartido de forma sincronizada. Cada extensi\'on de an\'alisis queda as\'i limitada a su l\'ogica de c\'alculo, sin intervenir en la gesti\'on de la concurrencia.
 
-La relaci\'on interna del subsistema es una generalizaci\'on: CU-001 y CU-002 especializan el caso de uso abstracto Ejecutar an\'alisis PAC / PPC, que define el procedimiento com\'un de c\'alculo del acoplamiento fase-amplitud y sus visualizaciones. Las especializaciones se distinguen por el origen de los datos. CU-001 toma la fase y la amplitud de un mismo canal, y CU-002 las toma de canales distintos y a\~nade la consistencia de fase por pares. Esta estructura permite reutilizar el comportamiento com\'un y agregar nuevas variantes de acoplamiento sin modificar las existentes.
+La relaci\'on interna del subsistema es una generalizaci\'on: CU-001 y CU-002 especializan el caso de uso abstracto Ejecutar an\'alisis PAC / PPC, que define el procedimiento com\'un de c\'alculo del acoplamiento fase-amplitud y sus visualizaciones. Las especializaciones se distinguen por el origen de los datos. CU-001 toma la fase y la amplitud de un mismo canal, y CU-002 las toma de canales distintos y a\~nade el acoplamiento fase-fase (PPC). Esta estructura permite reutilizar el comportamiento com\'un y agregar nuevas variantes de acoplamiento sin modificar las existentes.
 
 CU-013 y CU-015 no participan en esta jerarqu\'ia y se representan como an\'alisis independientes. CU-013 produce la representaci\'on tiempo-frecuencia de la se\~nal y tiene un tiempo m\'aximo de c\'omputo definido. CU-015 produce la serie promediada de los trials y opera sobre el subconjunto seleccionado en el subsistema Preprocesamiento.
 
@@ -1507,7 +1500,7 @@ El TooltipHelper se encuentra implementado en el módulo \texttt{ayudas} y prove
 \paragraph{IPlugin}
 IPlugin es la interfaz que define el contrato que toda extensión debe cumplir para integrarse al sistema, y constituye el mecanismo principal de extensibilidad de la arquitectura. Se encuentra implementada y establece las siguientes operaciones: get\_widget, que provee la interfaz gráfica de la extensión; process, que ejecuta el procesamiento propio de la extensión; stop, que detiene la extensión y libera sus recursos; y get\_active\_signal y get\_active\_trials, que proporcionan acceso a los datos de trabajo. IPlugin depende de las clases SignalDataset y TrialDataset.
 
-Se encuentra planificada la incorporación al contrato de la operación clear\_params, cuya finalidad es restablecer los parámetros de una extensión a sus valores predeterminados, conforme al caso de uso CU-009. Actualmente esta operación se encuentra implementada de forma individual en las extensiones FilterPlugin, TrialsPlugin y ArtifactRemovePlugin, pero aún no forma parte de la interfaz común.
+El restablecimiento de los parámetros a sus valores predeterminados, conforme al caso de uso CU-009, se encuentra implementado mediante el botón Clear en cada una de las dieciséis extensiones que se ejecutan con un botón. Cada extensión implementa su propio restablecimiento, por lo que esta operación no forma parte de la interfaz común.
 
 \subsubsection{Extensiones}
 
@@ -1530,7 +1523,7 @@ Todas las extensiones del sistema realizan la interfaz IPlugin. La Tabla~\ref{ta
 \addlinespace
 \texttt{Pac\_plugin} & Acoplamiento entre fase y amplitud (PAC) de un ensayo, promediado sobre los ensayos o sobre los ciclos detectados (Psel); en esta última modalidad, la fase y la amplitud pueden tomarse de canales distintos. \\
 \addlinespace
-\texttt{Ppc\_plugin} & Consistencia de fase entre dos canales (\textit{Pairwise Phase Consistency}, PPC). \\
+\texttt{Ppc\_plugin} & Acoplamiento fase-fase entre dos canales (\textit{phase-phase coupling}, PPC), cuantificado con la consistencia de fase por pares. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1589,9 +1582,9 @@ La concentración de la lectura de archivos en el FileIOService asegura la indep
 
 La persistencia de proyectos mediante el ProjectService y la estructura ProjectData produce proyectos autocontenidos y versionados. La inclusión de una copia de la señal de origen permite reabrir el trabajo en otro equipo, y la versión del esquema permite detectar incompatibilidades entre versiones del formato.
 
-\subsection{Vista de despliegue}
+\subsection{Vista de desarrollo}
 \subsubsection{Propósito}
-La vista de despliegue permite comprender cómo se organiza Gamma Lab 2.0 y cómo colaboran sus componentes para ofrecer las funcionalidades de procesamiento y análisis de señales neurofisiológicas. El Kernel y el PluginManager proporcionan la estructura necesaria para integrar las extensiones, mientras que los servicios de soporte se encargan de gestionar los datos, los archivos, la configuración, los proyectos y la exportación de resultados.
+La vista de desarrollo permite comprender cómo se organiza Gamma Lab 2.0 y cómo colaboran sus componentes para ofrecer las funcionalidades de procesamiento y análisis de señales neurofisiológicas. El Kernel y el PluginManager proporcionan la estructura necesaria para integrar las extensiones, mientras que los servicios de soporte se encargan de gestionar los datos, los archivos, la configuración, los proyectos y la exportación de resultados.
 
 Por su parte, los plugins reúnen las herramientas de entrada y salida, preprocesamiento, análisis y medición. A estos componentes se suman nuevas incorporaciones, como el TaskOrchestrator, orientado a coordinar la ejecución de tareas; el ProjectService, destinado a conservar y recuperar el estado del trabajo; y el TooltipHelper, que busca facilitar la comprensión de las herramientas disponibles.
 
@@ -1698,9 +1691,9 @@ Esta organización permite que las funcionalidades se agrupen según el propósi
 
     \item \textbf{Plugins de preprocesamiento (\texttt{preprocessing}):} incluyen \texttt{Trials}, \texttt{ArtifactRemove} y \texttt{Filter}. Estas herramientas permiten preparar las señales antes de analizarlas, mediante operaciones como la segmentación en ensayos o \textit{trials}, la eliminación o corrección de artefactos y la aplicación de filtros.
 
-    \item \textbf{Plugins de medición (\texttt{measure}):} incluyen \texttt{Amplitude} y \texttt{Slope}. Su función es obtener medidas cuantitativas a partir de las señales o de los resultados disponibles. La amplitud permite caracterizar la magnitud de una respuesta, mientras que la pendiente describe su variación en un intervalo determinado.
+    \item \textbf{Plugins de medición (\texttt{measure}):} incluyen \texttt{Amplitude}, \texttt{Slope} y \texttt{Difference}. Su función es obtener medidas cuantitativas a partir de las señales o de los resultados disponibles. La amplitud permite caracterizar la magnitud de una respuesta, la pendiente describe su variación en un intervalo determinado y la diferencia calcula la derivada de la señal en ese intervalo.
 
-    \item \textbf{Plugins de análisis (\texttt{analysis}):} incluyen \texttt{FFT}, \texttt{PSD}, \texttt{Average}, \texttt{ERP} y \texttt{Wavelet}. Estas herramientas permiten estudiar las señales desde diferentes perspectivas. Los análisis temporales incluyen el promediado y los potenciales relacionados con eventos; los análisis en frecuencia incluyen la transformada rápida de Fourier y la densidad espectral de potencia; y los análisis tiempo-frecuencia permiten estudiar cómo varían las características espectrales a lo largo del tiempo.
+    \item \textbf{Plugins de análisis (\texttt{analysis}):} incluyen \texttt{FFT}, \texttt{PSD} y \texttt{Wavelet} con sus variantes (\texttt{FFT Average}, \texttt{PSD Average}, \texttt{Relative PSD} y \texttt{Wavelet Average}), \texttt{Average}, \texttt{ERP}, \texttt{PAC}, \texttt{Modulation Index} y \texttt{PPC}. Estas herramientas permiten estudiar las señales desde diferentes perspectivas. Los análisis temporales incluyen el promediado y los potenciales relacionados con eventos; los análisis en frecuencia incluyen la transformada rápida de Fourier y la densidad espectral de potencia; y los análisis tiempo-frecuencia permiten estudiar cómo varían las características espectrales a lo largo del tiempo.
 \end{itemize}
 
 Estas categorías se complementan entre sí dentro del flujo de trabajo de la aplicación. Por ejemplo, una señal puede cargarse mediante un plugin de entrada, prepararse con las herramientas de preprocesamiento y utilizarse posteriormente en un análisis o una medición. Los resultados pueden consultarse desde la interfaz y, cuando corresponda, exportarse para su utilización posterior.
@@ -2018,7 +2011,7 @@ Respuesta & El sistema detecta, valida y registra el plugin, exponiéndolo en la
 \hline
 Medida de Respuesta & Plugin visible en la UI en menos de 1 minuto. Ningún plugin existente debe fallar tras la carga. \\
 \hline
-Trazabilidad & NFR-S-05 (R77--R78) \\
+Trazabilidad & NFR-S-05 (R77) \\
 \hline
 \end{tabularx}
 \end{table}
@@ -2049,7 +2042,7 @@ Respuesta & La señal se carga correctamente, sin duplicación innecesaria de da
 \hline
 Medida de Respuesta & Visualización inicial en menos de 8 segundos para este caso de estrés (el umbral base de carga es $\leq 2$ s para el archivo típico de referencia). Uso de CPU menor a 80\%. Sin cierres inesperados ni latencias mayores a 5 segundos. \\
 \hline
-Trazabilidad & NFR-P-03 (R48), NFR-P-14 (R72), NFR-P-10 (R56) \\
+Trazabilidad & NFR-P-03 (R47), NFR-P-14 (R71), NFR-P-10 (R55) \\
 \hline
 \end{tabularx}
 \end{table}
@@ -2080,7 +2073,7 @@ Respuesta & El sistema captura la excepción, informa al usuario y evita un cier
 \hline
 Medida de Respuesta & 0\% de pérdida de datos. Continuidad del sistema garantizada. Mensaje de error mostrado en menos de 2 segundos. \\
 \hline
-Trazabilidad & R47 \\
+Trazabilidad & NFR-U-01 (R02) \\
 \hline
 \end{tabularx}
 \end{table}
@@ -2111,7 +2104,7 @@ Respuesta & El archivo se genera correctamente o, en caso de error, se notifica 
 \hline
 Medida de Respuesta & Tiempo de exportación menor a 3 segundos. 0\% de pérdida de datos. Notificación clara ante error. \\
 \hline
-Trazabilidad & NFR-P-07 (R51), NFR-P-12 (R57), NFR-S-03 (R70) \\
+Trazabilidad & NFR-P-07 (R51), NFR-P-12 (R57), NFR-S-03 (R69) \\
 \hline
 \end{tabularx}
 \end{table}
@@ -2173,7 +2166,7 @@ Respuesta & El sistema reutiliza datos sin duplicarlos, mantiene tiempos de acce
 \hline
 Medida de Respuesta & Cambio entre señales cargadas en menos de 1 segundo. Sin bloqueos ni cierres inesperados. Uso de memoria dentro del 70--75\%. \\
 \hline
-Trazabilidad & NFR-P-06 (R51), NFR-P-01/P-08 (R11, R53) \\
+Trazabilidad & NFR-P-06 (R50), NFR-P-01/P-08 (R11, R52) \\
 \hline
 \end{tabularx}
 \end{table}
@@ -2204,7 +2197,7 @@ Respuesta & El sistema captura el error, notifica al usuario, cancela la operaci
 \hline
 Medida de Respuesta & Mensaje de error mostrado en menos de 2 segundos. 0\% de pérdida de datos o señales cargadas previamente. El sistema continúa operativo sin fallos. \\
 \hline
-Trazabilidad & FR-IO-04  \\
+Trazabilidad & FR-IO-02 (R80), FR-IO-04 (R78)  \\
 \hline
 \end{tabularx}
 \end{table}
@@ -2235,7 +2228,7 @@ Respuesta & La gráfica generada refleja exactamente los datos filtrados o selec
 \hline
 Medida de Respuesta & Actualización gráfica en menos de 3 segundos. 0 diferencias entre los datos mostrados y los procesados. Consistencia confirmada entre ejecuciones sucesivas. \\
 \hline
-Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
+Trazabilidad & NFR-R-04 (R72), NFR-P-15 (R73), NFR-U-02 (R03) \\
 \hline
 \end{tabularx}
 \end{table}
@@ -2289,7 +2282,17 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \hline
 \texttt{h5py} & 3.15.1 & Soporte de formatos basados en HDF5 \\
 \hline
+\texttt{PyQt5\_sip} & 12.17.1 & Enlace de PyQt5 con Qt \\
+\hline
+\texttt{PyQtWebEngine} & 5.15.7 & Visualización del manual de usuario en PDF \\
+\hline
+\texttt{PyYAML} & 6.0.3 & Lectura de los descriptores \texttt{properties.yml} \\
+\hline
 \texttt{pytest} & 8.4.2 & Framework de pruebas \\
+\hline
+\texttt{pandas} & 2.3.3 & Lectura de los archivos exportados en las pruebas \\
+\hline
+\texttt{openpyxl} & 3.1.5 & Verificación de los libros \texttt{.xlsx} en las pruebas \\
 \hline
 \end{longtable}
 \end{center}
@@ -2297,7 +2300,7 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \subsection{M\'etricas y plan de verificaci\'on}
 \label{sec:metricas_verificacion}
 
-La Tabla~\ref{tab:metricas} formaliza la ``Medida de Respuesta'' de cada escenario de calidad (secci\'on~5.1) en una m\'etrica verificable, junto con su m\'etodo de medici\'on y el criterio de aceptaci\'on correspondiente.
+La Tabla~\ref{tab:metricas} formaliza la ``Medida de Respuesta'' de cada escenario de calidad (secci\'on~6.1) en una m\'etrica verificable, junto con su m\'etodo de medici\'on y el criterio de aceptaci\'on correspondiente.
 
 \begin{center}
 \small
@@ -2320,25 +2323,25 @@ La Tabla~\ref{tab:metricas} formaliza la ``Medida de Respuesta'' de cada escenar
 Extensibilidad (Esc.~1) &
 Tiempo de aparici\'on de un plugin nuevo; plugins existentes que fallan &
 Agregar un plugin v\'alido y correr \texttt{plugins\_\allowbreak test} &
-$<$1\,min; 0 plugins fallan (R77--R78) \\
+$<$1\,min; 0 plugins fallan (R77) \\
 \hline
 
 Rendimiento: carga grande (Esc.~2) &
 Tiempo a primer render; uso de CPU &
-\texttt{performance\_\allowbreak test}; medido: 78.4\,ms (1.8\,M muestras) &
-$\leq$8\,s estr\'es, $\leq$2\,s t\'ipico; CPU $<$80\% (R48/R72/R56) \\
+\texttt{performance\_\allowbreak test}; medido: 0,2\,s hasta verla en pantalla (1,8\,M muestras) &
+$\leq$8\,s estr\'es, $\leq$2\,s t\'ipico; CPU $<$80\% (R47/R71/R55) \\
 \hline
 
 Confiabilidad: errores en ejecuci\'on (Esc.~3) &
 \% p\'erdida de datos; tiempo del mensaje &
 Inyecci\'on de fallos dentro de \texttt{process()} &
-0\% p\'erdida; mensaje $<$2\,s; sistema operativo \\
+0\% p\'erdida; mensaje $<$2\,s; sistema operativo (R02) \\
 \hline
 
 Confiabilidad: exportaci\'on (Esc.~4) &
 Tiempo de exportaci\'on; error silencioso &
 \texttt{test\_\allowbreak export.py} &
-$<$3\,s; 0\% p\'erdida; notificaci\'on clara (R51/R57/R70) \\
+$<$3\,s; 0\% p\'erdida; notificaci\'on clara (R51/R57/R69) \\
 \hline
 
 Usabilidad (Esc.~5) &
@@ -2350,25 +2353,19 @@ $<$5\,min; bajas consultas al manual (R42--R44) \\
 Rendimiento: m\'ultiples se\~nales (Esc.~6) &
 Tiempo de cambio; \% de memoria &
 Benchmark de \texttt{DataStore} &
-$<$1\,s cambio; memoria 70--75\% (R11, R51, R53) \\
+$<$1\,s cambio; memoria 70--75\% (R11, R50, R52) \\
 \hline
 
 Confiabilidad: archivos corruptos (Esc.~7) &
 Tiempo del error; continuidad de sesi\'on &
 \texttt{test\_\allowbreak fileio\_\allowbreak abf}/\texttt{edf.py} &
-Mensaje $<$2\,s; 0\% p\'erdida previa (FR-IO-04) \\
+Mensaje $<$2\,s; 0\% p\'erdida previa (R80, R78) \\
 \hline
 
 Confiabilidad y\newline Usabilidad (Esc.~8) &
 Tiempo de actualizaci\'on; diferencias &
 Revisi\'on de consistencia entrada-salida &
-$<$3\,s; 0 diferencias (R73, R03) \\
-\hline
-
-Mantenibilidad &
-\% de cobertura autom\'atica &
-\texttt{pytest} --\texttt{cov} sobre \texttt{core}/\texttt{plugins} &
-$\geq$80\% de cobertura \\
+$<$3\,s; 0 diferencias (R72, R73, R03) \\
 \hline
 
 Rendimiento: no regresi\'on vs.\ 1.0 &
@@ -2394,10 +2391,10 @@ Liberaci\'on en $\leq$ 2~s (R46, R70, R74) \\
 
 \subsection{Plan de evidencia}
 \begin{enumerate}
-    \item \textbf{Fixture ABF real y referencias MATLAB.} \texttt{test/data/17308005.abf} m\'as los 8 CSV de referencia en \texttt{plugins\_\allowbreak test/} sustentan la correcci\'on num\'erica exigida por Extensibilidad (Esc.~1) y por las m\'etricas de Mantenibilidad.
+    \item \textbf{Fixture ABF real y referencias MATLAB.} \texttt{test/data/17308005.abf} m\'as los 8 CSV de referencia de la misma carpeta \texttt{test/\allowbreak data/} sustentan la correcci\'on num\'erica exigida por Extensibilidad (Esc.~1) y por la consistencia entre datos y gr\'aficas (Esc.~8).
     \item \textbf{Suite de benchmarks versionada.} \texttt{performance\_\allowbreak test/}, con resultados persistidos por etiqueta en \texttt{perf\_\allowbreak results.json} (p.\,ej.\ \texttt{gammalab1\_\allowbreak baseline\_\allowbreak 2026-08-16}), es la evidencia reproducible de Rendimiento y de la comparaci\'on de no regresi\'on frente a 1.0.
     \item \textbf{Auditor\'ias documentales.} Los informes \texttt{reporte\_\allowbreak tests.\allowbreak tex} e \texttt{informe\_\allowbreak rendimiento.\allowbreak tex} (\texttt{docs/\allowbreak tests documents/}) registran el estado de la suite de pruebas y los hallazgos de rendimiento.
-    \item \textbf{Pruebas de usabilidad con usuarios reales.} \texttt{docs/pruebas-usabilidad/} sustenta el criterio de aceptaci\'on de Usabilidad (Esc.~5).
+    \item \textbf{Pruebas de usabilidad con usuarios reales.} La secci\'on de pruebas de usabilidad del TD (casos UT-01 a UT-10 y cuestionario SUS) sustenta el criterio de aceptaci\'on de Usabilidad (Esc.~5).
     \item \textbf{Prueba de instalaci\'on limpia.} Arranque del ejecutable generado por PyInstaller en un Windows~10/11 sin Python previamente instalado, como evidencia de Portabilidad.
     \item \textbf{Pruebas de cancelaci\'on.} Las pruebas de \texttt{test/\allowbreak services\_\allowbreak test/\allowbreak test\_\allowbreak task\_\allowbreak service.py} sobre el \texttt{Task\-Orchestrator}, incluida la de una tarea que ignora la cancelaci\'on, son la evidencia de Robustez (CU-014).
 \end{enumerate}

@@ -323,7 +323,7 @@ Por último, quiero agradecer a esa compañía del día a día, a quienes compar
 \begin{abstract}
 Gamma Lab 2.0 es la segunda versión de una plataforma de \textit{software} libre para el procesamiento, visualización y análisis de señales electroencefalográficas (EEG), desarrollada para el Laboratorio de Electrofisiología de la Universidad Nacional de Colombia. Aunque su primera versión permitió integrar distintas técnicas de análisis en una interfaz gráfica, las pruebas con usuarios y la revisión del código evidenciaron limitaciones que dificultaban su uso continuo en un entorno de investigación. A partir de este diagnóstico, el proyecto se orientó a cuatro frentes de mejora: la corrección de errores funcionales, la experiencia de navegación, la estabilidad de la arquitectura y la ampliación de las capacidades analíticas.
 
-La solución se desarrolló sobre la arquitectura de \textit{microkernel} basada en \textit{plugins} de la versión original, conservando su implementación en Python y fortaleciendo los servicios del núcleo. Entre las principales mejoras se incorporaron un orquestador de tareas para ejecutar cálculos en segundo plano, mecanismos de gestión de recursos y persistencia de proyectos, así como una reorganización de la interfaz para facilitar la interacción con la herramienta. Además, se corrigieron funcionalidades existentes y se amplió el alcance analítico mediante la incorporación del análisis de acoplamiento fase-amplitud (PAC), incluyendo el índice de modulación y la consistencia de fase por pares (PPC) para el estudio de relaciones entre canales.
+La solución se desarrolló sobre la arquitectura de \textit{microkernel} basada en \textit{plugins} de la versión original, conservando su implementación en Python y fortaleciendo los servicios del núcleo. Entre las principales mejoras se incorporaron un orquestador de tareas para ejecutar cálculos en segundo plano, mecanismos de gestión de recursos y persistencia de proyectos, así como una reorganización de la interfaz para facilitar la interacción con la herramienta. Además, se corrigieron funcionalidades existentes y se amplió el alcance analítico mediante la incorporación del análisis de acoplamiento fase-amplitud (PAC), incluyendo el índice de modulación y el acoplamiento fase-fase (PPC) para el estudio de relaciones entre canales.
 
 La solución se evaluó mediante 921 pruebas automáticas, comparaciones numéricas con el sistema de referencia BOARD-FTD-PACC y sesiones de validación con investigadores del laboratorio. Los resultados no registraron fallas inesperadas en las pruebas automáticas y la evaluación de usabilidad alcanzó puntuaciones de 87,5 y 92,5 sobre 100. En conjunto, Gamma Lab 2.0 representa un avance en la estabilidad, usabilidad y capacidad de análisis de la herramienta, proporcionando una base tecnológica más adecuada para las exigencias de la investigación electrofisiológica. Asimismo, su arquitectura extensible y distribución como \textit{software} libre favorecen la continuidad del desarrollo y la colaboración entre instituciones académicas.
 
@@ -475,7 +475,7 @@ Sin embargo, para estudiar estas oscilaciones no basta con analizar la señal de
 
 Estos tres dominios son, en conjunto, el lenguaje técnico sobre el que ya opera Gamma Lab y sobre el que se apoyan sus módulos de preprocesamiento, \textit{wavelet} y promediado de ensayos.
 
-Ahora bien, estos tres dominios comparten una limitación de fondo: analizan las bandas de oscilación de manera individual. Por ello, no permiten caracterizar directamente qué ocurre cuando dos bandas distintas se activan de forma simultánea sobre una misma señal y existe una relación entre ellas. Este tipo de interacción se conoce como acoplamiento cruzado de frecuencias (\textit{Cross-Frequency Coupling}, CFC). Dentro de sus distintas formas, el acoplamiento fase-amplitud (\textit{Phase-Amplitude Coupling}, PAC) describe una relación en la que la fase de una oscilación lenta modula la amplitud de una oscilación rápida; este fenómeno se ha asociado con procesos de comunicación, coordinación y cómputo neuronal a través de distintas escalas espaciales y temporales \cite{combrisson2020}. Su análisis requiere, por tanto, medidas específicas de acoplamiento, como el índice de modulación para relaciones dentro de un mismo canal \cite{combrisson2020} y la Consistencia de Fase por Pares (\textit{Pairwise Phase Consistency}, PPC) para relaciones entre canales \cite{vinck2010}. Estas medidas constituyen la base del nuevo módulo PAC que Gamma Lab 2.0 incorpora, tanto para el análisis de un solo canal como para el análisis inter-canal.
+Ahora bien, estos tres dominios comparten una limitación de fondo: analizan las bandas de oscilación de manera individual. Por ello, no permiten caracterizar directamente qué ocurre cuando dos bandas distintas se activan de forma simultánea sobre una misma señal y existe una relación entre ellas. Este tipo de interacción se conoce como acoplamiento cruzado de frecuencias (\textit{Cross-Frequency Coupling}, CFC). Dentro de sus distintas formas, el acoplamiento fase-amplitud (\textit{Phase-Amplitude Coupling}, PAC) describe una relación en la que la fase de una oscilación lenta modula la amplitud de una oscilación rápida; este fenómeno se ha asociado con procesos de comunicación, coordinación y cómputo neuronal a través de distintas escalas espaciales y temporales \cite{combrisson2020}. Su análisis requiere, por tanto, medidas específicas de acoplamiento, como el índice de modulación para relaciones dentro de un mismo canal \cite{combrisson2020} y el acoplamiento fase-fase (\textit{phase-phase coupling}, PPC) para relaciones entre canales, cuantificado con la consistencia de fase por pares \cite{vinck2010}. Estas medidas constituyen la base del nuevo módulo PAC que Gamma Lab 2.0 incorpora, tanto para el análisis de un solo canal como para el análisis inter-canal.
 
 La incorporación de esta nueva capacidad analítica, sin reescribir lo que ya existe, se apoya en una decisión arquitectónica adoptada desde la primera versión de Gamma Lab. La herramienta se construyó sobre una arquitectura de \textit{microkernel}, un patrón de diseño en el que un núcleo central concentra los servicios esenciales del sistema, mientras que cada dominio o técnica de análisis se implementa como un \textit{plugin} independiente que puede incorporarse sin modificar el núcleo ni los demás módulos \cite{richards2022}. Esta estructura favorece la extensibilidad del sistema y permite incorporar nuevas técnicas de análisis, como PAC. Sin embargo, el crecimiento de los módulos también incrementa las exigencias sobre el núcleo, especialmente en la coordinación y gestión de los procesos de cómputo \cite{richards2022}. En la versión 1.0, la arquitectura estaba cerca de su límite para sostener de manera estable las funcionalidades que ya integraba, por lo que incorporar nuevas capacidades exigía fortalecer la coordinación y evolucionar el núcleo hacia un orquestador que gestione de forma centralizada el procesamiento de los distintos módulos de análisis.
 
@@ -550,7 +550,7 @@ Los requisitos funcionales especifican las acciones y comportamientos observable
 
     \item \textbf{Módulo WV: \textit{Wavelet}/Escalograma.} Opera sobre el resultado de una técnica ya presente en Gamma Lab: el escalograma generado por \textit{wavelet}. Sus operaciones son de ajuste y presentación, entre las que se incluyen elegir la escala, normalizar el resultado y exportarlo en formato vectorial, sin intervenir en el cálculo del escalograma en sí. En esa medida, WV corrige y fortalece esta técnica existente, dándole al usuario mayor control sobre su interpretación visual.
 
-    \item \textbf{Módulo PAC: Acoplamiento fase-amplitud.} Opera sobre una relación nueva entre los datos de la señal: el acoplamiento entre la fase de una banda lenta y la amplitud de una banda rápida, intra e inter-canal. Sus operaciones cubren todo el ciclo del análisis, desde la selección de bandas y canales hasta el cálculo del acoplamiento, la consistencia de fase por pares y la exportación de resultados. En esa medida, PAC amplía el alcance analítico de Gamma Lab mediante una técnica completamente nueva, concentrando cerca de la mitad de los requisitos funcionales de esta iteración.
+    \item \textbf{Módulo PAC: Acoplamiento fase-amplitud.} Opera sobre una relación nueva entre los datos de la señal: el acoplamiento entre la fase de una banda lenta y la amplitud de una banda rápida, intra e inter-canal. Sus operaciones cubren todo el ciclo del análisis, desde la selección de bandas y canales hasta el cálculo del acoplamiento fase-amplitud y del acoplamiento fase-fase (PPC) y la exportación de resultados. En esa medida, PAC amplía el alcance analítico de Gamma Lab mediante una técnica completamente nueva, concentrando cerca de la mitad de los requisitos funcionales de esta iteración.
 \end{itemize}
 
 \subsubsection{Requerimientos No Funcionales}
@@ -589,7 +589,7 @@ Esta correspondencia entre subsistemas y componentes se detalla a continuación:
 
     \item \textbf{Subsistema de Preprocesamiento.} Agrupa los casos de uso que transforman la señal antes de cualquier análisis: la generación y modificación de \textit{trials}, la selección de los \textit{trials} que participan en un cálculo, la remoción de artefactos de estimulación con medidas de referencia previas al cambio, el ajuste de la frecuencia de muestreo y la aplicación de filtros digitales.
 
-    \item \textbf{Subsistema de Análisis.} Agrupa las técnicas de procesamiento que constituyen el propósito analítico de la herramienta: el cálculo de la transformada \textit{Wavelet}, el promedio de \textit{trials}, y el análisis de acoplamiento fase-amplitud en su variante intra-canal (un canal) e inter-canal (dos canales y consistencia de fase por pares, PPC), estas dos últimas modeladas como especializaciones de un caso de uso abstracto que comparte el procedimiento de cálculo.
+    \item \textbf{Subsistema de Análisis.} Agrupa las técnicas de procesamiento que constituyen el propósito analítico de la herramienta: el cálculo de la transformada \textit{Wavelet}, el promedio de \textit{trials}, y el análisis de acoplamiento fase-amplitud en su variante intra-canal (un canal) e inter-canal (dos canales y acoplamiento fase-fase, PPC), estas dos últimas modeladas como especializaciones de un caso de uso abstracto que comparte el procedimiento de cálculo.
 
     \item \textbf{Subsistema de Exportación.} Agrupa el guardado y exportación de datos del proyecto y la exportación gráfica en formato vectorial de los resultados analíticos.
 \end{itemize}
@@ -772,14 +772,18 @@ La integración del orquestador con los demás componentes se establece mediante
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth,height=0.44\textheight,keepaspectratio]{diagrama_actividad_sistema_completo.png}
-  \caption{Diagrama de actividades de Gamma Lab 2.0}
-  \label{fig:diagrama-actividad}
+  \includegraphics[width=\textwidth]{diagrama_clases_sistema_completo.png}
+  \caption{Diagrama de clases de Gamma Lab 2.0}
+  \label{fig:diagrama-clases}
 \end{figure}
 
-El flujo de trabajo de Gamma Lab 2.0 comienza con la inicialización de la aplicación, durante la cual se registran los servicios del sistema y se descubren las extensiones disponibles. Una vez iniciado, el investigador puede abrir un proyecto existente desde Home o cargar una señal desde un archivo compatible mediante \texttt{FileIOService}. En el primer caso, el sistema recupera la señal y el trabajo previo; en el segundo, incorpora los datos de la señal a la sesión. En ambos casos, la información se publica en el \texttt{DataStore} para su utilización en las etapas posteriores. Sobre estos datos, el investigador puede realizar tareas de preprocesamiento, como la generación y edición de ensayos, la selección de segmentos, la eliminación de artefactos y la aplicación de filtros, con el fin de preparar las señales para su análisis.
+La estructura lógica de Gamma Lab 2.0 se organiza en seis grupos de componentes: núcleo, servicios del sistema, presentación, contrato de extensión, extensiones y modelo de datos. El núcleo, representado por \texttt{Kernel}, centraliza el registro y acceso a los servicios y administra las extensiones mediante \texttt{PluginManager}, encargado de descubrirlas y cargarlas. Esta organización permite que los módulos funcionales accedan a las capacidades comunes de la aplicación a través de un punto central de coordinación.
 
-Con los datos preparados, el investigador puede ejecutar los métodos de análisis disponibles e interactuar con sus resultados mediante las herramientas de visualización. Estas operaciones son coordinadas por el \texttt{TaskOrchestrator}, que gestiona la ejecución de los cálculos y permite cancelar las tareas en curso sin interrumpir el resto de la sesión. Para facilitar la exploración de señales de gran tamaño, el sistema contempla el uso de submuestreo durante su representación visual. El flujo mantiene un carácter iterativo, ya que el investigador puede regresar al preprocesamiento, ajustar los datos y realizar nuevos análisis según los resultados obtenidos. Finalmente, puede exportar los resultados, guardar el proyecto para conservar el trabajo realizado y cerrar la sesión, momento en el que el sistema finaliza las operaciones activas y libera los recursos utilizados.
+Los servicios del sistema proporcionan las operaciones necesarias para el funcionamiento de los demás componentes. \texttt{SettingsService} administra la configuración, \texttt{FileIOService} centraliza la lectura de señales en distintos formatos y \texttt{ExportService} permite generar archivos de imagen y resultados tabulares. Por su parte, \texttt{ProjectService} gestiona el almacenamiento y la recuperación de los proyectos, mientras que \texttt{DataStore} mantiene el estado compartido de la sesión. La ejecución de las operaciones de procesamiento se coordina mediante \texttt{TaskOrchestrator}, que recibe las solicitudes de las extensiones, administra su ejecución y entrega cada resultado al hilo de la interfaz, el único que escribe en el almacén de datos.
+
+La presentación se organiza alrededor de \texttt{MainWindow}, que constituye la interfaz principal para la navegación entre las funcionalidades y la gestión de los proyectos. Estas funcionalidades se implementan mediante extensiones (\textit{plugins}), que cumplen el contrato definido por \texttt{IPlugin}. Esta interfaz establece las operaciones comunes para integrar cada módulo con el sistema, proporcionar su componente gráfico, ejecutar sus procesos y acceder a los datos de trabajo. En conjunto, las extensiones permiten gestionar las señales electrofisiológicas y realizar operaciones de procesamiento, segmentación y análisis sobre ellas.
+
+Finalmente, el modelo de datos define las estructuras utilizadas por los componentes para representar y compartir la información. \texttt{SignalDataset} contiene las señales electrofisiológicas multicanal, mientras que \texttt{TrialDataset} representa su organización en ensayos. Ambas estructuras constituyen los datos de trabajo sobre los que operan las extensiones. A su vez, \texttt{ProjectData} reúne la información necesaria para conservar y restaurar un proyecto, incluyendo los datos de origen, las mediciones, la segmentación y el estado de los análisis. De esta manera, los servicios, las extensiones y la interfaz trabajan sobre una representación común de la información.
 
 \subsubsection{Vista Física}
 
@@ -798,18 +802,14 @@ La interacción con el entorno se realiza a través del sistema de archivos, que
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{diagrama_clases_sistema_completo.png}
-  \caption{Diagrama de clases de Gamma Lab 2.0}
-  \label{fig:diagrama-clases}
+  \includegraphics[width=\textwidth,height=0.44\textheight,keepaspectratio]{diagrama_actividad_sistema_completo.png}
+  \caption{Diagrama de actividades de Gamma Lab 2.0}
+  \label{fig:diagrama-actividad}
 \end{figure}
 
-La estructura lógica de Gamma Lab 2.0 se organiza en seis grupos de componentes: núcleo, servicios del sistema, presentación, contrato de extensión, extensiones y modelo de datos. El núcleo, representado por \texttt{Kernel}, centraliza el registro y acceso a los servicios y administra las extensiones mediante \texttt{PluginManager}, encargado de descubrirlas y cargarlas. Esta organización permite que los módulos funcionales accedan a las capacidades comunes de la aplicación a través de un punto central de coordinación.
+El flujo de trabajo de Gamma Lab 2.0 comienza con la inicialización de la aplicación, durante la cual se registran los servicios del sistema y se descubren las extensiones disponibles. Una vez iniciado, el investigador puede abrir un proyecto existente desde Home o cargar una señal desde un archivo compatible mediante \texttt{FileIOService}. En el primer caso, el sistema recupera la señal y el trabajo previo; en el segundo, incorpora los datos de la señal a la sesión. En ambos casos, la información se publica en el \texttt{DataStore} para su utilización en las etapas posteriores. Sobre estos datos, el investigador puede realizar tareas de preprocesamiento, como la generación y edición de ensayos, la selección de segmentos, la eliminación de artefactos y la aplicación de filtros, con el fin de preparar las señales para su análisis.
 
-Los servicios del sistema proporcionan las operaciones necesarias para el funcionamiento de los demás componentes. \texttt{SettingsService} administra la configuración, \texttt{FileIOService} centraliza la lectura de señales en distintos formatos y \texttt{ExportService} permite generar archivos de imagen y resultados tabulares. Por su parte, \texttt{ProjectService} gestiona el almacenamiento y la recuperación de los proyectos, mientras que \texttt{DataStore} mantiene el estado compartido de la sesión. La ejecución de las operaciones de procesamiento se coordina mediante \texttt{TaskOrchestrator}, que recibe las solicitudes de las extensiones, administra su ejecución y publica los resultados en el almacén de datos de forma sincronizada.
-
-La presentación se organiza alrededor de \texttt{MainWindow}, que constituye la interfaz principal para la navegación entre las funcionalidades y la gestión de los proyectos. Estas funcionalidades se implementan mediante extensiones (\textit{plugins}), que cumplen el contrato definido por \texttt{IPlugin}. Esta interfaz establece las operaciones comunes para integrar cada módulo con el sistema, proporcionar su componente gráfico, ejecutar sus procesos y acceder a los datos de trabajo. En conjunto, las extensiones permiten gestionar las señales electrofisiológicas y realizar operaciones de procesamiento, segmentación y análisis sobre ellas.
-
-Finalmente, el modelo de datos define las estructuras utilizadas por los componentes para representar y compartir la información. \texttt{SignalDataset} contiene las señales electrofisiológicas multicanal, mientras que \texttt{TrialDataset} representa su organización en ensayos. Ambas estructuras constituyen los datos de trabajo sobre los que operan las extensiones. A su vez, \texttt{ProjectData} reúne la información necesaria para conservar y restaurar un proyecto, incluyendo los datos de origen, las mediciones, la segmentación y el estado de los análisis. De esta manera, los servicios, las extensiones y la interfaz trabajan sobre una representación común de la información.
+Con los datos preparados, el investigador puede ejecutar los métodos de análisis disponibles e interactuar con sus resultados mediante las herramientas de visualización. Estas operaciones son coordinadas por el \texttt{TaskOrchestrator}, que gestiona la ejecución de los cálculos y permite cancelar las tareas en curso sin interrumpir el resto de la sesión. Para facilitar la exploración de señales de gran tamaño, el sistema contempla el uso de submuestreo durante su representación visual. El flujo mantiene un carácter iterativo, ya que el investigador puede regresar al preprocesamiento, ajustar los datos y realizar nuevos análisis según los resultados obtenidos. Finalmente, puede exportar los resultados, guardar el proyecto para conservar el trabajo realizado y cerrar la sesión, momento en el que el sistema finaliza las operaciones activas y libera los recursos utilizados.
 
 \subsection{Diseño detallado}
 
@@ -843,7 +843,7 @@ La funcionalidad más importante de Gamma Lab 2.0 es la posibilidad de guardar e
 
 Cada proyecto se guarda en una carpeta que incluye una copia de la señal original, por lo que puede trasladarse a otro equipo sin perder información. En lugar de almacenar todos los datos calculados, el proyecto guarda los pasos necesarios para reconstruirlos, lo que mantiene los archivos livianos. Además, el sistema avisa cuando hay cambios sin guardar y evita que una copia interrumpida deje el proyecto incompleto.
 
-Gamma Lab 2.0 amplía las herramientas de análisis disponibles. Se incorporaron el acoplamiento fase-amplitud (PAC), tanto en un canal como entre dos canales, y la consistencia de fase por pares (PPC). Estos análisis permiten estudiar cómo interactúan los distintos ritmos presentes en la señal, lo que amplía el alcance de la herramienta para los investigadores.
+Gamma Lab 2.0 amplía las herramientas de análisis disponibles. Se incorporaron el acoplamiento fase-amplitud (PAC), tanto en un canal como entre dos canales, y el acoplamiento fase-fase (PPC). Estos análisis permiten estudiar cómo interactúan los distintos ritmos presentes en la señal, lo que amplía el alcance de la herramienta para los investigadores.
 
 Por último, la siguiente tabla es un resumen de los principales avances de Gamma Lab a Gamma Lab 2.0.
 
@@ -1133,7 +1133,7 @@ El diseño tiene los siguientes límites conocidos:
 \begin{itemize}
   \item \textbf{Sin prueba de significancia.} Los módulos calculan la magnitud del acoplamiento, pero no la comparan contra datos sustitutos. Esa valoración queda a cargo del investigador, con los valores exportados, y debe hacerse con cuidado porque puede aparecer acoplamiento aparente sin interacción real \cite{aru2015}.
   \item \textbf{Submuestreo sin filtro \textit{antialias}.} Se conserva para coincidir con la referencia, por lo que el contenido sobre el nuevo Nyquist se pliega sobre frecuencias bajas.
-  \item \textbf{Cancelación no inmediata.} Una etapa en curso no se puede interrumpir. Pasados dos segundos el resultado se descarta, pero el cálculo puede seguir activo hasta terminar, lo que deja parcialmente cubierto el requerimiento de garantizar que todo cálculo cancelado termine.
+  \item \textbf{Cancelación cooperativa.} Una etapa en curso no se puede interrumpir desde fuera: el cálculo se detiene en su siguiente punto de comprobación. Si no responde en dos segundos, el servicio de tareas lo desliga, descarta su resultado y libera la interfaz y la cola, como exige el requerimiento R46; el hilo puede seguir activo hasta terminar, porque la terminación forzada queda fuera del requerimiento.
   \item \textbf{PAC entre canales solo en modo Psel.} Los modos PAC y PAC \textit{Average} trabajan sobre un canal.
   \item \textbf{Aproximación de las muestras independientes en PPC.} Con ruido independiente, la media medida fue de $-0{,}009$ en lugar de 0. El sesgo va hacia abajo, de modo que no crea acoplamiento.
   \item \textbf{Tramos planos en PPC.} Se detecta un \textit{trial} constante, pero no un tramo plano dentro de un \textit{trial} por lo demás activo.
@@ -1152,7 +1152,7 @@ Se añadió el apartado \textit{File} como primera opción de la barra de menú 
 
 En la versión 1.0 de Gamma Lab, al abrir la aplicación, el usuario no recibía ninguna explicación del funcionamiento general. Tenía que descubrir por su cuenta el orden de uso de las secciones (\textit{Home}, \textit{Preprocessing} y \textit{Analysis}) y la existencia de funciones accesibles solo desde el clic derecho sobre una gráfica. Esto es parte de lo que dificultaba construir un modelo mental claro de la herramienta.
 
-En la actualidad Gamma Lab 2.0 se diseñó para que "\textit{Home}" fuera la primera sección que viera el usuario y la que se muestra por defecto. Concentra las acciones básicas para trabajar de esta manera el usuario conoce que funciones existen directamente con una señal ya cargada, como lo son medirla y ajustar la vista de la gráfica. Sus botones se organizan en dos grupos: \textit{Measurements} (pendiente y amplitud, con menús para eliminar y para mostrar u ocultar mediciones) y \textit{Zoom} (ventana emergente que actúa sobre la última gráfica visitada). El botón de la herramienta activa queda resaltado con un contorno, para que el usuario sepa en todo momento qué está usando.
+En la actualidad Gamma Lab 2.0 se diseñó para que "\textit{Home}" fuera la primera sección que viera el usuario y la que se muestra por defecto. Concentra las acciones básicas para trabajar de esta manera el usuario conoce que funciones existen directamente con una señal ya cargada, como lo son medirla y ajustar la vista de la gráfica. Sus botones se organizan en dos grupos: \textit{Measurements} (pendiente, diferencia y amplitud, con menús para eliminar y para mostrar u ocultar mediciones) y \textit{Zoom} (ventana emergente que actúa sobre la última gráfica visitada). El botón de la herramienta activa queda resaltado con un contorno, para que el usuario sepa en todo momento qué está usando.
 
 Para orientar al usuario nuevo se añadieron tres elementos. El primero es un panel de bienvenida en el área central, con el logotipo y la instrucción "\textit{To get started, open a signal}". Se muestra solo en el \textit{Home} y mientras no haya una herramienta activa. El segundo es una guía que aparece la primera vez que se ejecuta la aplicación, con el recorrido en cinco pasos (\textit{Home}, \textit{Preprocessing}, \textit{Analysis}, las barras \textit{Explorer} y \textit{Results}, y el clic derecho sobre una gráfica). El tercero son mensajes explicativos por cada funcionalidad para que el usuario sepa qué hace cada herramienta antes de usarla: al pasar el cursor sobre un botón de la cinta aparece su nombre y una descripción breve de su función, y lo mismo ocurre con cada control de los paneles de parámetros.
 
@@ -1196,7 +1196,7 @@ Para la primera versión de la aplicación, el usuario tenía que saber en qué 
 
 La sección \textit{Analysis} reúne las técnicas que se calculan sobre los \textit{trials} ya preparados. Es la más extensa de la aplicación, por lo que su diseño buscó que el usuario encontrara cada técnica con rapidez y supiera siempre sobre qué datos se calculó cada resultado.
 
-En la versión 1.0 de Gamma Lab, los botones de las técnicas no tenían un orden definido por dominio. Ahora se agrupan en cuatro cuadros etiquetados, de izquierda a derecha, por tipo de análisis: \textit{Time} (\textit{Average} y \textit{Event Related Potential}), \textit{Frequency} (FFT, FFT \textit{Average}, PSD, PSD \textit{Average} y \textit{Relative} PSD), \textit{Time-Frequency} (PAC, \textit{Modulation Index}, \textit{Wavelet}, \textit{Wavelet} \textit{Average} y PPC). El orden de los grupos y de los botones dentro de cada grupo lo declara cada herramienta en su descriptor, de modo que una técnica nueva se coloca sin modificar la interfaz. Cada botón muestra al pasar el cursor su nombre y una descripción de lo que calcula y de las opciones que ofrece.
+En la versión 1.0 de Gamma Lab, los botones de las técnicas no tenían un orden definido por dominio. Ahora se agrupan en tres cuadros etiquetados, de izquierda a derecha, por tipo de análisis: \textit{Time} (\textit{Average} y \textit{Event Related Potential}), \textit{Frequency} (FFT, FFT \textit{Average}, PSD, PSD \textit{Average} y \textit{Relative} PSD), \textit{Time-Frequency} (PAC, \textit{Modulation Index}, \textit{Wavelet}, \textit{Wavelet} \textit{Average} y PPC). El orden de los grupos y de los botones dentro de cada grupo lo declara cada herramienta en su descriptor, de modo que una técnica nueva se coloca sin modificar la interfaz. Cada botón muestra al pasar el cursor su nombre y una descripción de lo que calcula y de las opciones que ofrece.
 
 \subsubsubsection{Clasificación de avisos}
 
@@ -1233,22 +1233,22 @@ La barra se organizó en torno a una columna estrecha de iconos que permanece si
 
 El panel admite además varios proyectos abiertos a la vez, cada uno en un árbol propio. Solo uno está activo y se distingue en negrita; para cambiar de proyecto basta con un doble clic sobre su \textit{.glab}. Se optó por mantener un único proyecto cargado en memoria y no todos, porque las señales pesan y la aplicación está construida alrededor de una sesión activa. El menú contextual de la carpeta de un proyecto ofrece duplicarlo, y la copia puede abrirse en la misma ventana o en una nueva.
 
-\paragraph{\textit{Results}.} El panel \textit{Results} se diseñó para consultar las mediciones sin abandonar el análisis en curso, ya que en la versión anterior de Gamma Lab el usuario debía cambiar constantemente de pestaña para poder consultar los resultados de sus mediciones. Al ubicarse debajo del área de trabajo, permite ver las tablas y la señal al mismo tiempo, sin cambiar de pantalla. Su altura se ajusta arrastrando el borde superior, según se quiera dar prioridad a los datos o a la señal. Las mediciones de pendiente y de amplitud se separan en las pestañas \textit{Slope} y \textit{Amplitude}, y su contenido se actualiza cada vez que se abre el panel. La cabecera reúne el título, un menú para exportar la tabla activa a CSV o Excel y un botón de cierre, de modo que las acciones sobre los resultados quedan junto a ellos. El panel también puede cerrarse pulsando de nuevo su icono en la barra lateral.
+\paragraph{\textit{Results}.} El panel \textit{Results} se diseñó para consultar las mediciones sin abandonar el análisis en curso, ya que en la versión anterior de Gamma Lab el usuario debía cambiar constantemente de pestaña para poder consultar los resultados de sus mediciones. Al ubicarse debajo del área de trabajo, permite ver las tablas y la señal al mismo tiempo, sin cambiar de pantalla. Su altura se ajusta arrastrando el borde superior, según se quiera dar prioridad a los datos o a la señal. Las mediciones de pendiente, de diferencia y de amplitud se separan en las pestañas \textit{Slope}, \textit{Difference} y \textit{Amplitude}, y su contenido se actualiza cada vez que se abre el panel. La cabecera reúne el título, un menú para exportar la tabla activa a CSV o Excel y un botón de cierre, de modo que las acciones sobre los resultados quedan junto a ellos. El panel también puede cerrarse pulsando de nuevo su icono en la barra lateral.
 
 
 %=====================================================================
 \capitulo{DESARROLLO DE LA SOLUCIÓN}
 
 \subsection{Implementación}
-Gamma Lab 2.0 se implementó en el lenguaje de programación Python, en su versión 3.12, el mismo empleado en la primera iteración de la herramienta. La permanencia de este lenguaje obedeció, como se expuso en la sección de arquitectura, a que su sustitución habría implicado la reimplementación y la nueva validación numérica de los dieciséis \textit{plugins} existentes. A ello se suma que Python dispone de un ecosistema consolidado de librerías orientadas al análisis de datos, al procesamiento de señales y a la visualización científica. 
+Gamma Lab 2.0 se implementó en el lenguaje de programación Python, en su versión 3.12, y es compatible con las versiones 3.11 a 3.13. El lenguaje es el mismo de la primera iteración de la herramienta. La permanencia de este lenguaje obedeció, como se expuso en la sección de arquitectura, a que su sustitución habría implicado la reimplementación y la nueva validación numérica de los dieciséis \textit{plugins} existentes. A ello se suma que Python dispone de un ecosistema consolidado de librerías orientadas al análisis de datos, al procesamiento de señales y a la visualización científica. 
 
-La interfaz gráfica de usuario (GUI) se desarrolló con PyQt5, conjunto de enlaces de Python para el \textit{framework} Qt, ampliamente adoptado en la construcción de aplicaciones de escritorio. Además de los componentes visuales, Qt proporcionó el mecanismo de señales y ranuras (\textit{signals and slots}), a través del cual se establece la comunicación entre la interfaz, el núcleo y los \textit{plugins}. De igual forma, aportó la clase \textit{QThread}, sobre la que se fundamenta el orquestador de tareas para ejecutar cada procesamiento en un hilo trabajador independiente, preservando así la capacidad de respuesta de la interfaz. Para el módulo de ayuda se incorporó PyQtWebEngine, componente que permite la presentación de contenido HTML dentro de la propia aplicación.
+La interfaz gráfica de usuario (GUI) se desarrolló con PyQt5, conjunto de enlaces de Python para el \textit{framework} Qt, ampliamente adoptado en la construcción de aplicaciones de escritorio. Además de los componentes visuales, Qt proporcionó el mecanismo de señales y ranuras (\textit{signals and slots}), a través del cual se establece la comunicación entre la interfaz, el núcleo y los \textit{plugins}. De igual forma, aportó la clase \textit{QThread}, sobre la que se fundamenta el orquestador de tareas para ejecutar cada procesamiento en un hilo trabajador independiente, preservando así la capacidad de respuesta de la interfaz. Para el módulo de ayuda se incorporó PyQtWebEngine, componente que permite mostrar el manual de usuario en PDF dentro de la propia aplicación.
 
 La representación gráfica de las señales y de los resultados se realizó mediante \textit{Visualization Toolkit} (VTK), librería de \textit{software} libre orientada a la visualización científica. VTK ofrece herramientas para la generación de gráficos bidimensionales y tridimensionales, así como para la interacción con ellos mediante operaciones de desplazamiento, ampliación y selección. Su uso se mantuvo respecto a la versión anterior en virtud de su desempeño en la representación de señales con un elevado número de muestras y de su compatibilidad con múltiples sistemas operativos.
 
 El procesamiento numérico se sustentó en las librerías NumPy y SciPy, que proporcionan las operaciones vectorizadas, los filtros digitales, la transformada de Hilbert y las rutinas de análisis espectral empleadas por los módulos de análisis. Las transformadas \textit{wavelet} se implementaron con la librería PyWavelets. Por su parte, la paralelización del cálculo sobre múltiples \textit{trials}, requerida en técnicas como el PAC promedio y el PPC, se efectuó mediante la clase \textit{ThreadPoolExecutor} del módulo estándar \textit{concurrent.futures}.
 
-La lectura de los distintos formatos de señal se resolvió mediante la integración de librerías especializadas. SciPy y h5py permiten la carga de archivos de MATLAB (.mat), incluidos aquellos de la versión 7.3, basados en el formato HDF5. La librería pyABF posibilita la lectura de registros en formato \textit{Axon Binary File} (.abf), y pyEDFlib, la de archivos en formato \textit{European Data Format} (.edf). En lo que respecta a la exportación de resultados, se emplearon las librerías pandas y openpyxl para la generación de archivos CSV y Excel, junto con el módulo estándar \textit{json} para el formato JSON. Finalmente, los metadatos de cada \textit{plugin} se declaran en un archivo de configuración YAML, interpretado por el núcleo mediante la librería PyYAML durante la carga dinámica de los módulos.
+La lectura de los distintos formatos de señal se resolvió mediante la integración de librerías especializadas. SciPy y h5py permiten la carga de archivos de MATLAB (.mat), incluidos aquellos de la versión 7.3, basados en el formato HDF5. La librería pyABF posibilita la lectura de registros en formato \textit{Axon Binary File} (.abf), y pyEDFlib, la de archivos en formato \textit{European Data Format} (.edf). En lo que respecta a la exportación de resultados, los archivos CSV se generan con el módulo estándar \textit{csv}, los archivos Excel con un escritor propio que arma directamente el formato \textit{.xlsx} sin librerías externas, y el formato JSON con el módulo estándar \textit{json}; las librerías pandas y openpyxl solo se emplean en las pruebas automáticas, para leer y verificar los archivos exportados. Finalmente, los metadatos de cada \textit{plugin} se declaran en un archivo de configuración YAML, interpretado por el núcleo mediante la librería PyYAML durante la carga dinámica de los módulos.
 
 La verificación del código se automatizó con el \textit{framework} de pruebas \textit{pytest}, mediante un conjunto de pruebas organizado en tres categorías: servicios del núcleo, \textit{plugins} y rendimiento. En cuanto a la distribución, la aplicación se empaquetó con PyInstaller, herramienta que genera un ejecutable autónomo que incorpora el intérprete y la totalidad de las dependencias, de manera que el usuario final no requiere una instalación previa de Python. A partir de dicho ejecutable, se elaboró con Inno Setup un instalador para el sistema operativo Windows, el cual registra la aplicación en el sistema y asocia los archivos de proyecto (.glab), de modo que estos se abren directamente con Gamma Lab 2.0.
 
@@ -1294,10 +1294,11 @@ Las exportaciones se guardan por defecto en la subcarpeta \textit{archivos} del 
   \label{fig:producto-results}
 \end{figure}
 
-Las mediciones se organizan en dos pestañas:
+Las mediciones se organizan en tres pestañas:
 
 \begin{itemize}
   \item \textbf{\textit{Slope}.} Puntos medidos, $\Delta x$, $\Delta y$, pendiente, distancia y fecha.
+  \item \textbf{\textit{Difference}.} Puntos medidos, ventana analizada, número de muestras, derivada máxima, mínima y media, y el instante de cada extremo.
   \item \textbf{\textit{Amplitude}.} Ventana medida, número de muestras, mínimo, máximo, amplitud pico a pico y el instante de cada extremo.
 \end{itemize}
 
@@ -1333,7 +1334,7 @@ abre un proyecto \textit{.glab} que restaura el trabajo hecho y se suma a los qu
   \label{fig:producto-home}
 \end{figure}
 
-Con \textit{Slope} se mide la pendiente entre dos puntos marcados sobre la gráfica, ya sea en el \textit{trial} visible o en todos los \textit{trials}, y con \textit{Amplitude} se mide la amplitud pico a pico dentro de una ventana definida por dos puntos. Es posible borrar la última medición o todas, y sus líneas pueden mostrarse u ocultarse sin perder los datos. Por último, \textit{Zoom} acerca, aleja o restaura la vista de la gráfica activa, y el clic derecho sobre una gráfica añade el \textit{zoom} por eje y la exportación como imagen o tabla.
+Con \textit{Slope} se mide la pendiente entre dos puntos marcados sobre la gráfica, ya sea en el \textit{trial} visible o en todos los \textit{trials}; con \textit{Difference}, la derivada de la señal dentro del intervalo entre dos puntos, y con \textit{Amplitude}, la amplitud pico a pico dentro de una ventana definida por dos puntos. Es posible borrar la última medición o todas, y sus líneas pueden mostrarse u ocultarse sin perder los datos. Por último, \textit{Zoom} acerca, aleja o restaura la vista de la gráfica activa, y el clic derecho sobre una gráfica añade el \textit{zoom} por eje y la exportación como imagen o tabla.
 
 \subsubsection{\textit{Preprocessing}}
 
@@ -1390,7 +1391,7 @@ La sección \textit{Analysis} agrupa las técnicas por dominio (Figura~\ref{fig:
   \item \textbf{PAC.} Acoplamiento entre la fase de una banda lenta y la amplitud de una banda rápida, en cuatro modos: PAC, PAC \textit{Average}, PAC Psel y PAC Psel inter-canal. Muestra un mapa, un histograma y el vector medio de acoplamiento.
   \item \textbf{\textit{Modulation Index}.} Comodulograma del índice de modulación sobre una rejilla de bandas de fase y de amplitud.
   \item \textbf{\textit{Wavelet} y \textit{Wavelet Average}.} Escalograma tiempo-frecuencia de un \textit{trial} o el promedio de varios, con ciclos, normalización y escala configurables.
-  \item \textbf{PPC.} Consistencia de fase entre dos canales, presentada como un mapa de frecuencia contra tiempo. Deja en blanco las zonas que no se pueden medir.
+  \item \textbf{PPC.} Acoplamiento fase-fase entre dos canales, presentada como un mapa de frecuencia contra tiempo. Deja en blanco las zonas que no se pueden medir.
 \end{itemize}
 
 %=====================================================================
@@ -1477,9 +1478,9 @@ Por la disponibilidad de los participantes, las sesiones fueron remotas y guiada
 
 \subsubsection{Pruebas de aceptación del usuario}
 
-Estas pruebas buscan confirmar que Gamma Lab 2.0 satisface los requisitos funcionales y las expectativas del usuario en condiciones reales de uso. Se realizaron en la misma sesión guiada de usabilidad: con señales del laboratorio, el participante indicó qué funcionalidades revisar entre las asociadas a los 45 requisitos funcionales del SRS, mientras el equipo operaba la aplicación. Por cada requisito se diligenció un cuadro que contrasta el comportamiento de la versión anterior (\textit{Antes}) con el observado en la versión 2.0 (\textit{Después}) y que registra la retroalimentación del usuario y el resultado: \textit{aceptado}, \textit{aceptado parcialmente} o \textit{no aceptado}.
+Estas pruebas buscan confirmar que Gamma Lab 2.0 satisface los requisitos funcionales y las expectativas del usuario en condiciones reales de uso. Se realizaron en la misma sesión guiada de usabilidad y se completaron en una sesión posterior: con señales del laboratorio, el participante indicó qué funcionalidades revisar entre las asociadas a los 45 requisitos funcionales del SRS, mientras el equipo operaba la aplicación. Por cada requisito se diligenció un cuadro que contrasta el comportamiento de la versión anterior (\textit{Antes}) con el observado en la versión 2.0 (\textit{Después}) y que registra la retroalimentación del usuario y el resultado: \textit{aceptado}, \textit{aceptado parcialmente} o \textit{no aceptado}.
 
-Solo se marca como aceptado un requisito que se demostró sin fallas durante la sesión. Los que presentaron fallas se registran como \textit{probados con fallas}, y los que no alcanzaron a tratarse, como \textit{no evaluados en la sesión}. Estos últimos no los utilizó personalmente el usuario, pero el equipo de trabajo verificó su implementación en el código y su respaldo en las pruebas automáticas.
+Solo se marca como aceptado un requisito que se demostró sin fallas durante una sesión. Los que presentaron fallas se registran como \textit{probados con fallas}. Los requisitos que no alcanzaron a tratarse en la primera sesión se evaluaron en una sesión posterior con otro investigador del laboratorio.
 
 Las sesiones de usabilidad y de aceptación se realizaron entre el 11 y el 18 de noviembre de 2026, con tres participantes (Tabla~\ref{tab:pruebas_sesiones}).
 
@@ -1532,8 +1533,7 @@ Fecha & 18 de noviembre de 2026 & 8 de noviembre de 2026 \\
 Se emplearon las siguientes herramientas:
 
 \begin{itemize}
-  \item \textbf{\textit{pytest} 8.4.2:} desarrollo y ejecución de las pruebas automáticas, con el comando \textit{python -m pytest test} desde la raíz del repositorio.
-  \item \textbf{BOARD-FTD-PACC y MATLAB:} generación de las referencias numéricas.
+  \item \textbf{\textit{pytest} 8.4.2:} desarrollo y ejecución de las pruebas automáticas, con el comando \textit{python -m pytest test} desde la raíz del repositorio.  \item \textbf{BOARD-FTD-PACC y MATLAB:} generación de las referencias numéricas.
   \item \textbf{\textit{time.perf\_counter} de Python:} medición de tiempos de respuesta.
   \item \textbf{Visual Studio Code:} entorno de desarrollo.
 \end{itemize}
@@ -1619,7 +1619,7 @@ Rendimiento & 25 & 25 & 0 & 0 \\
 Las pruebas del núcleo y de los módulos confirman tres resultados principales:
 
 \begin{itemize}
-  \item \textbf{Ejecución en segundo plano:} el cómputo pesado no bloquea la interfaz y puede cancelarse en cualquier momento.
+  \item \textbf{Ejecución en segundo plano:} el cómputo pesado no bloquea la interfaz y puede cancelarse: el cálculo se detiene en su siguiente punto de comprobación y, si no responde en dos segundos, su resultado se descarta y la interfaz queda libre.
   \item \textbf{Memoria:} se libera al cerrar un proyecto, al cargar otra señal y al salir de un módulo.
   \item \textbf{Proyectos:} al guardarlos y abrirlos se conserva todo el trabajo: señal, \textit{trials}, descartes, preprocesamiento, medidas y parámetros.
 \end{itemize}
@@ -1633,7 +1633,7 @@ En la validación frente a BOARD-FTD-PACC, \textbf{cinco de los ocho análisis c
 
 Los módulos nuevos también se validaron. PAC y el índice de modulación reproducen paso a paso las funciones originales de BOARD-FTD-PACC. PPC responde como se espera ante señales sintéticas de respuesta conocida.
 
-La comparación visual confirmó estos resultados. El usuario calificó como \textit{equivalentes} las gráficas de \textit{Average}, \textit{Wavelet}, PAC y PPC, y el equipo de desarrollo, las de ERP, FFT, \textit{FFT Average} y PSD. En \textit{Wavelet Average} la diferencia se calificó como \textit{aceptada}, por corresponder a la convención de amplitud, y en \textit{PSD Average} como \textit{no aceptada}, por la separación de las curvas entre 1 y 3\,Hz. \textit{Relative PSD}, PAC entre canales y el índice de modulación no se compararon por falta de una referencia exportada.
+La comparación visual confirmó estos resultados. El usuario calificó como \textit{equivalentes} las gráficas de \textit{Average}, PAC y PPC, y el equipo de desarrollo, las de ERP, FFT, \textit{FFT Average} y PSD. En \textit{Wavelet}, que el usuario aprobó, y en \textit{Wavelet Average} la diferencia se calificó como \textit{aceptada}, por corresponder a la convención de amplitud, y en \textit{PSD Average} como \textit{no aceptada}, por la separación de las curvas entre 1 y 3\,Hz. \textit{Relative PSD}, PAC entre canales y el índice de modulación no se compararon por falta de una referencia exportada.
 
 \subsection{Requisitos no funcionales}
 
@@ -1668,9 +1668,9 @@ En memoria, liberar las ventanas gráficas de cada módulo redujo el consumo de 
 
 \subsection{Validación con el usuario}
 
-En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan Muñoz y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen principalmente de la sesión guiada con un profesor investigador, en la que el equipo operó la aplicación, y se complementan con una sesión anterior con otro investigador.
+En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan Muñoz y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen principalmente de la sesión guiada con un profesor investigador, en la que el equipo operó la aplicación, y se complementan con una sesión anterior con otro investigador y con la sesión de Francisco Alejandro Munera Galarza, en la que se evaluaron los casos y requisitos que habían quedado pendientes.
 
-En usabilidad, \textbf{se trataron ocho de los diez casos, seis de ellos sin fallas} (Tabla~\ref{tab:resultados_usabilidad}). La instalación y el primer arranque, la carga de la señal, la segmentación en \textit{trials}, la remoción de artefactos, el filtrado con vista previa y el análisis PAC funcionaron correctamente, y el participante valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials}, corregidas después de la sesión, y en un error de carga al abrir un proyecto.
+En usabilidad, \textbf{se trataron los diez casos, ocho de ellos sin fallas} (Tabla~\ref{tab:resultados_usabilidad}). La instalación y el primer arranque, la carga de la señal, la segmentación en \textit{trials}, la remoción de artefactos, el filtrado con vista previa, el análisis PAC, los análisis entre dos canales y la cancelación de un cálculo funcionaron correctamente, y el participante de la sesión guiada valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials} y en un error de carga al abrir un proyecto, ambos corregidos después de la sesión.
 
 \begin{table}[H]
 \centering
@@ -1680,11 +1680,11 @@ En usabilidad, \textbf{se trataron ocho de los diez casos, seis de ellos sin fal
 \hline
 \textbf{Resultado} & \textbf{Casos} & \textbf{Total} \\
 \hline
-Completados sin fallas & UT-01, UT-02, UT-03, UT-04, UT-05, UT-06 & 6 \\
+Completados sin fallas & UT-01, UT-02, UT-03, UT-04, UT-05, UT-06, UT-07, UT-09 & 8 \\
 \hline
 Completados con dificultad & UT-08, UT-10 & 2 \\
 \hline
-No evaluados en la sesión & UT-07, UT-09 & 2 \\
+No evaluados & --- & 0 \\
 \hline
 \end{tabularx}
 \caption{Resultados de las pruebas de usabilidad}
@@ -1693,7 +1693,7 @@ No evaluados en la sesión & UT-07, UT-09 & 2 \\
 
 El cuestionario SUS lo respondieron dos profesores investigadores del laboratorio, que otorgaron \textbf{87,5 y 92,5 puntos sobre 100}. Ambos valores superan el que Bangor, Kortum y Miller asocian con una usabilidad ``excelente'' (85,6) \cite{bangor2009}.
 
-En aceptación, \textbf{17 de los 45 requisitos funcionales se aceptaron, uno más se aceptó parcialmente y ninguno se rechazó} (Tabla~\ref{tab:resultados_aceptacion}). Los aceptados cubren la persistencia de la señal, el guardado de proyectos, la exportación, la segmentación en \textit{trials}, el ajuste de la frecuencia de muestreo, el \textit{Butterfly}, la remoción de artefactos, el escalograma y el análisis PAC de un canal. La carga de formatos se aceptó parcialmente, porque no se probó un archivo EDF, y la apertura de proyectos se probó con fallas, por el error de carga.
+En aceptación, \textbf{43 de los 45 requisitos funcionales se aceptaron, uno más se aceptó parcialmente y ninguno se rechazó} (Tabla~\ref{tab:resultados_aceptacion}). En la sesión guiada se aceptaron 17, que cubren la persistencia de la señal, el guardado de proyectos, la exportación, la segmentación en \textit{trials}, el ajuste de la frecuencia de muestreo, el \textit{Butterfly}, la remoción de artefactos, el escalograma y el análisis PAC de un canal. La carga de formatos se aceptó parcialmente, porque no se probó un archivo EDF, y la apertura de proyectos se probó con fallas, por el error de carga, que se corrigió después de la sesión.
 
 \begin{table}[H]
 \centering
@@ -1703,7 +1703,7 @@ En aceptación, \textbf{17 de los 45 requisitos funcionales se aceptaron, uno m�
 \hline
 \textbf{Resultado} & \textbf{Requisitos} & \textbf{Porcentaje} \\
 \hline
-Aceptados & 17 & 37,8\,\% \\
+Aceptados & 43 & 95,6\,\% \\
 \hline
 Aceptados parcialmente & 1 & 2,2\,\% \\
 \hline
@@ -1711,7 +1711,7 @@ No aceptados & 0 & 0\,\% \\
 \hline
 Probados con fallas & 1 & 2,2\,\% \\
 \hline
-No evaluados en la sesión & 26 & 57,8\,\% \\
+No evaluados & 0 & 0\,\% \\
 \hline
 \textbf{Total} & \textbf{45} & \textbf{100\,\%} \\
 \hline
@@ -1720,9 +1720,9 @@ No evaluados en la sesión & 26 & 57,8\,\% \\
 \label{tab:resultados_aceptacion}
 \end{table}
 
-Los 26 requisitos no evaluados no alcanzaron a tratarse por el tiempo de la sesión; entre ellos están los del análisis entre canales y PPC, que requerían un registro con dos canales neuronales. No los utilizó personalmente el usuario, pero el equipo de trabajo verificó que están implementados en el código y que cuentan con pruebas automáticas aprobadas.
+Los 26 requisitos que no alcanzaron a tratarse en la sesión guiada, entre ellos los del análisis entre canales y PPC, que requerían un registro con dos canales neuronales, se evaluaron en la sesión con Francisco Alejandro Munera Galarza. Todos se aceptaron sin errores, y al participante le pareció bien su funcionamiento.
 
-De las trece solicitudes y observaciones surgidas en las sesiones, nueve se atendieron: entre ellas, la línea de la pendiente, la medida por derivada (\textit{Difference}), las medidas sobre todos los \textit{trials} y la posibilidad de tener varios proyectos abiertos. Dos siguen pendientes, una se resolvió de forma manual por acuerdo con la directora y una se dejó como trabajo futuro.
+De las trece solicitudes y observaciones surgidas en las sesiones, once se atendieron: entre ellas, la línea de la pendiente, la medida por derivada (\textit{Difference}), las medidas sobre todos los \textit{trials}, la posibilidad de tener varios proyectos abiertos, el error de carga al abrir un proyecto con parámetros de PAC y el aviso de la señal anterior que seguía visible. Una se resolvió de forma manual por acuerdo con la directora y una se dejó como trabajo futuro.
 
 Por último, el laboratorio valoró que Gamma Lab 2.0 reúne en una sola herramienta los análisis que requiere y automatiza los procedimientos repetitivos, de modo que ``un análisis que tomaba semanas puede completarse en minutos''.
 
@@ -1738,10 +1738,8 @@ Los resultados anteriores dejan las siguientes limitaciones:
   \item \textbf{Primera apertura de PAC:} puede detener la interfaz entre 270 y 480\,ms, por encima del límite de 300\,ms. Las aperturas siguientes cumplen.
   \item \textbf{Instalación:} al no tener firma digital, el instalador genera un aviso de Windows que el usuario debe confirmar.
   \item \textbf{Pantallas pequeñas:} por debajo de 1366 píxeles de ancho, el área de gráficas se reduce notablemente.
-  \item \textbf{Apertura de proyectos con PAC:} abrir un proyecto con parámetros de PAC produjo un error de carga cuya causa no se ha identificado.
-  \item \textbf{Aviso de la señal anterior:} tras cargar otra señal, el aviso de la anterior sigue visible.
   \item \textbf{Frecuencia de muestreo de archivos \textit{.mat}:} no se toma del encabezado; por acuerdo con la directora, el usuario la ingresa de forma manual.
-  \item \textbf{Alcance de la validación con el usuario:} se realizó con tres participantes, en su mayoría en una sesión guiada, por lo que no mide del todo la autonomía del investigador frente a la interfaz, y 26 requisitos cuentan con la verificación del equipo pero no con la aceptación directa del usuario.
+  \item \textbf{Alcance de la validación con el usuario:} se realizó con tres participantes, en su mayoría en una sesión guiada, por lo que no mide del todo la autonomía del investigador frente a la interfaz.
 \end{itemize}
 
 %=====================================================================
@@ -1780,9 +1778,9 @@ Se identificaron las brechas de la primera versión a partir de las pruebas con 
 
 Se diseñó una solución que conserva la arquitectura \textit{microkernel} y la fortalece en tres puntos: un orquestador de tareas en el núcleo, servicios compartidos centralizados y la separación entre cálculo y presentación en cada módulo. Sobre esa base se incorporó la gestión de proyectos \textit{.glab}.
 
-Se implementó Gamma Lab 2.0, con 20 \textit{plugins} y 81 requisitos especificados (45 funcionales y 36 no funcionales). Se agregaron el análisis PAC en cuatro modos, el índice de modulación y la consistencia de fase entre canales (PPC). También se corrigieron las fallas de la versión anterior y la aplicación se empaquetó en un instalador para Windows.
+Se implementó Gamma Lab 2.0, con 20 \textit{plugins} y 81 requisitos especificados (45 funcionales y 36 no funcionales). Se agregaron el análisis PAC en cuatro modos, el índice de modulación y el acoplamiento fase-fase entre canales (PPC). También se corrigieron las fallas de la versión anterior y la aplicación se empaquetó en un instalador para Windows.
 
-Se validó la solución con 921 pruebas automáticas, sin ninguna fallida. Cinco de los ocho análisis comparados resultaron equivalentes a BOARD-FTD-PACC, y las diferencias de los otros tres están medidas. Se cumplen, además, 25 de los 27 requisitos de rendimiento, confiabilidad y soporte. Con el usuario se aceptaron 17 de los 45 requisitos funcionales y uno más de forma parcial, ninguno se rechazó y el cuestionario de usabilidad alcanzó 87,5 y 92,5 sobre 100; los 26 requisitos no evaluados en la sesión cuentan con la verificación del equipo y con pruebas automáticas.
+Se validó la solución con 921 pruebas automáticas, sin ninguna fallida. Cinco de los ocho análisis comparados resultaron equivalentes a BOARD-FTD-PACC, y las diferencias de los otros tres están medidas. Se cumplen, además, 25 de los 27 requisitos de rendimiento, confiabilidad y soporte. Con el usuario se aceptaron 43 de los 45 requisitos funcionales y uno más de forma parcial, ninguno se rechazó, y el cuestionario de usabilidad alcanzó 87,5 y 92,5 sobre 100.
 
 En conjunto, se cumplió el objetivo general: Gamma Lab 2.0 amplía las capacidades de análisis hacia el acoplamiento entre frecuencias, sobre una arquitectura que ejecuta los cálculos en segundo plano, libera los recursos que deja de usar y mantiene los tiempos de respuesta muy por debajo de los límites fijados.
 

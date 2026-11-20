@@ -30,7 +30,7 @@ No borres el archivo `17309009_full.mat` de la raíz del proyecto: el script lo 
 
 ## 2. Cómo volver a crear el instalador
 
-1. **Haz tus cambios y pruébalos:** `python -m pytest test -q` (las 3 pruebas de comparación con MATLAB de PSD Average y Wavelet Average ya fallaban antes y no tienen que ver con el instalador).
+1. **Haz tus cambios y pruébalos:** `python -m pytest test -q` (las 5 comparaciones con MATLAB de PSD Average, Wavelet y Wavelet Average se mantienen como fallos esperados, `xfail`, y no tienen que ver con el instalador).
 2. **Sube el número de versión.** Abre `installer\gamma_lab.iss` y cambia la línea:
    ```
    #define VersionApp "2.0.0"

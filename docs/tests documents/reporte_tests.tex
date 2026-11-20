@@ -100,6 +100,8 @@ corregir ese import en una copia aislada (fuera del repositorio, solo para diagn
 nunca fue modificado), 19 de 24 tests pasan y \textbf{5 fallan de verdad}, revelando errores numéricos reales
 en los plugins \texttt{wavelet}, \texttt{wavelet\_\allowbreak average} y \texttt{psd\_\allowbreak average}.
 
+\noindent\textbf{Nota posterior (noviembre de 2026).} Este informe conserva el diagnóstico de agosto de 2026. El análisis posterior, documentado en el TD de Gamma Lab 2.0, mostró que las cinco comparaciones que fallaban no se deben a errores de cálculo. En \texttt{wavelet} y \texttt{wavelet\_\allowbreak average}, la diferencia es la convención de amplitud: la referencia de MATLAB no aplica la normalización por la raíz de la escala de PyWavelets, y al igualarla la correlación sube de 0,83 a 0,98 para un \textit{trial} y a 0,997 para el promedio. En \texttt{psd\_\allowbreak average}, la diferencia que queda entre 1 y 3\,Hz se debe al método de cálculo de cada herramienta (SciPy frente a MATLAB). Las cinco se mantienen en la suite como fallos esperados.
+
 % ==================================================================
 \section{Arquitectura general de la suite}
 % ==================================================================
