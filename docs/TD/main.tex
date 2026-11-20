@@ -52,7 +52,8 @@
 \newcommand{\autorTres}{Sebastián Almanza Galvis}
 \newcommand{\autorCuatro}{Xiomara Herrera Suárez}
 \newcommand{\nombreDocumento}{\textit{TEST DOCUMENT} (TD)}
-\newcommand{\fechasesion}{11 de noviembre de 2026}
+\newcommand{\fechasesion}{12 de noviembre de 2026}
+\newcommand{\fechasesionanterior}{11 de noviembre de 2026}
 \newcommand{\director}{Ing. Cécile Gauthier Umaña}
 \newcommand{\juradoUno}{Ing. Nombre del Primer Jurado}
 \newcommand{\juradoDos}{Ing. Nombre del Segundo Jurado}
@@ -715,9 +716,9 @@ Estas pruebas evalúan la facilidad con que los investigadores del laboratorio c
 \subsection{Metodología}
 Cada sesión es individual y la conduce un moderador del equipo. El participante recibe la descripción de cada tarea, la realiza sin instrucciones adicionales y se le pide expresar en voz alta lo que piensa mientras trabaja. El moderador solo interviene si el participante solicita ayuda, y registra cada solicitud. Por cada caso se registran cuatro métricas: si la tarea se completó, el tiempo empleado, los errores cometidos y las solicitudes de ayuda. Al terminar los casos, el participante diligencia el cuestionario de satisfacción SUS (\textit{System Usability Scale}) \cite{brooke1996}.
 
-\textbf{Sesión realizada.} La sesión se hizo de forma remota por Microsoft Teams el \fechasesion{} y duró unos 63 minutos. Participó un profesor investigador del Laboratorio de Electrofisiología, y la directora del proyecto se unió desde el minuto 9. Por la disponibilidad del participante, la sesión fue guiada: dos integrantes del equipo operaron la aplicación compartiendo pantalla, y el participante indicó qué probar, hizo preguntas y comentó los resultados. Por eso no se midieron el tiempo, los errores ni las solicitudes de ayuda del participante en cada tarea, como preveía el procedimiento. El tiempo de cada caso es la duración aproximada del tramo de la grabación en que se trató, y en los campos de errores y ayudas se registran las preguntas del participante y los problemas del sistema observados. Los casos que no se trataron en la sesión se indican como no evaluados. La remoción de un artefacto (UT-04) se hizo en un tramo que no quedó grabado y se registra a partir de las notas del equipo.
+\textbf{Sesión anterior.} La primera sesión se hizo de forma remota el \fechasesionanterior{}, duró unos 60 minutos y se completó con éxito. Participó Jonathan Muñoz, investigador externo al Laboratorio de Electrofisiología, quien revisó y aprobó los cambios hechos sobre Gamma Lab 1.0. El participante descargó la aplicación desde la página de descarga, la instaló por sí mismo y la abrió por primera vez sin ningún error (caso UT-01). La sesión fue semidirigida: el participante exploró libremente la herramienta mientras el equipo le explicaba lo que se había desarrollado y los cambios respecto a la versión 1.0.
 
-\textbf{Sesión anterior.} Antes se hizo otra sesión remota con otro investigador del laboratorio. Su transcripción automática se generó en un idioma equivocado y resultó casi ininteligible, por lo que de esa sesión solo se registra, a partir de las notas del equipo, el caso UT-01: el participante descargó la aplicación desde la página de descarga, la instaló y la abrió por primera vez sin problemas. De la transcripción se recuperan además algunas solicitudes y comentarios: el participante pidió una descripción emergente al pasar el cursor sobre las medidas y la aprobó al verla; la directora pidió medir la pendiente sobre el promedio de todos los \textit{trials} entre dos instantes y poder tener varias instancias de un mismo experimento abiertas en paralelo, funciones que se mostraron en la sesión del \fechasesion{}; se propuso complementar el manual con videos tutoriales, y el participante concluyó que lo implementado ``es más que suficiente para un análisis''.
+\textbf{Sesión realizada.} La segunda sesión se hizo de forma remota por Microsoft Teams el \fechasesion{} y duró unos 63 minutos. Participó Alejandro Múnera, profesor del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia. En esta sesión se presentaron algunas fallas del sistema, que se describen en los casos UT-08 y UT-10 y en la Tabla~\ref{tab:td_ut_solicitudes}. Por la disponibilidad del participante, la sesión fue guiada: dos integrantes del equipo operaron la aplicación compartiendo pantalla, y el participante indicó qué probar, hizo preguntas y comentó los resultados. Por eso no se midieron el tiempo, los errores ni las solicitudes de ayuda del participante en cada tarea, como preveía el procedimiento. El tiempo de cada caso es la duración aproximada del tramo de la grabación en que se trató, y en los campos de errores y ayudas se registran las preguntas del participante y los problemas del sistema observados. Los casos que no se trataron en la sesión se indican como no evaluados. La remoción de un artefacto (UT-04) se hizo en un tramo que no quedó grabado y se registra a partir de las notas del equipo.
 
 \subsection{Entorno de la prueba}
 
@@ -813,7 +814,7 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & Según el registro del equipo, en la sesión anterior otro investigador del laboratorio descargó la aplicación desde la página de descarga, la instaló y la abrió por primera vez sin problemas, y aprobó la descripción emergente que había pedido para las medidas. En la sesión del \fechasesion{} el equipo mostró además las descripciones emergentes y la barra de búsqueda de funciones. \\
+\textbf{Resultado obtenido} & Según el registro del equipo, en la sesión anterior (\fechasesionanterior{}) Jonathan Muñoz, investigador externo al laboratorio, descargó la aplicación desde la página de descarga, la instaló y la abrió por primera vez sin problemas, y aprobó la descripción emergente que había pedido para las medidas. En la sesión del \fechasesion{} el equipo mostró además las descripciones emergentes y la barra de búsqueda de funciones. \\
 \hline
 \textbf{Tiempo empleado (min)} & No registrado \\
 \hline
@@ -823,7 +824,7 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \textbf{Estado} & \casilla{x} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
 \hline
-\textbf{Fecha de ejecución} & Sesión anterior al \fechasesion{} \\
+\textbf{Fecha de ejecución} & \fechasesionanterior{} (sesión anterior) \\
 \hline
 \textbf{Observaciones} & NA \\
 \hline
@@ -1369,7 +1370,7 @@ El participante califica cada afirmación de la Tabla~\ref{tab:td_sus} de 1 (tot
 \hline
 \endfoot
 \hline
-\caption{Cuestionario SUS} \label{tab:td_sus} \\
+\caption{Cuestionario SUS respondido por Jonathan Muñoz} \label{tab:td_sus} \\
 \endlastfoot
 1 & Creo que me gustaría usar este sistema con frecuencia. & & & & & x \\
 \hline
@@ -1411,7 +1412,7 @@ El participante califica cada afirmación de la Tabla~\ref{tab:td_sus} de 1 (tot
 \hline
 \endfoot
 \hline
-\caption{Cuestionario SUS} \label{tab:td_sus} \\
+\caption{Cuestionario SUS respondido por Cécile Gauthier} \label{tab:td_sus_2} \\
 \endlastfoot
 1 & Creo que me gustaría usar este sistema con frecuencia. & & & & & x \\
 \hline
@@ -1438,7 +1439,7 @@ El participante califica cada afirmación de la Tabla~\ref{tab:td_sus} de 1 (tot
 \end{longtable}
 \end{center}
 
-Los cuestionarios fueron respondidos por profesores investigadores que participaron en la sesión del \fechasesion{}. Su puntuación de 87,5 y 92,5 se ubica cerca de la media que Bangor, Kortum y Miller asocian con el adjetivo ``excelente'' (85,6) \cite{bangor2009}. Al provenir de un solo participante, el resultado indica una valoración alta del sistema, pero no permite generalizarla.
+El cuestionario de la Tabla~\ref{tab:td_sus}, con una puntuación de 87,5, lo respondió Jonathan Muñoz, investigador externo al laboratorio que participó en la sesión del \fechasesionanterior{}. El de la Tabla~\ref{tab:td_sus_2}, con una puntuación de 92,5, lo respondió Cécile Gauthier, Directora de la tesis Gamma Lab 2.0. Ambas puntuaciones se ubican cerca o por encima de la media que Bangor, Kortum y Miller asocian con el adjetivo ``excelente'' (85,6) \cite{bangor2009}. Al provenir de solo dos participantes, el resultado indica una valoración alta del sistema, pero no permite generalizarla.
 
 \subsection{Conclusiones de las pruebas de usabilidad}
 El Laboratorio de Electrofisiología, cliente del proyecto, compartió la siguiente valoración de Gamma Lab 2.0:
