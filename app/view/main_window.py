@@ -1,0 +1,2111 @@
+from collections import defaultdict
+import html
+import gc
+import os
+import shutil
+import sys
+from core.utils.ayudas import completar_ayudas
+from core.utils.dialogo_bienvenida import DialogoBienvenida
+from functools import partial
+from pathlib import Path
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWidget,
+    QToolButton,
+    QGroupBox,
+    QLabel,
+    QSizePolicy,
+    QApplication,
+    QMenu,
+    QAction,
+    QTreeView,
+    QStackedWidget,
+    QFileSystemModel,
+    QFileDialog,
+    QAbstractItemView,
+    QWidgetAction,
+    QLineEdit,
+    QPushButton,
+    QMessageBox,
+    QSplitter,
+    QInputDialog,
+)
+from app.view.explorer_proyectos import (ArbolProyecto, DialogoCerrarProyecto,
+                                         DialogoProyectoNuevo, clave_ruta)
+from app.view.main_window_ui import Ui_MainWindow 
+from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter
+from PyQt5.QtCore import QSize, Qt, QEvent
+from PyQt5.QtWidgets import QFrame, QCompleter
+from app.view.main_window_ui import Ui_MainWindow
+from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter, QDesktopServices
+from PyQt5.QtCore import QSize, Qt, QEvent, QUrl, QMimeData, QTimer, QProcess
+from PyQt5.QtWidgets import QFrame
+
+from core.plugins.interfaces import IPlugin
+from core.utils.plugin_alerts import PluginAlerts
+from core.utils.rutas import carpeta_del_programa, carpeta_inicial
+from core.utils.notifications import NotificationCenter
+from core.utils.task_progress import TaskProgressBar
+from core.utils.trial_labels import describe_trials
+from core.utils.vtk_observers import retirar_de, reponer_en
+from core.utils.vtk_ventanas import liberar_ventanas
+from core.services.project_service import ProjectService
+
+class MainWindow(QMainWindow):
+    RESULT_PLUGINS = ("Slope Results", "Difference Results", "Amplitude Results")
+
+    def __init__(self, kernel):
+        super().__init__()
+        self.kernel = kernel
+        self._project_busy = False
+
+        self.kernel.register_service("MainWindow", self)
+
+        icon = QIcon(":/assets/logos/app-logo.png")
+        if icon.isNull():
+            icon = QIcon("assets/logos/app-logo.png")
+        self.setWindowIcon(icon)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.setup_plugin_search()
+        
+        self.alerts = PluginAlerts()
+        self.alerts.parent = self
+
+        self.kernel.event.connect(self.on_kernel_event)
+
+        self._proyectos_abiertos = []
+        self._glab_activo = None
+        self._abriendo_proyecto = False
+        self.project_service = ProjectService(self.kernel)
+        self.project_service.on_change = self._on_project_changed
+        self.kernel.register_service("ProjectService", self.project_service)
+        store = self.kernel.get_service("DataStore")
+        if store is not None:
+            store.set("_project_service", self.project_service)
+        self.ui.titleProjectNameLabel.renamed.connect(self._on_project_name_edited)
+
+        self.task_progress = TaskProgressBar(self)
+        self.statusBar().addPermanentWidget(self.task_progress)
+
+        self.cursor_readout = QLabel(self)
+        self.cursor_readout.setObjectName("cursorReadoutLabel")
+        self.cursor_readout.setToolTip("Posición del cursor en unidades de los ejes del gráfico")
+        self.statusBar().addPermanentWidget(self.cursor_readout)
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is not None:
+            tasks.task_started.connect(self._on_task_started)
+
+        self.current_section = "Home"
+        self.active_plugin = None
+        self.active_plugin_widget = None
+        self.plugin_widgets = {}
+        self._active_vtk_menu = None
+
+        self.plugin_area = self.ui.workspace
+
+        self.notifications = NotificationCenter(self.plugin_area)
+        PluginAlerts.set_center(self.notifications)
+        self.statusBar().messageChanged.connect(self._on_status_message_changed)
+
+        self.setup_sidebar_functionality()
+
+        if not self.plugin_area.layout():
+            self.plugin_layout = QVBoxLayout(self.plugin_area)
+            self.plugin_layout.setContentsMargins(0,0,0,0)
+        else:
+            self.plugin_layout = self.plugin_area.layout()
+
+        self._bg_logo_label = QLabel(self.plugin_area)
+        self._bg_logo_label.setObjectName("gammaLabWatermark")
+        self._bg_logo_label.setAlignment(Qt.AlignCenter)
+        self._bg_logo_label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        self._bg_logo_label.setAttribute(Qt.WA_TranslucentBackground, True)
+        self._bg_logo_label.setAttribute(Qt.WA_NoSystemBackground, True)
+        self._bg_logo_label.setStyleSheet("background: transparent; border: none;")
+        self._bg_logo_pixmap = QPixmap("assets/logos/app-logo.png")
+        self._logo_opacity = 0.1
+        self._bg_logo_label.lower()
+        self._bg_logo_label.setScaledContents(False)
+        self._position_background_logo()
+        self.plugin_area.installEventFilter(self)
+
+        self._home_welcome = self._build_home_welcome_widget()
+        self.plugin_layout.addWidget(self._home_welcome)
+
+        self._watermark_forced = False
+        self._update_background_logo_visibility()
+        self._update_home_welcome_visibility()
+
+        self.section_buttons = {
+            "Home": self.ui.bnt_home,
+            "Preprocessing": self.ui.btn_preprocessing,
+            "Analysis": self.ui.btn_analysis,
+        }
+
+        for section, btn in self.section_buttons.items():
+            btn.setCheckable(True)
+            btn.clicked.connect(lambda _, s=section: self.switch_section(s))
+
+        self.setup_file_menu()
+        self._update_title_bar_signal_name()
+
+        self.switch_section(self.current_section)
+        
+        self._app_quitting = False
+        app = QApplication.instance()
+        if app is not None:
+            app.aboutToQuit.connect(self._on_app_about_to_quit)
+
+
+    '''buttons section'''
+    def on_plugin_registered(self, name):
+        plugin = self.kernel.get_plugin(name)
+        if plugin and plugin.category() == self.current_section:
+            
+            self.add_plugin_button(name)
+            self.refresh_plugin_search()
+
+    def refresh_plugin_search(self):
+        names = self._get_registered_plugin_names()
+
+        model = self._search_completer.model()
+        model.setStringList(names)
+
+    def switch_section(self, section):
+        self.current_section = section
+        self.setWindowTitle(f"Gamma Lab - {self.current_section}")
+
+        for btn in self.section_buttons.values():
+            btn.setChecked(False)
+        if section in self.section_buttons:
+            self.section_buttons[section].setChecked(True)
+
+        contenedor = self.ui.buttonContainer.layout()
+        while contenedor.count():
+            item = contenedor.takeAt(0)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+
+        contenedor.setContentsMargins(0, 0, 0, 0)
+        contenedor.setSpacing(8)
+        contenedor.setAlignment(Qt.AlignLeft)
+
+        subcategories = defaultdict(list)
+        for name in self.kernel.get_plugins_by_category(section):
+            plugin = self.kernel.get_plugin(name)
+            subcategories[plugin.subcategory()].append(name)
+
+        def _orden(n):
+            o = getattr(self.kernel.get_plugin(n).meta, "order", None)
+            return o if o is not None else float("inf")
+        for plugins in subcategories.values():
+            plugins.sort(key=_orden)
+
+        subcats = list(subcategories.items())
+        if section == "Analysis":
+            def _orden_grupo(kv):
+                valores = [getattr(self.kernel.get_plugin(n).meta, "subcategory_order", None) for n in kv[1]]
+                return max((v for v in valores if v is not None), default=0)
+            subcats.sort(key=_orden_grupo)
+        measurements_row = None
+        for idx, (subcat, plugins) in enumerate(subcats):
+            group_box = QGroupBox(subcat, self.ui.buttonContainer)
+            group_box.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
+            row = QHBoxLayout(group_box)
+            row.setContentsMargins(10, 6, 10, 25)
+            row.setSpacing(20)
+
+            for name in plugins:
+                if section == "Home" and name == "Slope Results":
+                    row.addWidget(self._build_slope_button(name), 0, Qt.AlignBottom)
+                    continue
+                if section == "Home" and name == "Difference Results":
+                    row.addWidget(self._build_difference_button(name), 0, Qt.AlignBottom)
+                    continue
+                if section == "Home" and name == "Amplitude Results":
+                    row.addWidget(self._build_amplitude_button(name), 0, Qt.AlignBottom)
+                    continue
+                btn = self.add_plugin_button(name)
+                if section == "Preprocessing":
+                    btn.setText(name.lower())
+                if section == "Analysis":
+                    btn.setIconSize(QSize(36, 36))
+                    btn.setFixedHeight(70)
+                row.addWidget(btn, 0, Qt.AlignBottom)
+
+            contenedor.addWidget(group_box, 0, Qt.AlignVCenter)
+            if subcat == "Measurements":
+                measurements_row = row
+
+        if section == "Home":
+            if measurements_row is not None:
+                measurements_row.addWidget(self._build_delete_toggle_stack(), 0, Qt.AlignTop)
+
+            zoom_group = QGroupBox("Zoom", self.ui.buttonContainer)
+            zoom_group.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
+            zoom_row = QHBoxLayout(zoom_group)
+            zoom_row.setContentsMargins(0, 6, 0, 80)
+            zoom_row.setSpacing(20)
+            zoom_row.addWidget(self._build_zoom_button(), 0, Qt.AlignBottom)
+            contenedor.addWidget(zoom_group, 0, Qt.AlignVCenter)
+
+        contenedor.addStretch(1)
+        self._update_plugin_button_selection()
+        self._update_background_logo_visibility()
+        self._update_home_welcome_visibility()
+        
+    def add_plugin_button(self, name):
+        plugin = self.kernel.get_plugin(name)
+        btn = QToolButton(self.ui.buttonContainer)
+        btn.setObjectName(f"btn_{name}")
+        btn.setProperty("pluginName", name)
+        btn.setCheckable(True)
+        btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+
+        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        btn.setFixedHeight(64)
+        btn.setMinimumWidth(72)
+
+        try:
+            icon_path = plugin.icon()
+            if icon_path:
+                btn.setIcon(QIcon(icon_path))
+                btn.setIconSize(QSize(30, 30))
+        except Exception as e:
+            print("Icon not available for plugin", name, "->", e)
+
+        btn.setText(plugin.name())
+        btn.setToolTip(self._plugin_tooltip(plugin))
+
+        btn.clicked.connect(lambda _, n=name: self.on_button_click(n))
+        return btn
+
+    @staticmethod
+    def _plugin_tooltip(plugin) -> str:
+        """Rich-text tooltip: bold plugin name, description wrapped into a narrow column."""
+        title = html.escape(plugin.name())
+        desc = html.escape(plugin.description() or "")
+        body = f"<b>{title}</b>"
+        if desc:
+            body += f"<br>{desc}"
+        return f"<table width='260'><tr><td>{body}</td></tr></table>"
+
+    def _update_plugin_button_selection(self):
+        """Check only the ribbon button of the active plugin (outlined via QSS)."""
+        for btn in self.ui.buttonContainer.findChildren(QToolButton):
+            name = btn.property("pluginName")
+            if name is None:
+                continue
+            active = (self.active_plugin is not None
+                      and self.kernel.get_plugin(name) is self.active_plugin)
+            btn.setChecked(active)
+
+    def _build_icon_arrow_pair(self, icon_btn: QToolButton, menu: QMenu, gap: int = 8,
+                                left_margin: int = 0) -> QWidget:
+        """
+        Icon button + a separate small arrow button that opens `menu`, with a real
+        layout gap between them. Native QToolButton::menu-button spacing is not
+        reliably controllable via QSS across styles, so we build it by hand.
+        """
+        row = QWidget(self.ui.buttonContainer)
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(left_margin, 0, 0, 0)
+        row_layout.setSpacing(gap)
+        row_layout.addWidget(icon_btn)
+
+        arrow_btn = QToolButton(row)
+        arrow_btn.setObjectName(f"{icon_btn.objectName()}_arrow")
+        arrow_btn.setText("▾")
+        arrow_btn.setAutoRaise(True)
+        arrow_btn.setCursor(Qt.PointingHandCursor)
+        arrow_btn.setPopupMode(QToolButton.InstantPopup)
+        arrow_btn.setMenu(menu)
+        arrow_btn.setStyleSheet(
+            "QToolButton { border: none; background: transparent; padding: 2px; color: #2E60A9; }"
+            "QToolButton:hover { background: #EEF3FA; border-radius: 4px; }"
+            "QToolButton::menu-indicator { image: none; width: 0; height: 0; }"
+        )
+        row_layout.addWidget(arrow_btn, 0, Qt.AlignVCenter)
+
+        return row
+
+    def _start_measurement(self, measure_type: str):
+        """Arm interactive 2-point picking on the last chart view visited."""
+        svc = self._get_active_measure_service()
+        if not svc:
+            self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
+            return
+        svc.on_change = self._refresh_measurement_tables
+        svc.start(measure_type)
+
+    def _build_measurement_button(self, name: str, label_text: str, measure_type: str, icon_size: int = 60,
+                                   menu_items: list[tuple[str, str]] | None = None,
+                                   icon_left_margin: int = 0) -> QWidget:
+        """
+        Icon-only button that arms an interactive measurement (click = start
+        `measure_type` on the active chart) with the label in its own QLabel
+        below. If `menu_items` is given (label, measure_type pairs), a
+        separated arrow button offers the alternative measurement types.
+        """
+        plugin = self.kernel.get_plugin(name)
+        icon_btn = QToolButton(self.ui.buttonContainer)
+        icon_btn.setObjectName(f"btn_{name}")
+        icon_btn.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        icon_btn.setAutoRaise(True)
+        icon_btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        icon_btn.setStyleSheet(
+            "QToolButton { padding: 0px; border: none; background: transparent; }"
+            "QToolButton:hover { background: #EEF3FA; border-radius: 10px; }"
+        )
+        try:
+            icon_path = plugin.icon()
+            if icon_path:
+                icon_btn.setIcon(QIcon(icon_path))
+                icon_btn.setIconSize(QSize(icon_size, icon_size))
+                icon_btn.setFixedSize(icon_size, icon_size)
+        except Exception as e:
+            print("Icon not available for plugin", name, "->", e)
+        icon_btn.setToolTip(self._plugin_tooltip(plugin))
+        icon_btn.clicked.connect(lambda _, mt=measure_type: self._start_measurement(mt))
+
+        if menu_items:
+            menu = QMenu(icon_btn)
+            for label, mt in menu_items:
+                menu.addAction(label, lambda mt=mt: self._start_measurement(mt))
+            top_row = self._build_icon_arrow_pair(icon_btn, menu, left_margin=icon_left_margin)
+        else:
+            top_row = icon_btn
+
+        container = QWidget(self.ui.buttonContainer)
+        v = QVBoxLayout(container)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(2)
+        v.addWidget(top_row, 0, Qt.AlignHCenter)
+        label = QLabel(label_text, container)
+        label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet("color: #2E60A9; font-size: 9pt; background: transparent;")
+        v.addWidget(label)
+        return container
+
+    def _build_slope_button(self, name: str) -> QWidget:
+        """Slope icon (click = start a 2-point slope) + arrow (2 trials / all trials)."""
+        return self._build_measurement_button(
+            name, "slope", measure_type="slope", icon_size=52,
+            menu_items=[("Slope (2 points)", "slope"), ("Slope (all trials)", "slope_all_trials")],
+            icon_left_margin=6,
+        )
+
+    def _build_difference_button(self, name: str) -> QWidget:
+        """Difference icon (click = derivative of the signal between 2 points) + arrow (all trials)."""
+        return self._build_measurement_button(
+            name, "difference", measure_type="difference", icon_size=52,
+            menu_items=[("Difference (2 points)", "difference"),
+                        ("Difference (all trials)", "difference_all_trials")],
+            icon_left_margin=6,
+        )
+
+    def _build_amplitude_button(self, name: str) -> QWidget:
+        """Amplitude icon (click = start an amplitude measurement) + arrow (all trials)."""
+        return self._build_measurement_button(
+            name, "amplitude", measure_type="amplitude", icon_size=74,
+            menu_items=[("Amplitude (2 points)", "amplitude"),
+                        ("Amplitude (all trials)", "amplitude_all_trials")],
+        )
+
+    def _build_static_tool_button(self, icon_path: str, object_name: str, small: bool = False) -> QToolButton:
+        """Build a ribbon button not backed by a plugin (e.g. delete, zoom)."""
+        btn = QToolButton(self.ui.buttonContainer)
+        btn.setObjectName(object_name)
+        btn.setCheckable(False)
+        btn.setAutoRaise(True)
+        btn.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        btn.setIconSize(QSize(20, 20) if small else QSize(24, 24))
+        btn.setIcon(QIcon(icon_path))
+        return btn
+
+    def _live_vtk_menu(self):
+        """Chart menu of the view on screen, read live: plugins like the ERP create it only after
+        'Generate' and may replace it, so the one remembered when the plugin was opened can be
+        missing or stale. Falls back to the last chart view visited."""
+        menu = getattr(self.active_plugin, "vtk_menu", None) if getattr(self, "active_plugin", None) else None
+        if menu is not None:
+            self._active_vtk_menu = menu
+        return self._active_vtk_menu
+
+    def _get_active_measure_service(self):
+        """MeasurementService of the chart view on screen (or the last one visited)."""
+        menu = self._live_vtk_menu()
+        return getattr(menu, "measure_service", None) if menu else None
+
+    def _refresh_measurement_tables(self):
+        """Reload the Slope/Amplitude results tables if they're already built."""
+        for name in self.RESULT_PLUGINS:
+            plugin = self.kernel.get_plugin(name)
+            if plugin and name in self.plugin_widgets:
+                try:
+                    plugin.process(None)
+                except Exception as e:
+                    print(f"refresh {name} error:", e)
+        if self.ui.resultsPanel.isVisible():
+            self.refresh_results_panel()
+        self.project_service.mark_dirty()
+        self._update_title_bar_project_name()
+
+    def _on_delete_last_measurement(self):
+        svc = self._get_active_measure_service()
+        removed = svc.remove_last_measurement() if svc else False
+        if not removed:
+            store = self.kernel.get_service("DataStore")
+            lst = (store.get("measurements", []) or []) if store else []
+            if not lst:
+                self.alerts.warning("There are no measurements to delete.")
+                return
+            lst.pop()
+            store.set("measurements", lst)
+        self._refresh_measurement_tables()
+
+    def _on_delete_all_measurements(self):
+        svc = self._get_active_measure_service()
+        if svc:
+            svc.clear_all_measurements()
+        else:
+            store = self.kernel.get_service("DataStore")
+            if store:
+                store.set("measurements", [])
+        self._refresh_measurement_tables()
+
+    def _on_show_all_measurements(self):
+        svc = self._get_active_measure_service()
+        if svc:
+            svc.set_overlay_visible(True)
+        else:
+            self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
+
+    def _on_hide_all_measurements(self):
+        svc = self._get_active_measure_service()
+        if svc:
+            svc.set_overlay_visible(False)
+        else:
+            self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
+
+    def _build_delete_button(self) -> QWidget:
+        """'delete last / delete all' dropdown for the Measurements group."""
+        btn = self._build_static_tool_button("assets/iconos/delete.png", "btn_delete_measurements", small=True)
+        menu = QMenu(btn)
+        menu.addAction("delete last", self._on_delete_last_measurement)
+        menu.addAction("delete all", self._on_delete_all_measurements)
+        return self._build_icon_arrow_pair(btn, menu, gap=4)
+
+    def _build_toggle_overlay_button(self) -> QWidget:
+        """Show/hide measurement overlays."""
+        btn = self._build_static_tool_button("assets/iconos/ocultar.png", "btn_toggle_measurements", small=True)
+        btn.setToolTip("Show/hide measurements")
+        menu = QMenu(btn)
+        menu.addAction("Show all", self._on_show_all_measurements)
+        menu.addAction("Hide all", self._on_hide_all_measurements)
+        return self._build_icon_arrow_pair(btn, menu, gap=4)
+
+    def _build_delete_toggle_stack(self) -> QWidget:
+        """Stack 'delete' above 'show/hide', vertically, as a compact pair."""
+        container = QWidget(self.ui.buttonContainer)
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(0, 10, 0, 0)
+        layout.setSpacing(2)
+        layout.addWidget(self._build_delete_button())
+        layout.addWidget(self._build_toggle_overlay_button())
+        return container
+
+    def _build_zoom_button(self) -> QWidget:
+        """Zoom popup: '100%' field + '+' / '-' / 'restore' controls."""
+        btn = self._build_static_tool_button("assets/iconos/zoom.png", "btn_zoom")
+
+        popup = QWidget()
+        popup_layout = QHBoxLayout(popup)
+        popup_layout.setContentsMargins(10, 8, 10, 8)
+        popup_layout.setSpacing(6)
+
+        zoom_field = QLineEdit("100%")
+        zoom_field.setFixedWidth(56)
+        zoom_field.setAlignment(Qt.AlignCenter)
+        zoom_field.setReadOnly(True)
+        popup_layout.addWidget(zoom_field)
+
+        zoom_state = {"pct": 100}
+
+        def apply_zoom(factor):
+            menu = self._live_vtk_menu()
+            if not menu or not hasattr(menu, "zoom_by_factor"):
+                self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
+                return
+            menu.zoom_by_factor(factor)
+            zoom_state["pct"] = max(10, round(zoom_state["pct"] / factor))
+            zoom_field.setText(f"{zoom_state['pct']}%")
+
+        def restore_zoom():
+            menu = self._live_vtk_menu()
+            if not menu or not hasattr(menu, "reset_zoom"):
+                self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
+                return
+            menu.reset_zoom()
+            zoom_state["pct"] = 100
+            zoom_field.setText("100%")
+
+        btn_plus = QPushButton("+")
+        btn_plus.setFixedWidth(28)
+        btn_plus.clicked.connect(lambda: apply_zoom(0.8))
+        popup_layout.addWidget(btn_plus)
+
+        btn_minus = QPushButton("-")
+        btn_minus.setFixedWidth(28)
+        btn_minus.clicked.connect(lambda: apply_zoom(1.25))
+        popup_layout.addWidget(btn_minus)
+
+        btn_restore = QPushButton("restore")
+        btn_restore.clicked.connect(restore_zoom)
+        popup_layout.addWidget(btn_restore)
+
+        widget_action = QWidgetAction(btn)
+        widget_action.setDefaultWidget(popup)
+
+        menu = QMenu(btn)
+        menu.addAction(widget_action)
+        return self._build_icon_arrow_pair(btn, menu, gap=6)
+
+    def clear_plugin_area(self):
+        if self.active_plugin_widget and self.active_plugin:
+            self._cancel_tasks_of(self.active_plugin)
+            try:
+                self.active_plugin.stop()
+            except Exception as e:
+                self.alerts.error(f"An error occurred while stopping the VTK render plugin.\n\nDetails:\n{str(e)}", "Error stopping plugin")
+            try:
+                retirar_de(self.active_plugin_widget)
+            except Exception as e:
+                print("retirar_observadores error:", e)
+            self.active_plugin_widget.setVisible(False)
+            if getattr(self.active_plugin.meta, "free_graphics", True):
+                QTimer.singleShot(0, partial(self._liberar_graficos, self.active_plugin_widget))
+
+        self.active_plugin_widget = None
+        self.active_plugin = None
+        self._update_background_logo_visibility()
+
+    def _liberar_graficos(self, widget):
+        if widget is self.active_plugin_widget:
+            return
+        try:
+            liberar_ventanas(widget)
+        except Exception as e:
+            print("liberar_ventanas error:", e)
+
+    def _cancel_tasks_of(self, plugin):
+        try:
+            tasks = self.kernel.get_service("TaskService")
+            if tasks is not None and getattr(plugin, "meta", None) is not None:
+                tasks.cancel_all_from(plugin.meta.id)
+        except Exception as e:
+            print("cancel_tasks_of error:", e)
+        self._update_home_welcome_visibility()
+        self._update_plugin_button_selection()
+
+
+    def show_plugin_widget(self, plugin: IPlugin):
+        try:
+            plugin.process(None)
+        except Exception as e:
+            print("Error resuming plugin:", e)
+        
+        if plugin is None:
+            return
+
+        if not getattr(plugin, "started", False):
+            try:
+                plugin.start(self.kernel)
+                plugin.started = True
+            except Exception as e:
+                print("Error starting plugin:", e)
+
+        if plugin.name() in self.plugin_widgets:
+            widget = self.plugin_widgets[plugin.name()]
+        else:
+            try:
+                widget = plugin.get_widget(parent=self.plugin_area)
+            except Exception as e:
+                self.alerts.error(f"An error occurred while rendering the plugin widget '{plugin.name()}'.\n\nDetails:\n{str(e)}", "Error rendering plugin")
+                print("[Main Window] Error in plugin get_widget:", e)
+                widget = None
+
+            if widget is None:
+                self.alerts.error(f"No UI available for the plugin '{plugin.name()}'.", "Error rendering plugin")
+
+
+                placeholder = QWidget(parent=self.plugin_area)
+                layout = QVBoxLayout(placeholder)
+                layout.addWidget(QLabel(f"No UI available for {plugin.name()}"))
+                widget = placeholder
+
+            widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            self.plugin_layout.addWidget(widget)
+            self.plugin_widgets[plugin.name()] = widget
+
+        completar_ayudas(widget)
+
+        self.clear_plugin_area()
+        try:
+            reponer_en(widget)
+        except Exception as e:
+            print("reponer_observadores error:", e)
+        widget.setVisible(True)
+        self.active_plugin_widget = widget
+        self.active_plugin = plugin
+        vtk_menu = getattr(plugin, "vtk_menu", None)
+        if vtk_menu is not None:
+            self._active_vtk_menu = vtk_menu
+            svc = getattr(vtk_menu, "measure_service", None)
+            if svc is not None:
+                svc.on_change = self._refresh_measurement_tables
+        self._update_background_logo_visibility()
+        self._update_home_welcome_visibility()
+        self._update_plugin_button_selection()
+
+        if hasattr(plugin, "on_show"):
+            try:
+                plugin.on_show()
+            except Exception as e:
+                print("Error in plugin on_show:", e)
+
+        self._refresh_trial_indicator()
+        self.notifications.restack()
+
+    def eventFilter(self, obj, event):
+        if obj is self.plugin_area and event.type() == QEvent.Resize:
+            self._position_background_logo()
+        return super().eventFilter(obj, event)
+
+    def _position_background_logo(self):
+        """Center and scale watermark inside the workspace area."""
+        if not hasattr(self, "_bg_logo_label"):
+            return
+        if self._bg_logo_pixmap.isNull():
+            return
+        area_size = self.plugin_area.size()
+        target = int(min(area_size.width(), area_size.height()) * 0.5)
+        if target <= 0:
+            return
+        scaled = self._bg_logo_pixmap.scaled(
+            target, target, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        scaled = self._make_translucent(scaled, self._logo_opacity)
+        w = scaled.width(); h = scaled.height()
+        x = max(0, (area_size.width() - w) // 2)
+        y = max(0, (area_size.height() - h) // 2)
+        self._bg_logo_label.setPixmap(scaled)
+        self._bg_logo_label.setGeometry(x, y, w, h)
+
+    def _has_any_signal(self) -> bool:
+        try:
+            datastore = self.kernel.get_service("DataStore")
+            if not datastore:
+                return False
+            sigs = datastore.get_signals()
+            return bool(sigs)
+        except Exception:
+            return False
+
+    def _has_active_signal(self) -> bool:
+        try:
+            datastore = self.kernel.get_service("DataStore")
+            if not datastore:
+                return False
+            return datastore.get_active_signal() is not None
+        except Exception:
+            return False
+
+    def _has_active_trials(self) -> bool:
+        try:
+            datastore = self.kernel.get_service("DataStore")
+            if not datastore:
+                return False
+            sig = datastore.get_active_signal()
+            if not sig:
+                return False
+            try:
+                td = sig.get_active_trials(sig.name, None)
+                return td is not None and getattr(td, "trials", None) is not None and td.trials.size > 0
+            except Exception:
+                return sig.number_of_trials_dataset() > 0
+        except Exception:
+            return False
+
+    def _update_background_logo_visibility(self):
+        """Show watermark when there is no active signal and not in Home."""
+        if not hasattr(self, "_bg_logo_label"):
+            return
+        visible = (self.current_section != "Home") and (not self._has_active_signal())
+        self._bg_logo_label.setVisible(visible)
+        if visible:
+            self._bg_logo_label.lower()
+            self._position_background_logo()
+
+    def _build_home_welcome_widget(self) -> QWidget:
+        """Build centered Home welcome with big title, small subtitle and a divider line."""
+        w = QWidget(self.plugin_area)
+        w.setObjectName("homeWelcomePanel")
+
+        outer = QVBoxLayout(w)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+
+        block = QWidget(w)
+        block_layout = QVBoxLayout(block)
+        block_layout.setContentsMargins(40, 40, 40, 40)
+        block_layout.setSpacing(12)
+
+        logo = QLabel(block)
+        logo.setAttribute(Qt.WA_TranslucentBackground, True)
+        logo.setAttribute(Qt.WA_NoSystemBackground, True)
+        logo.setStyleSheet("background: transparent; border: none;")
+        pix = QPixmap("assets/logos/app-logo.png").scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        logo.setPixmap(pix)
+        block_layout.addWidget(logo, 0, Qt.AlignHCenter)
+
+        title = QLabel("Welcome to GAMMA LAB", block)
+        f = title.font()
+        try:
+            f.setPointSize(160)
+        except Exception:
+            pass
+        f.setBold(True)
+        title.setFont(f)
+        title.setStyleSheet("color: #2a63a9;")
+        block_layout.addWidget(title, 0, Qt.AlignHCenter)
+
+        subtitle = QLabel("To get started, open a signal", block)
+        f2 = subtitle.font()
+        try:
+            f2.setPointSize(max(10, f2.pointSize() + 2))
+        except Exception:
+            pass
+        subtitle.setFont(f2)
+        subtitle.setStyleSheet("color: #6f7a86;")
+        block_layout.addWidget(subtitle, 0, Qt.AlignHCenter)
+
+        line = QFrame(block)
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        block_layout.addWidget(line)
+
+        outer.addStretch(1)
+        outer.addWidget(block, 0, Qt.AlignHCenter)
+        outer.addStretch(2)
+
+        w.setVisible(False)
+        return w
+
+    def _update_home_welcome_visibility(self):
+        """Home welcome is visible only in Home when no plugin UI is active."""
+        if not hasattr(self, "_home_welcome"):
+            return
+        show = (self.current_section == "Home") and (self.active_plugin_widget is None)
+        self._home_welcome.setVisible(show)
+
+    def show_watermark(self):
+        self._watermark_forced = False
+        if hasattr(self, "_bg_logo_label"):
+            self._update_background_logo_visibility()
+
+    def hide_watermark(self):
+        self._watermark_forced = False
+        if hasattr(self, "_bg_logo_label"):
+            self._update_background_logo_visibility()
+
+    def _make_translucent(self, pix: QPixmap, opacity: float) -> QPixmap:
+        """Return a copy of the pixmap with a global opacity applied."""
+        try:
+            if pix.isNull():
+                return pix
+            opacity = max(0.0, min(1.0, float(opacity)))
+            out = QPixmap(pix.size())
+            out.fill(Qt.transparent)
+            painter = QPainter(out)
+            painter.setOpacity(opacity)
+            painter.drawPixmap(0, 0, pix)
+            painter.end()
+            return out
+        except Exception:
+            return pix
+
+    def _schedule_watermark_autohide(self):
+        """Wait for the plugin to create its content (e.g., VTK) and hide the watermark."""
+        delays = [0, 120, 350, 1000]
+        for d in delays:
+            QTimer.singleShot(d, self._check_and_autohide_plugin_content)
+
+
+    def on_button_click(self, name):
+        plugin = self.kernel.get_plugin(name)
+        if plugin:
+            print(f"Plugin button clicked: {name}")
+            self.show_plugin_widget(plugin)
+            if hasattr(plugin, "process"):
+                try:
+                    plugin.process("Window opened")
+                except Exception as e:
+                    print("Error in plugin process:", e)
+        else:
+            print("Plugin not found:", name)
+        self._update_plugin_button_selection()
+
+    '''File menu'''
+
+    def setup_file_menu(self):
+        """Build the dropdown menu shown when clicking the 'File' tab."""
+        file_menu = QMenu(self.ui.btn_file)
+
+        act_open_signal = QAction("Open signal", self)
+        act_new_project = QAction("New project", self)
+        act_open_project = QAction("Open project", self)
+        act_save = QAction("Save", self)
+        act_save_as = QAction("Save as", self)
+        act_close_project = QAction("Close project", self)
+        act_exit = QAction("Exit", self)
+
+        act_open_signal.triggered.connect(self.on_open_signal_clicked)
+        act_new_project.triggered.connect(self.on_new_project_clicked)
+        act_open_project.triggered.connect(self.on_open_project_clicked)
+        act_save.triggered.connect(self.on_save_project_clicked)
+        act_save_as.triggered.connect(self.on_save_project_as_clicked)
+        act_close_project.triggered.connect(self.on_close_project_clicked)
+        act_exit.triggered.connect(self.on_exit_clicked)
+
+        file_menu.addAction(act_open_signal)
+        file_menu.addAction(act_new_project)
+        file_menu.addAction(act_open_project)
+        file_menu.addAction(act_save)
+        file_menu.addAction(act_save_as)
+        file_menu.addAction(act_close_project)
+        file_menu.addAction(act_exit)
+
+        self.ui.btn_file.setMenu(file_menu)
+
+    def on_save_project_clicked(self):
+        """File > Save: write the .glab to its existing location (or prompt if new)."""
+        self._guardar_proyecto(como=False, titulo="Save Project")
+
+    def on_save_project_as_clicked(self):
+        """File > Save as: always prompt for a location and (re)create the project there."""
+        self._guardar_proyecto(como=True, titulo="Save Project As")
+
+    def _guardar_proyecto(self, como, titulo):
+        """R04: copying the signal into the project leaves the UI thread (progress bar
+        and Cancel from the TaskService); the manifest is written back here, because
+        it reads the state of the plugins."""
+        if getattr(self, "_guardando", False):
+            self.statusBar().showMessage("Ya se está guardando el proyecto.", 4000)
+            return
+        ps = self.project_service
+        try:
+            job = ps.iniciar_guardado(self, como=como)
+        except Exception as e:
+            self.alerts.error(str(e), titulo)
+            return
+        if job is None:
+            return
+        tasks = self.kernel.get_service("TaskService")
+        if job.copia is None or tasks is None:
+            try:
+                if job.copia is not None:
+                    ps._copiar_si_cambio(*job.copia)
+                self._terminar_guardado(job, titulo)
+            except Exception as e:
+                ps.revertir_guardado(job)
+                self.alerts.error(str(e), titulo)
+            return
+
+        self._guardando = True
+        self.statusBar().showMessage(f"Guardando {job.copia[0].name}…")
+        handle = tasks.submit(ps.copiar_senal, owner="project", origen=job.copia[0], destino=job.copia[1])
+        handle.finished.connect(lambda ok: self._copia_terminada(job, titulo, ok))
+        handle.failed.connect(lambda msg: self._guardado_fallido(job, titulo, msg))
+        handle.cancelled.connect(lambda: self._guardado_fallido(job, titulo, None))
+
+    def _copia_terminada(self, job, titulo, ok):
+        if not ok:
+            self._guardado_fallido(job, titulo, None)
+            return
+        try:
+            self._terminar_guardado(job, titulo)
+        except Exception as e:
+            self.project_service.revertir_guardado(job)
+            self.alerts.error(str(e), titulo)
+        finally:
+            self._guardando = False
+
+    def _terminar_guardado(self, job, titulo):
+        path = self.project_service.completar_guardado(job)
+        if path:
+            self.statusBar().showMessage(f"Project saved: {path}", 4000)
+            self.alerts.info(f"Project saved:\n{path}", titulo)
+
+    def _guardado_fallido(self, job, titulo, message):
+        self._guardando = False
+        self.project_service.revertir_guardado(job)
+        if message:
+            self.statusBar().clearMessage()
+            self.alerts.error(message, titulo)
+        else:
+            self.statusBar().showMessage("Guardado cancelado.", 4000)
+
+    def on_open_project_clicked(self):
+        """File > Open project: pick a .glab and restore its signal + measurements."""
+        if not self._confirm_discard_unsaved_changes():
+            return
+
+        settings = self.kernel.get_service("Settings")
+        last_dir = settings.get("last_project_dir", carpeta_inicial())
+
+        path_str, _ = QFileDialog.getOpenFileName(
+            self, "Open Project", last_dir, "Gamma Lab Project (*.glab)"
+        )
+        if not path_str:
+            return
+        settings.set("last_project_dir", str(Path(path_str).parent))
+        self._abrir_proyecto(path_str)
+
+    def abrir_proyecto_desde_ruta(self, path_str):
+        
+        self.kernel.get_service("Settings").set("last_project_dir", str(Path(path_str).parent))
+        self._abrir_proyecto(path_str)
+
+    def cambiar_a_proyecto(self, path_str):
+        """Doble clic en un .glab del Explorer: ese proyecto pasa a ser el activo.
+
+        El activo se descarga (preguntando si hay cambios sin guardar) y su carpeta sigue en
+        el Explorer para poder volver a él.
+        """
+        if self._project_busy or getattr(self, "_guardando", False):
+            self.statusBar().showMessage("Espera a que termine de abrirse o guardarse el proyecto.", 4000)
+            return
+        activo = self.project_service.glab_path
+        if activo is not None and clave_ruta(activo) == clave_ruta(path_str):
+            self.statusBar().showMessage(f"«{Path(path_str).name}» ya es el proyecto activo.", 4000)
+            return
+        if not self._confirm_discard_unsaved_changes():
+            return
+        self.abrir_proyecto_desde_ruta(path_str)
+
+    def _proyecto_ocupado(self) -> bool:
+        if self._project_busy or getattr(self, "_guardando", False):
+            self.statusBar().showMessage("Espera a que termine la operación con el proyecto en curso.", 4000)
+            return True
+        return False
+
+    def _ubicacion_por_defecto(self) -> str:
+        """Junto al último proyecto abierto (su carpeta padre), o la carpeta del usuario."""
+        settings = self.kernel.get_service("Settings")
+        ultimo = settings.get("last_project_dir", "") if settings is not None else ""
+        padre = Path(ultimo).parent if ultimo else None
+        return str(padre) if padre is not None and padre.is_dir() else carpeta_inicial()
+
+    def on_new_project_clicked(self):
+        """File > New project: un proyecto en blanco, en esta ventana o en una nueva."""
+        if self._proyecto_ocupado():
+            return
+        respuesta = DialogoProyectoNuevo.pedir(
+            "New Project", "nuevo_proyecto", self._ubicacion_por_defecto(), "Create", parent=self)
+        if respuesta is None:
+            return
+        carpeta, nombre, ventana_nueva = respuesta
+        try:
+            glab = ProjectService.crear_proyecto_vacio(carpeta, nombre)
+        except Exception as e:
+            self.alerts.error(str(e), "New Project")
+            return
+        if not ventana_nueva and self._hay_trabajo_cargado():
+            self._agregar_al_explorer(glab)
+            return
+        self._abrir_proyecto_creado(glab, ventana_nueva)
+
+    def _hay_trabajo_cargado(self) -> bool:
+        """Hay un proyecto activo o una señal cargada que no conviene descargar."""
+        if self.project_service.is_open:
+            return True
+        store = self.kernel.get_service("DataStore")
+        return store is not None and store.get_active_signal() is not None
+
+    def _agregar_al_explorer(self, glab):
+        """Añade el proyecto al Explorer, debajo de los abiertos, sin cambiar el proyecto activo."""
+        if self._indice_proyecto_abierto(glab) is None:
+            self._proyectos_abiertos.append(Path(glab))
+        self._refrescar_explorer()
+        self.statusBar().showMessage(
+            f"Proyecto «{Path(glab).name}» creado. Haz doble clic en su .glab en el Explorer para abrirlo.", 8000)
+
+    @staticmethod
+    def _glabs_de_carpeta(carpeta) -> list:
+        """Los .glab que están directamente en `carpeta` (no en subcarpetas)."""
+        try:
+            return sorted(p for p in Path(carpeta).iterdir()
+                          if p.is_file() and p.suffix.lower() == ".glab")
+        except OSError:
+            return []
+
+    def duplicar_proyecto_de_carpeta(self, carpeta):
+        """Clic derecho > Duplicate project sobre la carpeta de un proyecto.
+
+        Si la carpeta guarda más de un .glab, pregunta cuál (el activo o uno abierto va primero).
+        """
+        glabs = self._glabs_de_carpeta(carpeta)
+        if not glabs:
+            return
+        if len(glabs) > 1:
+            activo = self.project_service.glab_path
+            clave_activo = clave_ruta(activo) if activo is not None else None
+            glabs.sort(key=lambda p: (clave_ruta(p) != clave_activo,
+                                      self._indice_proyecto_abierto(p) is None, p.name.lower()))
+            nombres = [p.name for p in glabs]
+            elegido, ok = QInputDialog.getItem(
+                self, "Duplicate Project", "¿Qué proyecto quieres duplicar?", nombres, 0, False)
+            if not ok:
+                return
+            glab = glabs[nombres.index(elegido)]
+        else:
+            glab = glabs[0]
+        self.duplicar_proyecto(glab)
+
+    def duplicar_proyecto(self, glab):
+        """Copia la carpeta del proyecto con otro nombre y lo abre aquí o en otra ventana."""
+        if self._proyecto_ocupado():
+            return
+        glab = Path(glab)
+        activo = self.project_service.glab_path
+        es_activo = activo is not None and clave_ruta(activo) == clave_ruta(glab)
+        if es_activo and self.project_service.dirty:
+            box = QMessageBox(self)
+            box.setIcon(QMessageBox.Question)
+            box.setWindowTitle("Duplicate Project")
+            box.setText("El proyecto tiene cambios sin guardar. La copia se hace de lo que está guardado en disco.")
+            guardar_btn = box.addButton("Guardar y duplicar", QMessageBox.AcceptRole)
+            tal_cual_btn = box.addButton("Duplicar lo guardado", QMessageBox.DestructiveRole)
+            box.addButton("Cancel", QMessageBox.RejectRole)
+            box.setDefaultButton(guardar_btn)
+            box.exec_()
+            if box.clickedButton() is guardar_btn:
+                try:
+                    guardado = self.project_service.save(self)
+                except Exception as e:
+                    self.alerts.error(str(e), "Save Project")
+                    return
+                if not guardado:
+                    return
+                glab = Path(guardado)
+            elif box.clickedButton() is not tal_cual_btn:
+                return
+
+        carpeta_origen = glab.parent.resolve()
+
+        def fuera_del_original(carpeta):
+            carpeta = carpeta.resolve()
+            if carpeta == carpeta_origen or carpeta_origen in carpeta.parents:
+                return "La copia no puede ir dentro de la carpeta del proyecto que se duplica."
+            return None
+
+        respuesta = DialogoProyectoNuevo.pedir(
+            "Duplicate Project", f"{glab.stem}_copia", str(carpeta_origen.parent), "Duplicate",
+            validar_extra=fuera_del_original, parent=self)
+        if respuesta is None:
+            return
+        carpeta, nombre, ventana_nueva = respuesta
+        if not ventana_nueva and not self._confirm_discard_unsaved_changes():
+            return
+
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is None:
+            try:
+                nuevo = ProjectService.duplicar_proyecto(glab, carpeta, nombre)
+            except Exception as e:
+                self.alerts.error(str(e), "Duplicate Project")
+                return
+            self._abrir_proyecto_creado(nuevo, ventana_nueva)
+            return
+
+        self._project_busy = True
+        self.statusBar().showMessage(f"Duplicando {glab.name}…")
+        handle = tasks.submit(ProjectService.duplicar_proyecto, owner="project",
+                              glab_origen=str(glab), carpeta_destino=str(carpeta), nombre=nombre)
+        handle.finished.connect(lambda nuevo: self._duplicado_terminado(nuevo, ventana_nueva))
+        handle.failed.connect(lambda msg: self._duplicado_fallido(msg))
+        handle.cancelled.connect(lambda: self._duplicado_fallido(None))
+
+    def _duplicado_terminado(self, nuevo, ventana_nueva):
+        self._project_busy = False
+        if not nuevo:
+            self._duplicado_fallido(None)
+            return
+        self._abrir_proyecto_creado(Path(nuevo), ventana_nueva)
+
+    def _duplicado_fallido(self, mensaje):
+        self._project_busy = False
+        if mensaje:
+            self.statusBar().clearMessage()
+            self.alerts.error(mensaje, "Duplicate Project")
+        else:
+            self.statusBar().showMessage("Duplicado cancelado.", 4000)
+
+    def _abrir_proyecto_creado(self, glab, ventana_nueva):
+        """Abre el proyecto recién creado: en esta ventana (se añade al Explorer) o en otra."""
+        if ventana_nueva:
+            if self.abrir_en_ventana_nueva(glab):
+                self.statusBar().showMessage(f"Abriendo «{Path(glab).name}» en una ventana nueva…", 6000)
+            return
+        self.abrir_proyecto_desde_ruta(str(glab))
+
+    def abrir_en_ventana_nueva(self, glab) -> bool:
+        """Lanza otra instancia de Gamma Lab con ese proyecto, como al hacer doble clic en un .glab."""
+        if getattr(sys, "frozen", False):
+            programa, argumentos = sys.executable, [str(glab)]
+        else:
+            programa, argumentos = sys.executable, [str(carpeta_del_programa() / "main.py"), str(glab)]
+        resultado = QProcess.startDetached(programa, argumentos, str(carpeta_del_programa()))
+        ok = resultado[0] if isinstance(resultado, tuple) else bool(resultado)
+        if not ok:
+            self.alerts.error(f"No se pudo abrir una ventana nueva.\nEl proyecto se creó en:\n{glab}",
+                              "New Window")
+        return ok
+
+    def _indice_proyecto_abierto(self, glab):
+        clave = clave_ruta(glab)
+        for i, p in enumerate(self._proyectos_abiertos):
+            if clave_ruta(p) == clave:
+                return i
+        return None
+
+    def _depurar_proyectos_abiertos(self):
+        """Quita los proyectos cuyo .glab ya no existe (borrado o movido), salvo el activo."""
+        activo = self.project_service.glab_path
+        clave_activo = clave_ruta(activo) if activo is not None else None
+        self._proyectos_abiertos = [
+            p for p in self._proyectos_abiertos
+            if p.is_file() or clave_ruta(p) == clave_activo
+        ]
+
+    def _actualizar_proyectos_abiertos(self):
+        """Lleva la lista al día con el proyecto activo tras abrir, guardar o renombrar.
+
+        Abrir añade el proyecto. Guardar con otro nombre o en otra carpeta (Save as) sustituye
+        la entrada del activo, porque es el mismo proyecto en otro sitio. Cerrar no quita nada:
+        eso lo hace File > Close project.
+        """
+        nuevo = self.project_service.glab_path
+        viejo = self._glab_activo
+        if nuevo is not None:
+            nuevo = Path(nuevo)
+            i_viejo = self._indice_proyecto_abierto(viejo) if viejo is not None else None
+            reemplaza = (not self._abriendo_proyecto and i_viejo is not None
+                         and clave_ruta(viejo) != clave_ruta(nuevo))
+            if reemplaza:
+                self._proyectos_abiertos[i_viejo] = nuevo
+                self._proyectos_abiertos = [
+                    p for j, p in enumerate(self._proyectos_abiertos)
+                    if j == i_viejo or clave_ruta(p) != clave_ruta(nuevo)
+                ]
+            elif self._indice_proyecto_abierto(nuevo) is None:
+                self._proyectos_abiertos.append(nuevo)
+        self._glab_activo = nuevo
+
+    def _abrir_proyecto(self, path_str):
+        self._project_busy = True
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is None:
+            self._finish_open_project(path_str, None)
+            return
+
+        self.statusBar().showMessage(f"Opening {Path(path_str).name}…")
+        handle = tasks.submit(self.project_service.preparar_apertura, owner="project",
+                              glab_path_str=path_str)
+        handle.finished.connect(lambda prep: self._finish_open_project(path_str, prep))
+        handle.failed.connect(lambda msg: self._fail_open_project(msg))
+        handle.cancelled.connect(lambda: self._fail_open_project(None))
+
+    def _finish_open_project(self, path_str, preparado):
+        try:
+            self.liberar_senal_anterior()
+            self._abriendo_proyecto = True
+            try:
+                self.project_service.open(path_str, self, preparado=preparado)
+            finally:
+                self._abriendo_proyecto = False
+            faltante = self.project_service.senal_faltante(*preparado)
+            if faltante:
+                self.statusBar().showMessage(f"Proyecto abierto sin señal: {path_str}", 8000)
+                self.alerts.warning(
+                    f"No se encontró el archivo de señal «{faltante}» que este proyecto referencia. "
+                    "El proyecto se abrió sin señal; ubica el archivo junto al proyecto o en su ruta original y ábrelo de nuevo.",
+                    "Señal no disponible")
+            else:
+                self.statusBar().showMessage(f"Project opened: {path_str}", 4000)
+        except Exception as e:
+            self.alerts.error(str(e), "Open Project")
+        finally:
+            self._project_busy = False
+
+    def _fail_open_project(self, message):
+        self._project_busy = False
+        if message:
+            self.statusBar().clearMessage()
+            self.alerts.error(message, "Open Project")
+        else:
+            self.statusBar().showMessage("Open project canceled.", 4000)
+
+    def liberar_senal_anterior(self, conservar_plugin=None):
+        """Suelta la señal que hay cargada y todo lo que depende de ella (R11, R52).
+
+        Cancela los cálculos, destruye los widgets de los módulos (menos `conservar_plugin`, que
+        está en medio de una carga), borra de los plugins sus datasets y resultados y quita las
+        señales del DataStore.
+        """
+        self._stop_all_background_workers()
+        self._reset_all_plugin_widgets(conservar=conservar_plugin)
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            if plugin is not None and hasattr(plugin, "olvidar_senal"):
+                try:
+                    plugin.olvidar_senal()
+                except Exception as e:
+                    print(f"olvidar_senal ({name}) error:", e)
+        store = self.kernel.get_service("DataStore")
+        if store is not None:
+            store.release_signals()
+        gc.collect()
+
+    PASOS_BIENVENIDA = (
+        ("Home", "abre una señal (ABF, EDF o MAT) y mídela con pendiente y amplitud."),
+        ("Preprocessing", "recorta la señal en trials, fíltrala o quita artefactos."),
+        ("Analysis", "calcula promedios, espectros, wavelet, PAC y más sobre los trials que elijas."),
+        ("Explorer y Results", "en la barra lateral: los archivos del proyecto y las tablas de mediciones."),
+        ("Clic derecho en una gráfica", "zoom, mediciones y exportación a CSV, Excel, JSON o imagen."),
+    )
+
+    def mostrar_bienvenida_inicial(self, forzar=False) -> bool:
+        """R10: la primera vez que se ejecuta la aplicación explica las funciones básicas. Devuelve si se mostró."""
+        ajustes = self.kernel.get_service("Settings")
+        if not forzar and (ajustes is None or ajustes.get("bienvenida_mostrada", False)):
+            return False
+        DialogoBienvenida(self.PASOS_BIENVENIDA, self).exec_()
+        if ajustes is not None:
+            ajustes.set("bienvenida_mostrada", True)
+        return True
+
+    def cerrar_proyecto_para_nueva_senal(self) -> bool:
+        """Cargar otra señal equivale a cerrar el proyecto abierto (R11, R12): avisa y pide guardar si hay cambios.
+
+        Devuelve False si el usuario cancela. El proyecto se cierra aquí para que guardar después
+        no escriba la señal nueva sobre el archivo del proyecto anterior.
+        """
+        if not self.project_service.is_open:
+            return True
+        kernel = getattr(self, "kernel", None)
+        store = kernel.get_service("DataStore") if kernel is not None else None
+        if store is not None and store.get_active_signal() is None:
+            self._senal_para_proyecto_en_blanco = True
+            return True
+        if not self._confirm_discard_unsaved_changes():
+            return False
+        nombre = self.project_service.project_name
+        self.project_service.close()
+        self._update_title_bar_signal_name()
+        self.statusBar().showMessage(f"Proyecto «{nombre}» cerrado al cargar otra señal.", 6000)
+        return True
+
+    def on_close_project_clicked(self):
+        """File > Close project. Con varios proyectos abiertos pregunta cuál, por el nombre del .glab.
+
+        Cerrar uno inactivo solo lo quita del Explorer. Cerrar el activo además suelta su señal
+        (pidiendo guardar si hay cambios); los demás siguen en el Explorer, sin activar ninguno.
+        """
+        if self._project_busy or getattr(self, "_guardando", False):
+            self.statusBar().showMessage("Espera a que termine de abrirse o guardarse el proyecto.", 4000)
+            return
+        self._depurar_proyectos_abiertos()
+        activo = self.project_service.glab_path
+        clave_activo = clave_ruta(activo) if activo is not None else None
+
+        opciones = [(p, p.name, str(p.parent), clave_ruta(p) == clave_activo)
+                    for p in self._proyectos_abiertos]
+        store = self.kernel.get_service("DataStore")
+        hay_senal = store is not None and store.get_active_signal() is not None
+        if activo is None and hay_senal:
+            nombre_nuevo = self.project_service.project_name or "untitled"
+            opciones.append((None, f"{nombre_nuevo}.glab", "Sin guardar todavía", True))
+
+        if len(opciones) > 1:
+            fila = DialogoCerrarProyecto.elegir([o[1:] for o in opciones], self)
+            if fila is None:
+                return
+            ruta, titulo, _detalle, es_activo = opciones[fila]
+        elif opciones:
+            ruta, titulo, _detalle, es_activo = opciones[0]
+        else:
+            ruta, titulo, es_activo = None, None, True
+
+        if not es_activo:
+            i = self._indice_proyecto_abierto(ruta)
+            if i is not None:
+                del self._proyectos_abiertos[i]
+            self._refrescar_explorer()
+            self.statusBar().showMessage(f"Proyecto «{titulo}» cerrado.", 6000)
+            return
+
+        if not self._confirm_discard_unsaved_changes():
+            return
+        activo = self.project_service.glab_path
+        if activo is not None:
+            i = self._indice_proyecto_abierto(activo)
+            if i is not None:
+                del self._proyectos_abiertos[i]
+        nombre = self.project_service.project_name
+        self.project_service.close()
+        if nombre:
+            self.statusBar().showMessage(f"Proyecto «{nombre}» cerrado.", 6000)
+        self.liberar_senal_anterior()
+        self.ui.resultsPanel.setVisible(False)
+        self._update_title_bar_signal_name()
+        self._update_background_logo_visibility()
+        self._update_home_welcome_visibility()
+        self._refresh_trial_indicator()
+        self.notifications.clear()
+
+    def _reset_all_plugin_widgets(self, conservar=None):
+        names = [n for n in self.plugin_widgets.keys() if n != conservar]
+        if not names:
+            return
+        try:
+            self._stop_all_background_workers()
+        except Exception as e:
+            print("stop background workers (close project) error:", e)
+        try:
+            self._finalize_all_vtk_render_windows(names)
+        except Exception as e:
+            print("finalize VTK windows (close project) error:", e)
+        for name in names:
+            widget = self.plugin_widgets.pop(name, None)
+            plugin = self.kernel.get_plugin(name)
+            if plugin is not None:
+                plugin.widget = None
+                if hasattr(plugin, "ui"):
+                    plugin.ui = None
+                self._reset_plugin_qt_vtk_state(plugin)
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+        if conservar is None:
+            self._active_vtk_menu = None
+            self.active_plugin_widget = None
+            self.active_plugin = None
+        self._update_plugin_button_selection()
+
+    def _reset_plugin_qt_vtk_state(self, plugin):
+      
+        import vtk
+        from PyQt5.QtWidgets import QWidget
+
+        if getattr(plugin, "alerts", None) is not None:
+            plugin.alerts.parent = None
+
+        for attr_name, attr_value in list(vars(plugin).items()):
+            if attr_name in ("kernel", "meta", "mainwin", "alerts", "widget", "ui"):
+                continue
+            if isinstance(attr_value, (QWidget, vtk.vtkObjectBase)):
+                setattr(plugin, attr_name, None)
+            elif type(attr_value).__name__ == "VTKContextMenu":
+                setattr(plugin, attr_name, None)
+            elif isinstance(attr_value, (list, tuple)) and attr_value and all(
+                isinstance(v, (QWidget, vtk.vtkObjectBase)) for v in attr_value
+            ):
+                setattr(plugin, attr_name, type(attr_value)())
+
+    def on_exit_clicked(self):
+        """File > Exit: same unsaved-changes guard as Close Project, then quit."""
+        if not self._confirm_discard_unsaved_changes():
+            return
+        QApplication.instance().quit()
+
+    def _on_task_started(self, handle):
+        """Engancha la barra de progreso a la tarea que acaba de empezar a correr."""
+        try:
+            nombre = self._nombre_de_plugin(getattr(handle, "owner", ""))
+            self.task_progress.seguir(handle, f"{nombre}: calculando…" if nombre else "")
+        except Exception as e:
+            print("[MainWindow] no se pudo seguir la tarea:", e)
+
+    def _nombre_de_plugin(self, owner: str) -> str:
+        """El `owner` de una tarea es el id del plugin; para la interfaz se
+        prefiere su nombre visible."""
+        if not owner:
+            return ""
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            meta = getattr(plugin, "meta", None)
+            if meta is not None and getattr(meta, "id", None) == owner:
+                return getattr(meta, "name", owner)
+        return owner
+
+    def _cancel_all_tasks(self):
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is None:
+            return
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            if plugin is not None and getattr(plugin, "meta", None) is not None:
+                tasks.cancel_all_from(plugin.meta.id)
+        tasks.cancel_all_from("project")
+
+    def _any_background_worker_running(self) -> bool:
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is not None and tasks.has_active_tasks():
+            return True
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            worker = getattr(plugin, "worker", None)
+            if worker is not None and hasattr(worker, "isRunning") and worker.isRunning():
+                return True
+        return False
+
+    def _stop_all_background_workers(self):
+        try:
+            self._cancel_all_tasks()
+        except Exception as e:
+            print("cancel tasks error:", e)
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            cleanup = getattr(plugin, "_cleanup_worker", None)
+            if callable(cleanup):
+                try:
+                    cleanup()
+                except Exception:
+                    pass
+
+    def _confirm_discard_unsaved_changes(self) -> bool:
+        """Ask Save/Don't Save/Cancel if dirty; True means OK to proceed.
+
+        Si hay un cálculo en curso o un proyecto abriéndose, primero se pide permiso para
+        cancelarlo y **después**, si hay cambios sin guardar, se ofrece guardarlos. Antes,
+        «Cerrar de todos modos» devolvía True sin mirar si había cambios y el trabajo se
+        perdía sin preguntar.
+
+        Mientras se guarda no se deja cerrar: cancelar a medias revierte el guardado, y
+        volver a guardar enseguida competiría con la copia que aún no terminó.
+        """
+        if getattr(self, "_guardando", False):
+            self.alerts.warning(
+                "El proyecto se está guardando. Espera a que termine y vuelve a intentarlo.",
+                "Guardando proyecto")
+            return False
+        if self._project_busy or self._any_background_worker_running():
+            box = QMessageBox(self)
+            box.setIcon(QMessageBox.Warning)
+            if self._project_busy:
+                box.setWindowTitle("Proyecto abriéndose")
+                box.setText("El proyecto todavía se está abriendo. ¿Quieres cerrarlo de todos modos?")
+            else:
+                box.setWindowTitle("Cálculo en curso")
+                box.setText("Hay un cálculo en curso. Si cierras ahora, se cancelará. ¿Quieres cerrar de todos modos?")
+            close_btn = box.addButton("Cerrar de todos modos", QMessageBox.DestructiveRole)
+            stay_btn = box.addButton("Quedarme", QMessageBox.RejectRole)
+            box.setDefaultButton(stay_btn)
+            box.exec_()
+            if box.clickedButton() is not close_btn:
+                return False
+            self._stop_all_background_workers()
+        if not self.project_service.dirty:
+            return True
+
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Warning)
+        box.setWindowTitle("Unsaved Changes")
+        box.setText("Are you sure you want to leave without saving changes to this project?")
+        save_btn = box.addButton("Save", QMessageBox.AcceptRole)
+        discard_btn = box.addButton("Don't Save", QMessageBox.DestructiveRole)
+        cancel_btn = box.addButton("Cancel", QMessageBox.RejectRole)
+        box.setDefaultButton(save_btn)
+        box.exec_()
+
+        clicked = box.clickedButton()
+        if clicked is cancel_btn:
+            return False
+        if clicked is save_btn:
+            try:
+                path = self.project_service.save(self)
+                if not path:
+                    return False
+            except Exception as e:
+                self.alerts.error(str(e), "Save Project")
+                return False
+        return True
+
+    def _on_project_changed(self):
+        """ProjectService callback: refresh title bar + Explorer after open/save/rename/close."""
+        self._update_title_bar_project_name()
+        self._actualizar_proyectos_abiertos()
+        self._refrescar_explorer()
+
+    def _on_project_name_edited(self, new_name: str):
+        """User double-clicked the project name in the title bar and typed a new one."""
+        self.project_service.set_project_name(new_name)
+
+    def _update_title_bar_signal_name(self):
+        """Reflect the active signal's real file name in the title bar."""
+        store = self.kernel.get_service("DataStore")
+        ds = store.get_active_signal() if store else None
+        if ds is not None:
+            signal_file = Path(getattr(ds, "source_path", "") or "").name or ds.name
+            self.ui.titleFileNameLabel.setText(signal_file)
+            if not self.project_service.project_name:
+                self.project_service.project_name = self.project_service.default_project_name(ds.name)
+                self._update_title_bar_project_name()
+        else:
+            self.ui.titleFileNameLabel.setText("No signal loaded")
+
+    def _update_title_bar_project_name(self):
+        name = self.project_service.project_name
+        if name:
+            dirty_mark = " *" if self.project_service.dirty else ""
+            self.ui.titleProjectNameLabel.setEditableValue(name)
+            self.ui.titleProjectNameLabel.setText(f"{name}.glab{dirty_mark}")
+            self.ui.titleProjectNameLabel.setVisible(True)
+            self.ui.titleSeparatorLabel.setVisible(True)
+        else:
+            self.ui.titleProjectNameLabel.setVisible(False)
+            self.ui.titleSeparatorLabel.setVisible(False)
+
+    def show_status(self, msg: str, level: str = "info", timeout: int = 3000):
+        """Mensaje en la barra de estado, coloreado por severidad (QSS
+        `QStatusBar[severity=...]`). El color se quita al borrarse el mensaje."""
+        bar = self.statusBar()
+        self._set_severity(bar, level)
+        bar.showMessage(msg, timeout)
+
+    def _on_status_message_changed(self, msg: str):
+        if not msg:
+            self._set_severity(self.statusBar(), "info")
+
+    @staticmethod
+    def _set_severity(widget, level: str):
+        if widget.property("severity") == level:
+            return
+        widget.setProperty("severity", level)
+        widget.style().unpolish(widget)
+        widget.style().polish(widget)
+
+    def _refresh_trial_indicator(self):
+        """Pide al plugin visible su estado de trial y lo muestra. Sin plugin
+        con trials, muestra el estado general de la senal activa."""
+        state = None
+        plugin = self.active_plugin
+        if plugin is not None and hasattr(plugin, "current_trial_state"):
+            try:
+                state = plugin.current_trial_state()
+            except Exception as e:
+                print("[MainWindow] current_trial_state error:", e)
+        if state is None:
+            state = self._default_trial_state()
+        self._update_trial_indicator(state)
+
+    def _default_trial_state(self):
+        store = self.kernel.get_service("DataStore")
+        sig = store.get_active_signal() if store else None
+        if sig is None:
+            return None
+        try:
+            td = sig.get_active_trials(sig.name, None) if sig.number_of_trials_dataset() else None
+        except Exception:
+            td = None
+        if td is None:
+            return {"mode": "none"}
+        return {"mode": "all", "total": int(td.trials.shape[1]), "channel": td.channel_name}
+
+    @staticmethod
+    def format_trial_state(state) -> str:
+        if not state:
+            return ""
+        mode = state.get("mode")
+        total = int(state.get("total") or 0)
+        if mode == "none":
+            return "Sin trials generados"
+        if mode == "raw":
+            texto = "Señal continua (sin trials)"
+        elif mode == "single":
+            if state.get("discarded"):
+                orig = state.get("original_index")
+                texto = (f"Trial descartado (original {orig + 1})" if orig is not None
+                         else "Trial descartado")
+            else:
+                texto = f"Trial {state.get('position')} / {total}"
+        elif mode == "average":
+            texto = f"Promedio de {total} trials"
+        elif mode == "selection":
+            d = describe_trials(state.get("positions"), total)
+            texto = d[:1].upper() + d[1:]
+        else:
+            texto = f"Todos los trials ({total})"
+        channel = state.get("channel")
+        if channel and mode != "raw":
+            texto = f"{channel} · {texto}"
+        if state.get("note"):
+            texto = f"{texto} · {state['note']}"
+        return texto
+
+    def _update_trial_indicator(self, state):
+        label = self.ui.titleTrialLabel
+        texto = self.format_trial_state(state)
+        if not texto:
+            label.setVisible(False)
+            return
+        label.setText(texto)
+        label.setToolTip(
+            "Trial con el que se está trabajando.\n"
+            "Los trials se numeran por su posición entre los válidos (no descartados).")
+        self._set_severity(label, "warning" if state.get("discarded") else "info")
+        label.setVisible(True)
+
+    def on_open_signal_clicked(self):
+        """File > Open signal: show the channel/signal preview and pop the file picker."""
+        plugin = self.kernel.get_plugin("Open Signal")
+        if not plugin:
+            print("Plugin not found: Open Signal")
+            return
+
+        self.show_plugin_widget(plugin)
+        if hasattr(plugin, "open_file_dialog"):
+            plugin.open_file_dialog()
+
+    '''Sidebar'''
+
+    def on_kernel_event(self, topic: str, payload: object):
+        """
+        Listen to events emitted by the Kernel.
+        """
+        if topic == "signal_added":
+            print(f"New signal added: {payload}")
+            if getattr(self, "_senal_para_proyecto_en_blanco", False):
+                self._senal_para_proyecto_en_blanco = False
+                if self.project_service.is_open:
+                    self.project_service.mark_dirty()
+                    self._update_title_bar_project_name()
+            self.update_signal_list()
+            self._update_background_logo_visibility()
+            self._update_title_bar_signal_name()
+        elif topic == "signal_active_changed":
+            self._update_background_logo_visibility()
+            self._update_title_bar_signal_name()
+        elif topic in ("trials_generated", "trial_discard_updated"):
+            self._update_background_logo_visibility()
+        elif topic == "current_trial_changed":
+            if (isinstance(payload, dict) and self.active_plugin is not None
+                    and payload.get("plugin") == self.active_plugin.name()):
+                self._update_trial_indicator(payload)
+            return
+
+        if topic in ("signal_added", "signal_active_changed",
+                     "trials_generated", "trial_discard_updated"):
+            self._refresh_trial_indicator()
+
+    def setup_sidebar_functionality(self):
+        sidebar = self.ui.widget_3
+        sidebar.setMaximumWidth(16777215)
+        sidebar.setMinimumWidth(0)
+        self.ui.splitter_3.setSizes([0, 9999])
+        self._sidebar_collapsed = True
+        """Initialize and connect all sidebar functions."""
+        self.ui.nav_explorer_btn.clicked.connect(lambda: self.toggle_sidebar_collapse(sidebar))
+        self.ui.help_nav_btn.clicked.connect(lambda: self.on_button_click("Help"))
+        self.ui.nav_results_btn.clicked.connect(self.toggle_results_panel)
+        self.ui.resultsCloseBtn.clicked.connect(lambda: self.ui.resultsPanel.setVisible(False))
+        results_menu = QMenu(self.ui.resultsMenuBtn)
+        results_menu.addAction("Export CSV", self._on_export_results_csv)
+        results_menu.addAction("Export Excel (.xlsx)", self._on_export_results_xlsx)
+        self.ui.resultsMenuBtn.setMenu(results_menu)
+        self.ui.resultsMenuBtn.setPopupMode(QToolButton.InstantPopup)
+
+        self.update_signal_list()
+
+        self.setup_explorer_section()
+
+    def toggle_sidebar_collapse(self, sidebar):
+        is_collapsed = getattr(self, "_sidebar_collapsed", False)
+        splitter = self.ui.splitter_3
+
+        if not is_collapsed:
+            current_width = sidebar.width()
+            if current_width > 0:
+                self._last_sidebar_width = current_width
+
+            sidebar.setMinimumWidth(0)
+            splitter.setSizes([0, 9999])
+            self._sidebar_collapsed = True
+
+        else:
+            width = getattr(self, "_last_sidebar_width", 560)
+
+            sidebar.setMinimumWidth(100)
+            sidebar.setMaximumWidth(16777215)
+            splitter.setSizes([width, 9999])
+            self._sidebar_collapsed = False
+
+
+    def update_signal_list(self):
+        """Update logo/watermark visibility depending on loaded signals."""
+        self._update_background_logo_visibility()
+
+    def toggle_results_panel(self):
+        """Show/hide the bottom Results panel, refreshing its data on open."""
+        panel = self.ui.resultsPanel
+        showing = not panel.isVisible()
+        panel.setVisible(showing)
+        if showing:
+            self._ensure_results_tabs()
+            self.refresh_results_panel()
+
+    def _ensure_results_tabs(self):
+        """Embed the real Slope/Amplitude plugin widgets (full table + CSV export) as tabs."""
+        if self.ui.resultsTabs.count() > 0:
+            return
+        for tab_label, plugin_name in (("Slope", "Slope Results"), ("Difference", "Difference Results"),
+                                       ("Amplitude", "Amplitude Results")):
+            plugin = self.kernel.get_plugin(plugin_name)
+            if not plugin:
+                continue
+            if not getattr(plugin, "started", False):
+                try:
+                    plugin.start(self.kernel)
+                    plugin.started = True
+                except Exception as e:
+                    print(f"Error starting {plugin_name}:", e)
+            try:
+                widget = plugin.get_widget(parent=self.ui.resultsTabs)
+            except Exception as e:
+                print(f"Error building {plugin_name} widget:", e)
+                continue
+            self.ui.resultsTabs.addTab(widget, tab_label)
+            self.plugin_widgets[plugin_name] = widget
+
+    def refresh_results_panel(self):
+        """Reload both results tables from DataStore['measurements']."""
+        for plugin_name in self.RESULT_PLUGINS:
+            plugin = self.kernel.get_plugin(plugin_name)
+            if plugin:
+                try:
+                    plugin.process(None)
+                except Exception as e:
+                    print(f"refresh {plugin_name} error:", e)
+
+    def _on_export_results_csv(self):
+        """'...' menu: export whichever results tab (Slope/Amplitude) is active."""
+        widget = self.ui.resultsTabs.currentWidget()
+        if widget is None:
+            return
+        for plugin_name in self.RESULT_PLUGINS:
+            plugin = self.kernel.get_plugin(plugin_name)
+            if plugin and getattr(plugin, "widget", None) is widget:
+                plugin.export_csv()
+                return
+
+    def _on_export_results_xlsx(self):
+        """'...' menu: export whichever results tab (Slope/Amplitude) is active to Excel."""
+        widget = self.ui.resultsTabs.currentWidget()
+        if widget is None:
+            return
+        for plugin_name in self.RESULT_PLUGINS:
+            plugin = self.kernel.get_plugin(plugin_name)
+            if plugin and getattr(plugin, "widget", None) is widget:
+                plugin.export_xlsx()
+                return
+
+    def setup_explorer_section(self):
+        """Build the Explorer: one file tree per open project folder, stacked vertically."""
+        container = self.ui.explorer_QWidget
+        layout = container.layout()
+        if layout is None:
+            layout = QVBoxLayout(container)
+            layout.setContentsMargins(0, 0, 0, 0)
+
+        self.explorer_stack = QStackedWidget(container)
+
+        self.explorer_placeholder = QLabel(
+            "No project open.\nSave or open a project to see its folder here.", container
+        )
+        self.explorer_placeholder.setObjectName("explorerPlaceholder")
+        self.explorer_placeholder.setAlignment(Qt.AlignCenter)
+        self.explorer_placeholder.setWordWrap(True)
+
+        self.explorer_splitter = QSplitter(Qt.Vertical, container)
+        self.explorer_splitter.setChildrenCollapsible(False)
+        self.explorer_arboles = {}
+
+        self.explorer_stack.addWidget(self.explorer_placeholder)
+        self.explorer_stack.addWidget(self.explorer_splitter)
+        self.explorer_stack.setCurrentWidget(self.explorer_placeholder)
+
+        layout.addWidget(self.explorer_stack)
+
+    def _crear_arbol_proyecto(self, carpeta: Path):
+        arbol = ArbolProyecto(carpeta, self.explorer_splitter)
+        arbol.doubleClicked.connect(partial(self._on_explorer_double_clicked, arbol))
+        arbol.customContextMenuRequested.connect(partial(self._on_explorer_context_menu, arbol))
+        self.explorer_splitter.addWidget(arbol)
+        return arbol
+
+    def _refrescar_explorer(self):
+        """Un árbol por cada carpeta con un proyecto abierto; el activo en negrita."""
+        self._depurar_proyectos_abiertos()
+        carpetas = {}
+        for glab in self._proyectos_abiertos:
+            carpetas.setdefault(clave_ruta(glab.parent), glab.parent)
+
+        for clave in list(self.explorer_arboles):
+            if clave not in carpetas:
+                arbol = self.explorer_arboles.pop(clave)
+                arbol.setParent(None)
+                arbol.deleteLater()
+        for clave, carpeta in carpetas.items():
+            if clave not in self.explorer_arboles:
+                self.explorer_arboles[clave] = self._crear_arbol_proyecto(carpeta)
+
+        activo = self.project_service.glab_path
+        for arbol in self.explorer_arboles.values():
+            arbol.marcar_activo(activo)
+        destino = self.explorer_splitter if self.explorer_arboles else self.explorer_placeholder
+        self.explorer_stack.setCurrentWidget(destino)
+
+    def _on_explorer_double_clicked(self, arbol, index):
+        """Double-click: a .glab switches to that project; any other file opens in its OS app."""
+        if not index.isValid() or arbol.modelo.isDir(index):
+            return
+        path = arbol.modelo.filePath(index)
+        if path.lower().endswith(".glab"):
+            self.cambiar_a_proyecto(path)
+            return
+        QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+
+    def _on_explorer_context_menu(self, arbol, pos):
+        """Right-click in the Explorer: item -> Rename/Copy/Paste; empty space -> New Folder."""
+        index = arbol.indexAt(pos)
+        menu = QMenu(arbol)
+
+        if index.isValid():
+            rename_action = menu.addAction("Rename")
+            copy_action = menu.addAction("Copy")
+            paste_action = menu.addAction("Paste")
+            paste_action.setEnabled(QApplication.clipboard().mimeData().hasUrls())
+            duplicate_action = None
+            ruta_item = arbol.modelo.filePath(index)
+            if arbol.modelo.isDir(index) and self._glabs_de_carpeta(ruta_item):
+                duplicate_action = menu.addAction("Duplicate project")
+            menu.addSeparator()
+            delete_action = menu.addAction("Delete")
+
+            chosen = menu.exec_(arbol.viewport().mapToGlobal(pos))
+            if chosen is not None and chosen == duplicate_action:
+                self.duplicar_proyecto_de_carpeta(ruta_item)
+            elif chosen == rename_action:
+                arbol.edit(index)
+            elif chosen == copy_action:
+                self._explorer_copy_path(arbol, index)
+            elif chosen == paste_action:
+                path = Path(arbol.modelo.filePath(index))
+                target_dir = path if arbol.modelo.isDir(index) else path.parent
+                self._explorer_paste_into(target_dir)
+            elif chosen == delete_action:
+                self._explorer_delete_path(arbol, index)
+        else:
+            new_folder_action = menu.addAction("New Folder")
+            paste_action = menu.addAction("Paste")
+            paste_action.setEnabled(QApplication.clipboard().mimeData().hasUrls())
+
+            chosen = menu.exec_(arbol.viewport().mapToGlobal(pos))
+            if chosen == new_folder_action:
+                self._explorer_create_new_folder(arbol)
+            elif chosen == paste_action:
+                self._explorer_paste_into(arbol.carpeta)
+
+    def _explorer_copy_path(self, arbol, index):
+        """Put the file/folder's path on the system clipboard as a file URL."""
+        path = arbol.modelo.filePath(index)
+        mime = QMimeData()
+        mime.setUrls([QUrl.fromLocalFile(path)])
+        QApplication.clipboard().setMimeData(mime)
+
+    def _explorer_delete_path(self, arbol, index):
+        """Delete a file/folder from the Explorer, after confirmation."""
+        path = Path(arbol.modelo.filePath(index))
+        is_dir = arbol.modelo.isDir(index)
+        kind = "folder" if is_dir else "file"
+        reply = QMessageBox.warning(
+            self, "Delete",
+            f"Are you sure you want to delete this {kind}?\n\n{path}",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
+        if reply != QMessageBox.Yes:
+            return
+        try:
+            if is_dir:
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+        except Exception as e:
+            self.alerts.error(f"Could not delete '{path.name}':\n{e}", "Delete")
+            return
+        self._refrescar_explorer()
+
+    def _explorer_paste_into(self, target_dir: Path):
+        """Copy whatever file/folder is on the clipboard into target_dir."""
+        mime = QApplication.clipboard().mimeData()
+        if not mime.hasUrls():
+            return
+        for url in mime.urls():
+            src = Path(url.toLocalFile())
+            if not src.exists():
+                continue
+            dest = self._explorer_unique_path(target_dir / src.name)
+            try:
+                if src.is_dir():
+                    shutil.copytree(src, dest)
+                else:
+                    shutil.copy2(src, dest)
+            except Exception as e:
+                self.alerts.error(f"Could not paste '{src.name}':\n{e}", "Paste")
+
+    def _explorer_create_new_folder(self, arbol):
+        """New Folder in that tree's project folder, ready to rename."""
+        dest = self._explorer_unique_path(arbol.carpeta / "New Folder")
+        parent_index = arbol.modelo.index(str(arbol.carpeta))
+        new_index = arbol.modelo.mkdir(parent_index, dest.name)
+        if new_index.isValid():
+            arbol.setCurrentIndex(new_index)
+            arbol.edit(new_index)
+
+    @staticmethod
+    def _explorer_unique_path(path: Path) -> Path:
+        """Append ' (2)', ' (3)', ... if `path` already exists."""
+        if not path.exists():
+            return path
+        stem, suffix, parent = path.stem, path.suffix, path.parent
+        n = 1
+        while True:
+            n += 1
+            candidate = parent / f"{stem} ({n}){suffix}"
+            if not candidate.exists():
+                return candidate
+
+    def _on_app_about_to_quit(self):
+        """Shut down plugins and their UI safely. Idempotent."""
+        if self._app_quitting:
+            return
+        self._app_quitting = True
+
+        try:
+            self._cancel_all_tasks()
+        except Exception as e:
+            print("cancel tasks on quit error:", e)
+
+        try:
+            import vtk
+            vtk.vtkObject.GlobalWarningDisplayOff()
+        except Exception:
+            pass
+
+        try:
+            self._finalize_all_vtk_render_windows()
+        except Exception as e:
+            print("finalize VTK windows error:", e)
+
+        try:
+            for name, w in list(self.plugin_widgets.items()):
+                if w is not None:
+                    w.setVisible(False)
+            self.plugin_widgets.clear()
+            self.active_plugin_widget = None
+            self.active_plugin = None
+        except Exception as e:
+            print("cleanup widgets error:", e)
+
+    def _finalize_all_vtk_render_windows(self, plugin_names=None):
+        from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
+        if plugin_names is None:
+            plugin_names = self.kernel.get_plugins()
+        for name in plugin_names:
+            plugin = self.kernel.get_plugin(name)
+            if plugin is None or getattr(plugin, "widget", None) is None:
+                continue
+            for attr_value in list(vars(plugin).values()):
+                if isinstance(attr_value, QVTKRenderWindowInteractor):
+                    try:
+                        render_window = attr_value.GetRenderWindow()
+                        if render_window is not None:
+                            render_window.Finalize()
+                    except Exception as e:
+                        print(f"Finalize() error for plugin '{name}':", e)
+
+    def closeEvent(self, event):
+        if not self._confirm_discard_unsaved_changes():
+            event.ignore()
+            return
+        self._on_app_about_to_quit()
+        super().closeEvent(event)
+
+    def _get_registered_plugin_names(self):
+        """Obtiene los nombres de todos los plugins registrados (cualquier categoría)."""
+        return sorted(self.kernel.get_plugins())
+
+
+    def setup_plugin_search(self):
+        """Configura el autocompletado y la navegación."""
+        self._search_completer = QCompleter(
+            self._get_registered_plugin_names(), self
+        )
+        self._search_completer.setCaseSensitivity(
+            Qt.CaseInsensitive
+        )
+        self._search_completer.setFilterMode(
+            Qt.MatchContains
+        )
+        self._search_completer.setCompletionMode(
+            QCompleter.PopupCompletion
+        )
+
+        self.ui.searchLineEdit.setCompleter(
+            self._search_completer
+        )
+
+        self._search_completer.activated[str].connect(
+            self._open_plugin_from_search
+        )
+
+        self.ui.searchLineEdit.returnPressed.connect(
+            self._search_exact_plugin
+        )
+
+
+    def _open_plugin_from_search(self, name):
+        """Abre el plugin seleccionado en las sugerencias."""
+        self.ui.searchLineEdit.clear()
+        self.on_button_click(name)
+
+
+    def _search_exact_plugin(self):
+        """Abre el plugin si el texto coincide con su nombre."""
+        query = self.ui.searchLineEdit.text().strip().casefold()
+
+        if not query:
+            return
+
+        for name in self._get_registered_plugin_names():
+            if name.casefold() == query:
+                self._open_plugin_from_search(name)
+                return

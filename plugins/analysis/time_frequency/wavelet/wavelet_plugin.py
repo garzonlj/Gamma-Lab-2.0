@@ -1,0 +1,555 @@
+from functools import partial
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from vtkmodules.util import numpy_support
+import vtk
+import numpy as np
+
+from core.utils.emf_writer import anotar_mapa
+from core.utils.mapa_zoom import MapaConZoom
+from core.utils.rango_color import (AVISO_RANGO_INVALIDO, guardar_rango, leer_rango, limites_color,
+                                    mapa_en_pantalla, mostrar_rango_automatico, rango_manual_invalido,
+                                    recolorear, restaurar_rango)
+from core.utils.heatmap_export import secciones_de_mapa
+from core.plugins.interfaces import IPlugin
+from core.plugins.meta import PluginMeta
+from core.utils.vtk_context_menu import VTKContextMenu
+from core.utils.trial_labels import trials_used
+from core.model.signal_dataset import SignalDataset
+from core.services.data_store import DataStore
+from plugins.analysis.time_frequency.wavelet import compute as cw
+from plugins.analysis.time_frequency.wavelet.wavelet_plugin_ui import Ui_Wavelet
+
+
+class Wavelet_plugin(IPlugin):
+    """Time-Frequency Analysis Plugin (Wavelet CWT with PyWavelets + VTK Visualization)"""
+
+    def __init__(self, meta: PluginMeta):
+        super().__init__(meta)
+        self.vtk_widget = None
+        self.renwin = None
+        self.ui = None
+        self.vtk_menu = None
+        self._ultimo = None
+        self._contexto = {}
+        self._context_view = None
+        self._vtk_renderer = None
+        self._handle = None
+        self._calculando = False
+        self.params = {
+            "sample_density_range": (1, 200_000),
+            "frequencies_range": (0, 10000),
+            "sample_density_value": None,
+            "high_frequency_value": 500,
+            "low_frequency_value": 1,
+            "cycles_range": (1, 20),
+            "cycles_value": 2
+        }
+        self._densidad_automatica = True
+        self._poniendo_densidad = False
+
+    DENSIDAD_SIN_SENAL = 1000
+
+    def _densidad_por_defecto(self):
+        """La tasa del archivo de los trials activos, o DENSIDAD_SIN_SENAL si aún no hay."""
+        _, td = self._active_trials_quiet()
+        t = getattr(td, "time_rel", None)
+        if t is None or len(t) < 2 or not (t[1] - t[0]) > 0:
+            return self.DENSIDAD_SIN_SENAL
+        lo, hi = self.params["sample_density_range"]
+        return int(min(max(round(1.0 / (t[1] - t[0])), lo), hi))
+
+    def _poner_densidad(self, valor):
+        """Pone la densidad sin contarla como un cambio del usuario."""
+        self._poniendo_densidad = True
+        try:
+            self.ui.sampleDensitySpinBox.setValue(int(valor))
+        finally:
+            self._poniendo_densidad = False
+        self._densidad_automatica = True
+
+    def _al_cambiar_densidad(self, *_):
+        if not self._poniendo_densidad:
+            self._densidad_automatica = False
+
+
+    def process(self, data: any):
+        if self.vtk_widget:
+            self.vtk_widget.Enable()
+
+        if self.vtk_widget and self.vtk_widget.GetRenderWindow():
+            interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
+            interactor.Enable()
+
+    def stop(self):
+        if self.vtk_widget and self.vtk_widget.GetRenderWindow():
+            interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
+            if interactor:
+                interactor.Disable()
+
+    def get_widget(self, parent=None):
+        if self.widget is not None:
+            self.widget.setParent(parent)
+            return self.widget
+
+        self.widget = QWidget(parent)
+        self.ui = Ui_Wavelet()
+        self.ui.setupUi(self.widget)
+        self.alerts.parent = self.widget
+        self.crear_selector_de_trials(unico=True)
+
+        self.init_controls()
+        self.ensure_vtk()
+
+
+        return self.widget
+
+    def init_controls(self):
+        self.ui.sampleDensitySpinBox.setRange(*self.params["sample_density_range"])
+        self._poner_densidad(self._densidad_por_defecto())
+        self.ui.sampleDensitySpinBox.valueChanged.connect(self._al_cambiar_densidad)
+        self.ui.highFrequencySpinBox.setRange(*self.params["frequencies_range"])
+        self.ui.highFrequencySpinBox.setValue(self.params["high_frequency_value"])
+        self.ui.lowFrequencySpinBox.setRange(*self.params["frequencies_range"])
+        self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
+        self.ui.cyclesSpinBox.setRange(*self.params["cycles_range"])
+        self.ui.cyclesSpinBox.setValue(self.params["cycles_value"])
+
+        self.ui.normalizeComboBox.setEnabled(False)
+        self.ui.normalizeComboBox.addItems(["Z-Score", "Percent change", "Relative power", "Min-Max"])
+        self.ui.normalizeCheckBox.stateChanged.connect(
+            lambda state: self.ui.normalizeComboBox.setEnabled(state == Qt.Checked)
+        )
+
+        self.ui.scaleComboBox.setEnabled(False)
+        self.ui.scaleComboBox.addItems(["Log"])
+        self.ui.scaleCheckBox.stateChanged.connect(
+            lambda state: self.ui.scaleComboBox.setEnabled(state == Qt.Checked)
+        )
+        for señal in (self.ui.colorRangeCheckBox.toggled, self.ui.colorMinSpinBox.editingFinished,
+                      self.ui.colorMaxSpinBox.editingFinished):
+            señal.connect(self._redibujar_color)
+
+        self.ui.createWaveletButton.clicked.connect(self.on_create_wavelet)
+        self.ui.clearButton.clicked.connect(self._on_clear_clicked)
+
+    def _on_clear_clicked(self):
+        if self._calculando:
+            self.alerts.warning("Hay un cálculo de wavelet en curso; espera a que termine.")
+            return
+        self._poner_densidad(self._densidad_por_defecto())
+        self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
+        self.ui.highFrequencySpinBox.setValue(self.params["high_frequency_value"])
+        self.ui.cyclesSpinBox.setValue(self.params["cycles_value"])
+        self.ui.normalizeCheckBox.setChecked(False)
+        self.ui.normalizeComboBox.setCurrentIndex(0)
+        self.ui.scaleCheckBox.setChecked(False)
+        self.ui.scaleComboBox.setCurrentIndex(0)
+        self.ui.colorRangeCheckBox.setChecked(False)
+
+    def ensure_vtk(self):
+        """Initialize VTK components for rendering."""
+        try:
+            if self.vtk_widget and self._context_view and self.renwin:
+                return
+
+            if not self.vtk_widget:
+                vtk_layout = QVBoxLayout(self.ui.plotArea)
+                vtk_layout.setContentsMargins(0, 0, 0, 0)
+
+                self.vtk_widget = QVTKRenderWindowInteractor(self.ui.plotArea)
+                vtk_layout.addWidget(self.vtk_widget)
+
+            if not self.renwin:
+                self.renwin = self.vtk_widget.GetRenderWindow()
+
+            if not self._context_view:
+                self._context_view = vtk.vtkContextView()
+                self._context_view.SetRenderWindow(self.renwin)
+
+            renderer = self._context_view.GetRenderer()
+            renderer.SetBackground(0.98, 0.98, 0.98)
+            self._vtk_renderer = renderer
+
+            interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
+            if interactor and not interactor.GetInitialized():
+                interactor.Initialize()
+
+        except Exception as e:
+            self._log("Error ensure_vtk:", e)
+
+    
+    def on_create_wavelet(self):
+        """ Load active signal, compute CWT wavelet and render scalogram in VTK """
+        tasks = self.kernel.get_service("TaskService") if self.kernel else None
+        if tasks is None:
+            self.alerts.error("El servicio de tareas no está disponible.")
+            return
+
+        signal = self.get_active_signal()
+        if signal is None:
+            return
+
+        trials = self.get_active_trials()
+        if trials is None:
+            return
+        self._contexto = {"señal": signal.name, "canal": getattr(trials, "channel_name", None)}
+        
+        t = trials.time_rel
+        if t is None or len(t) < 2:
+            self.alerts.error(f"No hay suficiente información de tiempo en {signal.name}.")
+            return
+
+        n_total = trials.trials.shape[1] if trials.trials.ndim == 2 else 1
+        self.selector_trials.establecer_total(n_total)
+        marcados = self.selector_trials.posiciones()
+        posicion = marcados[0] if marcados else 1
+        try:
+            sig = trials.trials[:, posicion - 1] if trials.trials.ndim == 2 else np.ravel(trials.trials)
+        except Exception:
+            sig = np.array(trials.trials, dtype=float).ravel()
+        self._trials_en_curso = trials_used([posicion], n_total, "single", channel=trials.channel_name)
+
+        sig = np.nan_to_num(np.asarray(sig).flatten(), nan=0.0, posinf=0.0, neginf=0.0)
+        fs_calculado = round(1.0 / (t[1] - t[0]), 3)
+
+        if self._densidad_automatica:
+            lo, hi = self.params["sample_density_range"]
+            self._poner_densidad(min(max(round(fs_calculado), lo), hi))
+        fs = self.ui.sampleDensitySpinBox.value()
+        fmin = self.ui.lowFrequencySpinBox.value()
+        fmax = self.ui.highFrequencySpinBox.value()
+        cycles = float(self.ui.cyclesSpinBox.value())
+        normalize = self.ui.normalizeCheckBox.isChecked()
+        scaled = self.ui.scaleCheckBox.isChecked()
+        norm_method = self.ui.normalizeComboBox.currentText().lower()
+
+        if fs <= 0:
+            self.alerts.warning("La densidad de muestreo debe ser mayor que cero.")
+            return
+        if fmin <= 0:
+            self.alerts.warning("La frecuencia baja debe ser mayor que cero.")
+            return
+        if fmax <= fmin:
+            self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
+            return
+
+        fs_efectiva, _ = cw.tasa_efectiva(fs_calculado, fs)
+        if fmax > fs_efectiva / 2:
+            self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
+                              f"la mitad de la densidad efectiva ({fs_efectiva:g} Hz).")
+            return
+        if abs(fs_efectiva - fs) > 1e-4 * fs:
+            self.alerts.info(f"La densidad de {fs:g} Hz no divide a los {fs_calculado:g} Hz del archivo; "
+                             f"se usará {fs_efectiva:.1f} Hz, la más cercana alcanzable.")
+
+        tasks.cancel_all_from(self.meta.id)
+        self._terminar_calculo()
+        self.stop()
+
+        self._calculando = True
+        self.ui.createWaveletButton.setEnabled(False)
+        self.ui.createWaveletButton.setText("Computing...")
+
+        handle = tasks.submit(
+            cw.wavelet_individual, owner=self.meta.id,
+            sig=sig, fs_calculado=fs_calculado, fs=fs, fmin=fmin, fmax=fmax,
+            cycles=cycles, normalize=normalize, scaled=scaled,
+            norm_method=norm_method, t0=float(t[0]),
+        )
+        self._handle = handle
+        self._anotar_si_restaura(handle)
+        handle.progress.connect(partial(self._on_wavelet_progress, handle))
+        handle.finished.connect(partial(self._on_wavelet_done, handle))
+        handle.failed.connect(partial(self._on_wavelet_failed, handle))
+        handle.cancelled.connect(partial(self._on_wavelet_cancelled, handle))
+
+    def _terminar_calculo(self):
+        self._calculando = False
+        self._handle = None
+        if self.ui is not None:
+            self.ui.createWaveletButton.setEnabled(True)
+            self.ui.createWaveletButton.setText("Generate")
+
+    def _on_wavelet_progress(self, handle, percent, message):
+        if handle is not self._handle:
+            return
+        self._log(f"{message} ({percent}%)")
+        self._notify(f"{message} ({percent}%)")
+
+    def _on_wavelet_failed(self, handle, message):
+        if handle is not self._handle:
+            return
+        self._terminar_calculo()
+        self.alerts.error(f"No se pudo calcular la wavelet: {message}")
+
+    def _on_wavelet_cancelled(self, handle):
+        if handle is not self._handle:
+            return
+        self._terminar_calculo()
+
+    def _on_wavelet_done(self, handle, result):
+        """Se ejecuta ya en el hilo de la interfaz."""
+        if handle is not self._handle:
+            return
+        try:
+            if self.ui is None:
+                return
+            times, freqs, scalogram, scaled = result
+            self._ultimo = {"parametros": {"señal": self._contexto.get("señal"), "canal": self._contexto.get("canal"),
+                                          **self.get_analysis_params()},
+                            "frecuencias": np.asarray(freqs), "tiempos": np.asarray(times),
+                            "matriz": np.asarray(scalogram), "logaritmica": scaled,
+                            "titulo": "Scalogram Wavelet (Morlet)"}
+
+            self.ensure_vtk()
+
+            usados = getattr(self, "_trials_en_curso", None)
+            titulo = "Scalogram Wavelet (Morlet)"
+            if usados:
+                titulo += f" — {usados['label']}"
+            self._ultimo["titulo"] = titulo
+            self.render_scalogram(times, freqs, scalogram, titulo, scaled)
+            self._trials_used = usados
+            if usados:
+                self._notify(f"Wavelet calculada con {usados['label']} ({usados['channel']})")
+            self.publish_current_trial()
+            self.mark_project_dirty(handle)
+        except Exception as e:
+            self._log("render_scalogram:", e)
+            self.alerts.error(f"No se pudo dibujar el escalograma: {e}")
+        finally:
+            self._terminar_calculo()
+            self.process("Done")
+
+    def current_trial_state(self):
+        """Wavelet siempre calcula sobre el primer trial valido."""
+        _, td = self._active_trials_quiet()
+        if td is None:
+            return None
+        return self.build_trial_state("single", position=1, total=int(td.trials.shape[1]),
+                                      channel=td.channel_name)
+
+    def get_analysis_params(self) -> dict:
+        return {
+            "sample_density": self.ui.sampleDensitySpinBox.value(),
+            "low_freq": self.ui.lowFrequencySpinBox.value(),
+            "high_freq": self.ui.highFrequencySpinBox.value(),
+            "cycles": self.ui.cyclesSpinBox.value(),
+            "normalize_enabled": self.ui.normalizeCheckBox.isChecked(),
+            "normalize_mode": self.ui.normalizeComboBox.currentText(),
+            "scale_enabled": self.ui.scaleCheckBox.isChecked(),
+            "scale_mode": self.ui.scaleComboBox.currentText(),
+            **guardar_rango(self.ui),
+            "trials_used": self._trials_used,
+        }
+
+    def apply_analysis_params(self, params: dict):
+        self.ui.sampleDensitySpinBox.setValue(params.get("sample_density", self.ui.sampleDensitySpinBox.value()))
+        self.ui.lowFrequencySpinBox.setValue(params.get("low_freq", self.ui.lowFrequencySpinBox.value()))
+        self.ui.highFrequencySpinBox.setValue(params.get("high_freq", self.ui.highFrequencySpinBox.value()))
+        self.ui.cyclesSpinBox.setValue(params.get("cycles", self.ui.cyclesSpinBox.value()))
+
+        self.ui.normalizeCheckBox.setChecked(params.get("normalize_enabled", False))
+        idx = self.ui.normalizeComboBox.findText(params.get("normalize_mode", ""))
+        if idx >= 0:
+            self.ui.normalizeComboBox.setCurrentIndex(idx)
+
+        self.ui.scaleCheckBox.setChecked(params.get("scale_enabled", False))
+        idx = self.ui.scaleComboBox.findText(params.get("scale_mode", ""))
+        if idx >= 0:
+            self.ui.scaleComboBox.setCurrentIndex(idx)
+
+        restaurar_rango(self.ui, params)
+        self.on_create_wavelet()
+
+    def exportar_resultados(self, fmt: str):
+        """Exporta la matriz de la última ejecución, con los parámetros que la produjeron."""
+        if not self._ultimo or self.vtk_menu is None:
+            self.alerts.warning("Primero genera el análisis para poder exportar sus resultados.")
+            return
+        u = self._ultimo
+        params = dict(u["parametros"])
+        resumen = [["n_frecuencias", int(u["frecuencias"].size)], ["n_tiempos", int(u["tiempos"].size)],
+                   ["escala_logaritmica", bool(u["logaritmica"])]]
+        secciones = secciones_de_mapa(params, resumen, u["frecuencias"], u["tiempos"], u["matriz"],
+                                      fmt, nombre="Escalograma")
+        self.vtk_menu.export_service.export_sections(secciones, fmt)
+
+    def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles, escala_log=False, t0=0.0):
+        return cw.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles,
+                                  escala_log=escala_log, t0=t0)
+
+
+    def normalize_tf(self, tf, method="z-score"):
+        return cw.normalize_tf(tf, method, log=self._log)
+
+
+    def _scale_log(self, scalogram, freqs):
+        return cw.scale_log(scalogram, freqs, log=self._log)
+
+
+    def _get_log_ticks_coords(self, f_min_log, f_max_log):
+        """Marcas 1-2-5 de cada década; entradas y posiciones en log10, etiquetas en Hz."""
+        valores = [m * 10.0 ** k
+                   for k in range(int(np.floor(f_min_log)), int(np.ceil(f_max_log)) + 1)
+                   for m in (1, 2, 5)]
+        valores = [v for v in valores if f_min_log - 1e-9 <= np.log10(v) <= f_max_log + 1e-9]
+        if len(valores) < 2:
+            valores = [10 ** f_min_log, 10 ** f_max_log]
+
+        return np.log10(valores), [f"{v:.3g}" for v in valores]
+
+    def _redibujar_color(self, *_):
+        """R33: aplica el rango de color sin volver a calcular y sin perder el zoom."""
+        u = self._ultimo
+        if not u:
+            return
+        if rango_manual_invalido(self.ui):
+            self.alerts.warning(AVISO_RANGO_INVALIDO, "Color range")
+        chart = mapa_en_pantalla(self._context_view)
+        if chart is None:
+            self.render_scalogram(u["tiempos"], u["frecuencias"], u["matriz"], u["titulo"], u["logaritmica"])
+            return
+        vmin, vmax = limites_color(u["matriz"], *leer_rango(self.ui))
+        mostrar_rango_automatico(self.ui, vmin, vmax)
+        recolorear(chart, self._build_lut("viridis", vmin, vmax))
+        self._context_view.GetRenderWindow().Render()
+
+    def render_scalogram(self, t, freqs, scalogram, title="Scalogram", log_scale=False):
+        if not self.vtk_widget:
+            return
+
+        context_view = self._context_view
+        scene = context_view.GetScene()
+        scene.ClearItems()
+        
+        n_freqs, n_times = scalogram.shape
+        t0, t_end = float(t[0]), float(t[-1])
+        dt = (t_end - t0) / n_times if n_times > 1 else 1.0
+
+        f = np.asarray(freqs, dtype=float)
+        Z = np.nan_to_num(scalogram.astype(np.float32))
+        if f[0] > f[-1]:
+            Z = np.flipud(Z)
+            f = f[::-1]
+        if log_scale:
+            ax_title = "Frequency (Hz) - Log"
+            f0_range, f_end_range = float(np.log10(max(f[0], 1e-6))), float(np.log10(f[-1]))
+        else:
+            ax_title = "Frequency (Hz)"
+            f0_range, f_end_range = float(f[0]), float(f[-1])
+        df_spacing = (f_end_range - f0_range) / n_freqs if n_freqs > 1 else 1.0
+
+        Z = np.ascontiguousarray(Z, dtype=np.float32)
+        img = vtk.vtkImageData()
+        img.SetDimensions(n_times, n_freqs, 1)
+        img.SetSpacing(dt, df_spacing, 1.0)
+        img.SetOrigin(t0, f0_range, 0.0)
+        arr = numpy_support.numpy_to_vtk(Z.ravel(), deep=False, array_type=vtk.VTK_FLOAT)
+        img.GetPointData().SetScalars(arr)
+        img.Modified()
+
+        vmin, vmax = limites_color(Z, *leer_rango(self.ui))
+        mostrar_rango_automatico(self.ui, vmin, vmax)
+        lut = self._build_lut("viridis", vmin, vmax)
+        
+        chart = vtk.vtkChartHistogram2D()
+        chart.SetTransferFunction(lut)
+        anotar_mapa(chart, img, lut)
+
+        ax_bottom, ax_left = chart.GetAxis(vtk.vtkAxis.BOTTOM), chart.GetAxis(vtk.vtkAxis.LEFT)
+        ax_bottom.SetBehavior(vtk.vtkAxis.FIXED)
+        ax_bottom.SetTitle("Time (s)")
+        ax_bottom.SetRange(t0, t_end)
+
+        ax_left.SetTitle(ax_title)
+        ax_left.SetBehavior(vtk.vtkAxis.FIXED)
+        ax_left.SetLogScale(False)
+        ax_left.SetRange(f0_range, f_end_range)
+
+        chart.mapa_zoom = MapaConZoom(chart, Z, t0, dt, f0_range, df_spacing)
+
+        if log_scale:
+            tick_values, tick_labels = self._get_log_ticks_coords(f0_range, f_end_range) 
+            
+            tick_positions_array = vtk.vtkDoubleArray()
+            [tick_positions_array.InsertNextValue(float(pos)) for pos in tick_values]
+
+            tick_labels_array = vtk.vtkStringArray()
+            [tick_labels_array.InsertNextValue(label) for label in tick_labels]
+                
+            ax_left.SetCustomTickPositions(tick_positions_array, tick_labels_array) 
+            ax_left.SetNumberOfTicks(0)
+
+        else:
+            ax_left.SetTickLabelAlgorithm(vtk.vtkAxis.TICK_WILKINSON_EXTENDED)
+            ax_left.SetNumberOfTicks(-1)
+            ax_left.SetPrecision(2)
+
+        ax_bottom.GetLabelProperties().SetColor(0, 0, 0)
+        ax_left.GetLabelProperties().SetColor(0, 0, 0)
+
+        scene.AddItem(chart)
+        
+        try:
+            ctx = self._contexto
+            self.vtk_menu = VTKContextMenu(chart, self.vtk_widget, ctx.get("señal"), ctx.get("canal"),
+                                           "Wavelet", parent=self.widget)
+            for fmt in ("csv", "xlsx", "json"):
+                self.vtk_menu.add_action(f"Export Wavelet results ({fmt})", partial(self.exportar_resultados, fmt))
+            self.vtk_menu.set_datastore(self.kernel.get_service("DataStore"))
+
+        except Exception as e:
+            self.alerts.error(f"Error creating contextual menu\n {str(e)}", "Contextual menu")
+
+            
+        context_view.GetRenderer().SetBackground(0.98, 0.98, 0.98)
+        context_view.GetRenderWindow().Render()
+
+    def _build_lut(self, mode: str, vmin: float, vmax: float) -> vtk.vtkLookupTable:
+        N = 256
+        lut = vtk.vtkLookupTable()
+        lut.SetNumberOfTableValues(N)
+        lut.SetRange(vmin, vmax)
+        lut.Build()
+
+        for i in range(N):
+            t = i / (N - 1)
+
+            if t < 0.125:
+                r, g, b = 0, 0, 0.5 + 0.5 * (t / 0.125)
+            elif t < 0.375:
+                r, g, b = 0, (t - 0.125) / 0.25, 1
+            elif t < 0.625:
+                r, g, b = (t - 0.375) / 0.25, 1, 1 - (t - 0.375) / 0.25
+            elif t < 0.875:
+                r, g, b = 1, 1 - (t - 0.625) / 0.25, 0
+            else:
+                r, g, b = 1, 0.15 * (1 - (t - 0.875) / 0.125), 0
+
+            r = 0.9 * r + 0.03
+            g = 0.9 * g + 0.03
+            b = 0.9 * b + 0.03
+
+            lut.SetTableValue(i, r, g, b, 1.0)
+
+        return lut
+
+    def _lut_to_ctf(self, lut: vtk.vtkLookupTable) -> vtk.vtkColorTransferFunction:
+        ctf = vtk.vtkColorTransferFunction()
+        ctf.ClampingOn()
+        n = lut.GetNumberOfTableValues()
+        if n <= 0:
+            return ctf
+        vmin, vmax = lut.GetRange()
+        if vmax == vmin:
+            vmin -= 0.5
+            vmax += 0.5
+        for i in range(n):
+            rgba = lut.GetTableValue(i)
+            x = vmin + (vmax - vmin) * (i / (n - 1))
+            ctf.AddRGBPoint(x, *rgba[:3])
+        return ctf

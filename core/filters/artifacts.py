@@ -1,0 +1,270 @@
+"""Cálculo puro de la modificación de artefactos.
+
+Vive en core y no en la carpeta del plugin porque lo necesitan dos capas: el
+plugin `artifact_remove`, que lo manda al orquestador, y `ProjectService`, que
+reaplica las modificaciones guardadas al abrir un proyecto. Es la misma
+situación de `core/filters/trials.py`, que comparten plugins y servicios.
+
+Recibe arreglos de NumPy y devuelve arreglos de NumPy: no toca el Kernel, el
+DataStore ni ningún widget.
+"""
+import copy
+import dataclasses
+from typing import Tuple
+
+import numpy as np
+from scipy.interpolate import CubicSpline
+
+from core.filters.bandpass import filtrar_columnas
+
+
+def _time_window_indices(t: np.ndarray, a: float, b: float) -> Tuple[int, int]:
+    """Return indices [i_a, i_b) for window [a, b] (swap if b<a)."""
+    if b < a:
+        a, b = b, a
+    i_a = int(np.searchsorted(t, a, side="left"))
+    i_b = int(np.searchsorted(t, b, side="right"))
+    i_a = max(0, min(i_a, t.shape[0]))
+    i_b = max(0, min(i_b, t.shape[0]))
+    return i_a, i_b
+
+
+def _fill_nan_segments(t: np.ndarray, data: np.ndarray) -> np.ndarray:
+    """
+    Replace NaN/Inf segments column-wise using interpolation so downstream analysis
+    receives finite values. Uses np.interp which clamps to edge values when the
+    NaN block touches the start/end.
+    """
+    if not np.isnan(data).any():
+        return data
+
+    for col in range(data.shape[1]):
+        y = data[:, col]
+        valid = np.isfinite(y)
+        if valid.all():
+            continue
+        idx = np.where(valid)[0]
+        if idx.size == 0:
+            data[:, col] = 0.0
+            continue
+        data[:, col] = np.interp(t, t[idx], y[idx])
+    return data
+
+
+def medidas_del_segmento(t, trials, *, mode: str, point_a: float, point_b: float | None = None):
+    """Medidas del segmento que `calcular_modificacion` va a tocar, sin tocarlo.
+
+    Se calculan sobre el **promedio de los trials activos**, que es lo que el
+    usuario ve cuando elige el rango, y se muestran antes de aplicar el cambio
+    para que decida con criterio (R40). Usa la misma ventana que la modificación:
+    [A, B] si hay B, o desde el inicio hasta A en el modo de corte.
+
+    Devuelve None si la ventana no contiene muestras (rango fuera del trial).
+    """
+    t = np.asarray(t, dtype=float)
+    datos = np.asarray(trials, dtype=float)
+    if mode == "interpolate" or (point_b is not None and point_b != point_a):
+        i_a, i_b = _time_window_indices(t, point_a, point_b)
+    else:
+        i_a, i_b = 0, int(np.searchsorted(t, point_a, side="left"))
+    if i_b <= i_a:
+        return None
+
+    media = np.nanmean(datos, axis=1) if datos.ndim == 2 else datos
+    seg = media[i_a:i_b]
+    seg_t = t[i_a:i_b]
+    if not np.isfinite(seg).any():
+        return None
+    k_min, k_max = int(np.nanargmin(seg)), int(np.nanargmax(seg))
+    return {
+        "inicio_s": float(seg_t[0]), "fin_s": float(seg_t[-1]),
+        "duracion_s": float(seg_t[-1] - seg_t[0]), "n_muestras": int(i_b - i_a),
+        "n_trials": int(datos.shape[1]) if datos.ndim == 2 else 1,
+        "y_min": float(seg[k_min]), "y_max": float(seg[k_max]),
+        "amplitud_pp": float(seg[k_max] - seg[k_min]), "media": float(np.nanmean(seg)),
+        "x_en_min": float(seg_t[k_min]), "x_en_max": float(seg_t[k_max]),
+    }
+
+
+def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: float | None = None,
+                          ctx=None):
+    """
+    Devuelve una copia modificada de `trials` (muestras × trials activos), o None si
+    no hay nada que modificar o si se canceló.
+
+      - mode='blank' (alias 'cut'): NaN en [A, B], o hasta A si no hay B
+        (`point_b=None`). B = 0 es un punto como cualquier otro: antes se tomaba
+        como «sin B» y [-0,05; 0] borraba desde el inicio hasta A. Después
+        esos tramos se rellenan interpolando para que los análisis reciban valores finitos.
+      - mode='interpolate': rellena [A, B] con un spline cúbico natural cuando se puede;
+        si no, con una recta.
+
+    `ctx` lo inyecta el orquestador: permite cancelar entre trial y trial y reportar avance.
+    """
+    t = np.asarray(t)
+    Ns, T_act = trials.shape
+    out_active = trials.copy()
+
+    if mode in ("blank", "cut"):
+        if point_b is not None and point_b != point_a:
+            i_a, i_b = _time_window_indices(t, point_a, point_b)
+            if i_b > i_a:
+                out_active[i_a:i_b, :] = np.nan
+            else:
+                return None
+        else:
+            i_a = int(np.searchsorted(t, point_a, side="left"))
+            i_a = max(0, min(i_a, Ns))
+            if i_a > 0:
+                out_active[:i_a, :] = np.nan
+            else:
+                return None
+
+    elif mode == "interpolate":
+        if point_b is None:
+            raise ValueError("Para interpolar hace falta el punto B.")
+        if point_a == point_b:
+            raise ValueError("Los puntos A y B no pueden ser iguales para interpolar.")
+        i_a, i_b = _time_window_indices(t, point_a, point_b)
+        if i_b - i_a < 2:
+            return None
+        for j in range(T_act):
+            if ctx is not None and ctx.cancelled:
+                return None
+            y = out_active[:, j].copy()
+            valid = np.isfinite(y)
+            keep = valid.copy()
+            keep[i_a:i_b] = False
+
+            x_keep = t[keep]
+            y_keep = y[keep]
+
+            if x_keep.size >= 4:
+                try:
+                    spline = CubicSpline(x_keep, y_keep, bc_type='natural')
+                    y[i_a:i_b] = spline(t[i_a:i_b])
+                    out_active[:, j] = y
+                    if ctx is not None:
+                        ctx.progress(int(100 * (j + 1) / T_act), f"Trial {j + 1}/{T_act}")
+                    continue
+                except Exception:
+                    pass
+
+            if x_keep.size >= 2:
+                ya = np.interp(t[i_a], x_keep, y_keep)
+                yb = np.interp(t[i_b-1], x_keep, y_keep)
+                r = np.linspace(0.0, 1.0, i_b - i_a)
+                y[i_a:i_b] = ya + (yb - ya) * r
+                out_active[:, j] = y
+            if ctx is not None:
+                ctx.progress(int(100 * (j + 1) / T_act), f"Trial {j + 1}/{T_act}")
+    else:
+        raise ValueError(f"Modo de modificación desconocido: {mode}.")
+
+    return _fill_nan_segments(t, out_active)
+
+
+def crear_derivado(td):
+    """A copy of a TrialDataset that owns its data, to write a preprocessing result into (R79)."""
+    return dataclasses.replace(td, trials=np.array(td.trials, copy=True),
+                               metadata=copy.deepcopy(td.metadata or {}))
+
+
+VERSION_RECETA = 2
+
+
+def receta(mode: str, point_a: float, point_b: float | None, discarded) -> dict:
+    """Describe una modificación con lo justo para poder repetirla.
+
+    Los descartes vigentes van incluidos porque determinan qué columnas del
+    TrialDataset base se tocaron: sin ellos, reaplicar la receta sobre otro
+    conjunto de descartes modificaría columnas distintas.
+    """
+    return {
+        "mode": str(mode),
+        "point_a": float(point_a),
+        "point_b": None if point_b is None else float(point_b),
+        "discarded_indices": sorted(int(i) for i in (discarded or ())),
+        "version": VERSION_RECETA,
+    }
+
+
+def punto_b_de_receta(r: dict) -> float | None:
+    """El B de una receta guardada, leído como se aplicó al guardarla.
+
+    En las recetas anteriores a la versión 2, B = 0.0 significaba «sin B» en el
+    modo de anular: se respeta para que un proyecto viejo se reconstruya igual
+    que se guardó.
+    """
+    pb = r.get("point_b")
+    if pb is None:
+        return None
+    pb = float(pb)
+    if pb == 0.0 and r.get("version", 1) < 2 and r.get("mode") in ("blank", "cut"):
+        return None
+    return pb
+
+
+def receta_filtro(low: float, high: float, order: int, tipo: str, fs: float, discarded) -> dict:
+    """Receta de un filtrado aplicado a los trials (R79): se reaplica igual que las de artefactos."""
+    return {
+        "mode": "filter",
+        "low": float(low), "high": float(high), "order": int(order),
+        "type": str(tipo), "fs": float(fs),
+        "discarded_indices": sorted(int(i) for i in (discarded or ())),
+    }
+
+
+def columnas_activas(n_trials_total: int, discarded) -> list:
+    """Columnas del TrialDataset base que estaban activas con esos descartes."""
+    fuera = {int(i) for i in (discarded or ())}
+    return [i for i in range(int(n_trials_total)) if i not in fuera]
+
+
+def reaplicar_modificaciones(td, recetas) -> int:
+    """Reaplica en orden las modificaciones guardadas sobre un TrialDataset.
+
+    Se llama al abrir un proyecto, después de recortar los trials y de reaplicar
+    los descartes. Modifica `td.trials` en el sitio y devuelve cuántas recetas
+    llegaron a aplicarse. Una receta que no corresponde a estos datos se salta
+    sin interrumpir las demás.
+    """
+    if not recetas:
+        return 0
+
+    t = np.asarray(td.time_rel)
+    aplicadas = 0
+
+    for r in recetas:
+        try:
+            cols = columnas_activas(td.trials.shape[1], r.get("discarded_indices"))
+            if not cols:
+                continue
+            activos = np.array(td.trials[:, cols], copy=True)
+            if r.get("mode") == "filter":
+                salida = filtrar_columnas(activos, float(r["low"]), float(r["high"]), int(r["order"]),
+                                          float(r["fs"]), r.get("type", "butterworth"))
+            else:
+                salida = calcular_modificacion(
+                    t, activos,
+                    mode=r.get("mode", ""),
+                    point_a=float(r.get("point_a", 0.0)),
+                    point_b=punto_b_de_receta(r),
+                )
+            if salida is None:
+                continue
+            for k, col in enumerate(cols):
+                td.trials[:, col] = salida[:, k]
+            aplicadas += 1
+        except Exception:
+            continue
+
+    if aplicadas:
+        td.metadata = getattr(td, "metadata", None) or {}
+        td.metadata["modificaciones"] = list(recetas)
+        marcados = set()
+        for r in recetas:
+            marcados.update(columnas_activas(td.trials.shape[1], r.get("discarded_indices")))
+        td.metadata["modified_trials"] = marcados
+
+    return aplicadas

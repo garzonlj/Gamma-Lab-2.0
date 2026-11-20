@@ -1,0 +1,1277 @@
+\documentclass{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{xcolor}
+\usepackage{indentfirst}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{longtable}
+\usepackage{hyperref}
+\definecolor{titleblue}{RGB}{31,73,125}
+
+
+\setlength{\parskip}{6pt}        % espacio entre párrafos
+\raggedbottom
+
+\title{PMP}
+\author{Gamma Lab 2.0}
+\date{May 2026}
+% Evita lineas que se salen del margen
+\setlength{\emergencystretch}{3em}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+% ============================================================================
+% PORTADA: GAMMALAB 2.0 - COMPLETAMENTE LIMPIA
+% Sin HTML, sin tikz, sin problemas
+% ============================================================================
+
+%=====================================================================
+%  PORTADA (misma estructura que la Memoria: caratula + paginas i a iii)
+%  Los datos usan \providecommand: si el documento ya los define, se
+%  respetan sus valores.
+%=====================================================================
+\providecommand{\tituloProyecto}{GAMMA LAB 2.0}
+\providecommand{\grupo}{Grupo 12}
+\providecommand{\autorUno}{Juan Felipe Romero Ortiz}
+\providecommand{\autorDos}{Laura Juliana Garzón Arias}
+\providecommand{\autorTres}{Sebastián Almanza Galvis}
+\providecommand{\autorCuatro}{Xiomara Herrera Suárez}
+\providecommand{\leyendaGrado}{MEMORIA DE PROYECTO DE GRADO REALIZADO PARA CUMPLIR UNO DE
+LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
+\providecommand{\director}{Ing. Cécile Gauthier Umaña}
+\providecommand{\juradoUno}{Ing. Nombre del Primer Jurado}
+\providecommand{\juradoDos}{Ing. Nombre del Segundo Jurado}
+\providecommand{\universidad}{PONTIFICIA UNIVERSIDAD JAVERIANA}
+\providecommand{\universidadNombre}{Pontificia Universidad Javeriana}
+\providecommand{\facultad}{FACULTAD DE INGENIERÍA}
+\providecommand{\programa}{PROGRAMA DE INGENIERÍA DE SISTEMAS}
+\providecommand{\ciudad}{BOGOTÁ, D.C.}
+\providecommand{\anio}{2026}
+\providecommand{\fechaLarga}{Noviembre, 2026}
+\providecommand{\rector}{Nombre del Rector, S.J.}
+\providecommand{\decano}{Ing. Nombre del Decano de la Facultad}
+\providecommand{\directorDepto}{Ing. Nombre del Director de Departamento, Ph.D.}
+\providecommand{\directorCarrera}{Ing. Nombre de la Directora de Carrera}
+
+\pagenumbering{alph}% la caratula no comparte destino PDF con la pagina 1
+\begingroup\setlength{\parskip}{0pt}% sin espacio extra entre parrafos en la portada
+
+%---------------------------------------------------------------------
+%  CARATULA (pagina sin numeracion)
+%---------------------------------------------------------------------
+\thispagestyle{empty}
+\begin{center}
+  \vspace*{1cm}
+  {\large \grupo}\par\vspace{1.2cm}
+  {\LARGE\bfseries \tituloProyecto}\par\vspace{1cm}
+  {\Large\bfseries Project Management Plan}\par\vspace{0.3cm}
+  {\large\bfseries (PMP)}\par\vspace{2cm}
+  \autorUno\par
+  \autorDos\par
+  \autorTres\par
+  \autorCuatro\par
+  \vfill
+  \universidad\par
+  \facultad\par
+  \programa\par
+  \ciudad\par
+  \anio\par
+  \vspace{1cm}
+\end{center}
+\clearpage
+
+%---------------------------------------------------------------------
+%  PAGINAS PRELIMINARES (numeracion romana: i, ii, iii, ...)
+%---------------------------------------------------------------------
+\pagenumbering{roman}
+
+%------------------------ PORTADA (pagina i) -------------------------
+\begin{center}
+  {\Large\bfseries \tituloProyecto}\par
+  \vspace{1.4cm}
+
+  {\bfseries Autores:}\par
+  \vspace{0.5cm}
+  \autorUno\par
+  \autorDos\par
+  \autorTres\par
+  \autorCuatro\par
+  \vspace{1.4cm}
+
+  \leyendaGrado\par
+  \vspace{1.4cm}
+
+  {\bfseries Director}\par
+  \vspace{0.4cm}
+  \director\par
+  \vspace{1.2cm}
+
+  {\bfseries Jurados del Trabajo Final de Grado}\par
+  \vspace{0.4cm}
+  \juradoUno\par
+  \juradoDos\par
+  \vspace{1.8cm}
+
+  \universidad\par\vspace{0.6cm}
+  \facultad\par\vspace{0.6cm}
+  \programa\par\vspace{0.6cm}
+  \ciudad\par\vspace{0.6cm}
+  \fechaLarga\par
+\end{center}
+\clearpage
+
+%--------------------- AUTORIDADES (pagina ii) -----------------------
+\begin{center}
+  {\bfseries \universidad}\par
+  {\bfseries \facultad}\par
+  {\bfseries \programa}\par
+  \vspace{6cm}
+
+  {\bfseries Rector de la \universidadNombre}\par
+  \vspace{0.4cm}
+  \rector\par
+  \vspace{0.9cm}
+
+  {\bfseries Decano de la Facultad de Ingeniería}\par
+  \vspace{0.4cm}
+  \decano\par
+  \vspace{0.9cm}
+
+  {\bfseries Director del Departamento de Ingeniería de Sistemas}\par
+  \vspace{0.4cm}
+  \directorDepto\par
+  \vspace{0.9cm}
+
+  {\bfseries Directora de Carrera de Ingeniería de Sistemas}\par
+  \vspace{0.4cm}
+  \directorCarrera\par
+\end{center}
+\clearpage
+
+%------------------ NOTA REGLAMENTARIA (pagina iii) ------------------
+\noindent{\bfseries Artículo 23 de la Resolución No. 1 de Junio de 1946}
+\vspace{1cm}
+
+{\itshape\noindent
+``La Universidad no se hace responsable de los conceptos emitidos por sus alumnos en sus
+proyectos de grado. Sólo velará porque no se publique nada contrario al dogma y la moral
+católica y porque no contengan ataques o polémicas puramente personales. Antes bien, que se
+vean en ellos el anhelo de buscar la verdad y la Justicia''\par}
+\clearpage
+%=====================================================================
+%  FIN DE LA PORTADA (cierra el grupo abierto en la caratula)
+\endgroup
+%=====================================================================
+\pagenumbering{arabic}
+
+\newpage
+
+% ============================================================================
+
+% ============================================================================
+% ÍNDICE
+% ============================================================================
+\tableofcontents
+
+
+\newpage
+
+
+\maketitle
+
+\section{Introducción}
+
+El presente documento constituye el Plan de Administración de Proyecto (PMP) de \textbf{Gamma Lab 2.0}, la versión extendida de la plataforma de código abierto para el análisis y visualización de señales electroencefalográficas (EEG) desarrollada originalmente como Gamma Lab. Documenta la planificación, la organización y los mecanismos de control del proyecto, así como su justificación, su alcance y la metodología adoptada.
+
+Gamma Lab 2.0 responde a las brechas técnicas y funcionales identificadas en la primera versión: amplía sus capacidades de análisis, fortalece su arquitectura y mejora la experiencia de usuario, y se mantiene como software libre.
+
+El documento presenta la vista general del proyecto, el contexto metodológico y tecnológico adoptado, los mecanismos de administración y control, y los procesos de soporte que acompañan el desarrollo. La metodología adoptada combina un enfoque secuencial por fases (\textit{Water-Scrum-Fall}) con ciclos iterativos de trabajo al interior de cada una, lo que permite respetar las dependencias técnicas entre fases y, a la vez, adaptarse a los cambios.
+
+El documento está dirigido a los integrantes del equipo de desarrollo, a la directora del proyecto, a los revisores académicos del trabajo de grado y al Laboratorio de Electrofisiología de la Universidad Nacional de Colombia, como cliente y usuario final del sistema. También define los criterios con los que se medirá el éxito del proyecto.
+
+\section{Vista General del Proyecto}
+ 
+\subsection{Visión del Producto}
+ 
+\textbf{Gamma Lab 2.0} es una versión extendida de la aplicación Gamma Lab diseñada para el análisis y posprocesamiento de señales electroencefalográficas (EEG). Su visión es que los investigadores puedan realizar análisis neurofisiológicos avanzados sin pagar licencias y sin programar.
+ 
+\subsubsection{Características clave de la visión}
+ 
+\begin{itemize}
+    \item \textbf{Accesibilidad}: Herramienta completamente gratuita y de código abierto (licencia MIT)
+    \item \textbf{Facilidad de uso}: Interfaz gráfica que no requiere conocimientos de programación
+    \item \textbf{Versatilidad analítica}: Análisis en dominios de tiempo, frecuencia y tiempo-frecuencia
+    \item \textbf{Escalabilidad}: Arquitectura microkernel que permite extensiones futuras
+    \item \textbf{Usuarios}: Investigadores del Laboratorio de Electrofisiología de la Universidad Nacional
+\end{itemize}
+ 
+\subsection{Propósito, Alcance y Objetivos}
+ 
+\subsubsection{Propósito}
+ 
+Expandir las capacidades de Gamma Lab mediante nuevas funcionalidades, optimización del rendimiento y corrección de limitaciones identificadas en su primera iteración.
+
+El propósito atiende a dos actores con necesidades distintas:
+
+\begin{itemize}
+    \item \textbf{El investigador}, usuario final del sistema: debe poder realizar análisis avanzados de señales EEG \textbf{sin experiencia en programación}. Su único punto de contacto con el sistema es la interfaz gráfica, desde la cual se ejecutan todas las operaciones de carga, análisis y visualización.
+
+    \item \textbf{El desarrollador}, responsable de extender el sistema en el futuro: debe poder incorporar nuevos análisis como módulos independientes sobre la arquitectura microkernel, sin modificar el núcleo. Esta extensibilidad \textbf{sí exige conocimientos de programación} y queda fuera del trabajo del investigador.
+\end{itemize}
+
+Por eso la facilidad de uso y la escalabilidad se evalúan de forma distinta: la primera, en la experiencia del investigador frente a la interfaz; la segunda, en el esfuerzo que le representa a un programador añadir una funcionalidad nueva.
+ 
+\subsubsection{Alcance}
+ 
+El alcance del proyecto Gamma Lab 2.0 comprende los siguientes elementos, enumerados en el orden en que se abordaron durante la ejecución:
+ 
+\begin{enumerate}
+    \item \textbf{Rediseño de la interfaz gráfica y la experiencia de usuario}: reorganización de la navegación, unificación visual de los paneles de parámetros y de las vistas de resultados.
+
+    \item \textbf{Corrección de errores y limitaciones de la versión 1.0}: subsanación de los defectos priorizados tras el análisis de brechas de la Fase~1, junto con los detectados durante el propio desarrollo.
+
+    \item \textbf{Ejecución de los cálculos en segundo plano}: incorporación de un orquestador de tareas que ejecuta los cálculos fuera del hilo de la interfaz, con informe de avance y cancelación, de modo que la aplicación no se bloquee durante los análisis prolongados.
+
+    \item \textbf{Integración de nuevos métodos de análisis de señales}: implementación del acoplamiento fase-amplitud (\textit{phase-amplitude coupling}) en sus modalidades PAC, PAC Average, PAC Psel y PAC Psel inter-canal, junto con el índice de modulación y la consistencia de fase por pares (PPC).
+
+    \item \textbf{Documentación completa y manual de usuario}: elaborada de forma transversal a lo largo del proyecto y consolidada en el cierre.
+\end{enumerate}
+ 
+Los nuevos métodos de análisis se abordaron al final porque dependen de la infraestructura de ejecución asíncrona del punto anterior; así se construyeron ya integrados al orquestador y no hubo que migrarlos después.
+ 
+\subsubsection{Objetivo General}
+ 
+Desarrollar Gamma Lab 2.0 como una versión extendida que amplíe las capacidades de análisis de señales EEG e incorpore una arquitectura escalable, mejorando el rendimiento del sistema y soportando un mayor número de análisis en los dominios de tiempo, frecuencia y tiempo-frecuencia.
+ 
+\subsubsection{Objetivos Específicos}
+ 
+Los objetivos específicos que guían el desarrollo del proyecto son:
+ 
+\begin{enumerate}
+    \item Identificar brechas de mejora en la versión 1.0 de Gamma Lab
+    \item Diseñar el planteamiento estructural de la solución para abordar las brechas detectadas
+    \item Implementar la solución técnica completa a través de software
+    \item Validar la solución mediante pruebas funcionales y de rendimiento con usuarios finales
+\end{enumerate}
+ 
+\subsection{Supuestos y Restricciones}
+ 
+\subsubsection{Supuestos}
+ 
+El proyecto se fundamenta en los siguientes supuestos:
+ 
+\begin{itemize}
+    \item La institución (Universidad Nacional de Colombia) proporcionará acceso a bases de datos de señales EEG para validación y pruebas
+    \item El equipo de desarrollo tendrá disponibilidad de tiempo dedicado durante el período del proyecto
+    \item El equipo de Gamma Lab facilitará el acceso al material original del proyecto: código fuente, documentación técnica y de gestión, el programa en MATLAB (\textit{BOARD\_FTD\_PACC}) que sirvió de referencia a la versión 1.0, y las señales EEG empleadas en su validación. Asimismo, atenderá consultas sobre las decisiones de diseño que no quedaron documentadas. Gamma Lab 2.0 parte de ese material como línea base
+    \item Los investigadores del laboratorio participarán activamente en pruebas, validación y retroalimentación del sistema
+    \item Los estándares de calidad establecidos (ISO/IEC, IEEE, PMI) serán aplicables al contexto académico del proyecto
+\end{itemize}
+ 
+\subsubsection{Restricciones}
+ 
+El proyecto opera bajo las siguientes restricciones:
+ 
+\begin{itemize}
+    \item \textbf{Restricciones Temporales}: El proyecto debe completarse en 16 semanas de desarrollo, dentro del cronograma académico de grado establecido por la institución. Esto exige planificar las actividades de forma que cada entrega quede cerrada dentro de ese periodo, sin posibilidad de extensión.
+    \item \textbf{Restricciones Económicas}: Ni el equipo ni la dirección del proyecto realizan inversión económica; el único aporte es el conocimiento y el tiempo del equipo. No se contempla la adquisición de licencias, equipos ni servicios, por lo que toda decisión de gestión se toma dentro de lo que ya está disponible sin costo.
+    \item \textbf{Restricciones de Equipamiento}: El diseño, la implementación y la validación se realizan sobre el equipamiento ya disponible en el laboratorio, que es limitado y de uso compartido. Esto implica que la ejecución de pruebas y validaciones debe planificarse en función de la disponibilidad del laboratorio y de los equipos.
+    \item \textbf{Restricciones de Equipo de Trabajo}: Equipo de 4 estudiantes con roles de desarrollo colaborativo bajo un enfoque de gestión híbrido, con una dedicación de 9 horas semanales por integrante (36 horas semanales en total). La planificación se ajusta a esa capacidad.
+    \item \textbf{Restricciones Institucionales}: El proyecto debe cumplir con la normativa de trabajo de grado de la institución, incluyendo los entregables formales y la sustentación, lo que fija requisitos de documentación y fechas que el equipo de trabajo no puede modificar.
+    \item \textbf{Restricciones de Disponibilidad de los Interesados}: La directora del proyecto y los investigadores del laboratorio participan en horarios limitados, por lo que las sesiones de revisión, validación y retroalimentación deben planificarse con anticipación dentro de las 16 semanas.
+    \item \textbf{Restricciones sobre los Datos}: El uso de las señales EEG está sujeto a las condiciones de acceso y confidencialidad que establezca la institución, lo que limita cómo pueden almacenarse, compartirse y documentarse en los entregables.
+\end{itemize}
+ 
+\subsection{Resumen del Proyecto}
+
+La siguiente tabla sintetiza las características principales del proyecto Gamma Lab 2.0:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{4cm}|p{9cm}|}
+        \hline
+        \textbf{Aspecto} & \textbf{Descripción} \\
+        \hline
+        Producto & Gamma Lab 2.0 - Software de análisis de señales EEG \\
+        \hline
+        Usuarios Finales & Investigadores del Laboratorio de Electrofisiología (UNC) \\
+        \hline
+        Licencia & MIT (Open Source) \\
+        \hline
+        Costo & Gratuito \\
+        \hline
+        Diferenciador & Gratuita, con interfaz gráfica y sin necesidad de programar \\
+        \hline
+        Metodología & Water-Scrum-Fall (4 fases, Scrum iterativo dentro de cada fase) \\
+        \hline
+        Equipo & 4 estudiantes + 1 directora (Product Owner) \\
+        \hline
+        Duración & Un semestre académico (16 semanas) \\
+        \hline
+        Tipo de Proyecto & Trabajo de grado académico de nivel pregrado \\
+        \hline
+    \end{tabular}
+    \caption{Resumen de características principales del proyecto Gamma Lab 2.0}
+    \label{tab:resumen_proyecto}
+\end{table}
+
+\section{Glosario}
+
+\begin{longtable}{|p{3.5cm}|p{10.5cm}|}
+
+
+\hline
+\textbf{Sigla / Término} & \textbf{Definición} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Sigla / Término} & \textbf{Definición} \\
+\hline
+\endhead
+
+SAD & \textit{Software Architecture Document}. Documento de arquitectura del sistema. \\
+\hline
+
+SRS & \textit{Software Requirements Specification}. Documento de especificación de requisitos. \\
+\hline
+
+SDD & \textit{Software Design Document}. Documento de diseño técnico. \\
+\hline
+
+IoC & Inversión de Control. Principio que delega el flujo de ejecución a un contenedor. \\
+\hline
+
+DI & \textit{Dependency Injection}. Técnica para resolver dependencias desde un contenedor externo. \\
+\hline
+
+MVP / MVC & Patrones de separación de interfaz y lógica (\textit{Model--View--Presenter} / \textit{Model--View--Controller}). \\
+\hline
+
+Template Method & Patrón que define un flujo general con pasos sobrescribibles. \\
+\hline
+
+Adapter & Patrón para estandarizar interfaces incompatibles. \\
+\hline
+
+Caching & Estrategia para evitar recalcular o recomponer estructuras de datos. \\
+\hline
+
+Python & Lenguaje de programación principal de \textit{Gamma Lab 2.0}. \\
+\hline
+
+PyQt5 & Framework de interfaz gráfica basado en Qt para Python. \\
+\hline
+
+VTK & \textit{Visualization Toolkit}. Biblioteca para visualización científica 2D/3D. \\
+\hline
+
+QVTK & Interfaz \texttt{QVTKRenderWindowInteractor} para incrustar VTK en aplicaciones Qt. \\
+\hline
+
+NumPy & Librería para cálculo numérico vectorizado. \\
+\hline
+
+EDF & \textit{European Data Format}. Formato estándar para señales biomédicas. \\
+\hline
+
+ABF & \textit{Axon Binary File}. Formato de archivo utilizado por Axon Instruments para registros biomédicos. \\
+\hline
+
+GUI Toolkit & Conjunto de herramientas para construir interfaces gráficas (Qt, PyQt, VTK). \\
+\hline
+\caption{Acrónimos y términos utilizados en el documento} \label{tab:acronimos} \\
+\end{longtable}
+
+
+\section{Contexto del Proyecto}
+
+\subsection{Modelo de Ciclo de Vida}
+Gamma Lab 2.0 adopta un ciclo de vida híbrido tipo \textit{Water-Scrum-Fall}, en el cual la estructura global del proyecto sigue una lógica secuencial, mientras que la ejecución interna de cada etapa se desarrolla bajo dinámicas iterativas inspiradas en Scrum.
+
+La naturaleza secuencial del modelo se refleja en la organización del proyecto alrededor de sus cuatro objetivos específicos, los cuales establecen una dependencia lógica entre etapas. Cada fase produce los insumos que necesita la siguiente. Las fases son:
+
+\begin{itemize}[label={}]
+    \item \textbf{Fase 1: Identificación de brechas de mejora en Gamma Lab.} 
+    Se analiza el proyecto antecesor desde perspectivas técnicas y funcionales para identificar oportunidades de mejora y definir prioridades para la nueva versión.
+
+    \item \textbf{Fase 2: Diseño del planteamiento estructural de la solución.} 
+    Se define la arquitectura general, el planteamiento estructural y las propuestas de mejora funcional y de experiencia de usuario para Gamma Lab 2.0.
+
+    \item \textbf{Fase 3: Implementación técnica.} 
+    Se desarrollan e integran de manera incremental las funcionalidades priorizadas y los nuevos componentes definidos en la etapa de diseño.
+
+    \item \textbf{Fase 4: Validación y pruebas con el usuario.} 
+    Se evalúa el desempeño técnico y funcional de Gamma Lab 2.0 mediante pruebas comparativas y validación con usuarios.
+\end{itemize}
+
+Dentro de cada fase, el trabajo se organiza en ciclos de una semana (\textit{sprints}) en los que se distribuyen las tareas, se revisa el avance y se incorpora la retroalimentación. Así, el equipo puede ajustar requerimientos o decisiones de diseño que surjan durante el proceso.
+
+Aunque el flujo principal mantiene una dirección secuencial, el modelo contempla retroalimentación entre fases cuando se identifican cambios relevantes. En estos casos, es posible retornar a una etapa previa para realizar ajustes específicos; por ejemplo, desde implementación hacia diseño o desde validación hacia implementación. Una vez hecho el ajuste, el proyecto continúa de manera secuencial por las fases siguientes.
+
+El trabajo iterativo se adapta a un equipo de cuatro desarrolladores. Uno de ellos asume funciones de coordinación equivalentes al \textit{Scrum Master}, enfocadas en la planeación y seguimiento del trabajo, mientras que la directora del proyecto cumple un rol análogo al \textit{Product Owner}, centralizando la retroalimentación del cliente y la validación de avances.
+
+La Figura~\ref{fig:ciclo_gammalab} resume el ciclo de vida metodológico de Gamma Lab 2.0.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Ciclo de Vida GammaLab 2.0.png}
+    \caption{Ciclo de vida metodológico adoptado para el desarrollo de Gamma Lab 2.0 bajo enfoque Water-Scrum-Fall.}
+    \label{fig:ciclo_gammalab}
+\end{figure}
+
+
+
+\subsection{Proceso de Selección del Modelo de Ciclo de Vida}
+
+El desarrollo de un sistema de software requiere, antes de cualquier decisión técnica, definir cómo se organizará el trabajo a lo largo del tiempo. Esta organización se formaliza a través de un modelo de ciclo de vida del software, que Pressman \& Maxim definen como una representación abstracta de la secuencia de actividades que guían al equipo desde la recolección de requisitos hasta la entrega y el mantenimiento del sistema \cite{pressman2015}.
+
+En términos generales, los modelos de ciclo de vida se agrupan en dos grandes categorías: los modelos dirigidos por plan (plan-driven), donde todas las fases se planifican en detalle desde el inicio y el progreso se mide contra ese plan; y los modelos ágiles, donde la planificación es incremental y el proceso se adapta continuamente a los cambios del entorno y de los requisitos \cite{sommerville2016}. Entre estos dos extremos existe un espectro de variantes que difieren en aspectos como la secuencialidad de sus fases, el nivel de documentación exigido, la frecuencia de entrega de resultados y el grado de participación del cliente durante el desarrollo. A continuación se presenta una revisión de los modelos de mayor relevancia en la literatura, con el propósito de fundamentar la elección metodológica para el desarrollo de Gamma Lab 2.0:
+
+\begin{enumerate}
+    \item \textbf{Modelo en cascada.} Propone una estrategia de organización estrictamente secuencial, en donde se propone el siguiente orden para los proyectos: requisitos, diseño, implementación, pruebas y mantenimiento. Se caracteriza porque en cada fase debe completarse y producir su documentación formal antes de iniciar la siguiente. Los recursos se asignan fase por fase, lo que típicamente implica equipos especializados por etapa con poca interacción cruzada. Es apropiado para proyectos grandes, con requisitos bien definidos desde el inicio, equipos distribuidos geográficamente y donde la documentación formal es un requisito contractual \cite{pressman2015}.
+    \item \textbf{Modelo en V.} Se presenta como una extensión directa del modelo en cascada \cite{pressman2015}. Su diferencia central es que a cada fase de desarrollo le corresponde simétricamente una fase de verificación o prueba: los requisitos se asocian a pruebas de aceptación, el diseño del sistema a pruebas de integración, y el diseño detallado a pruebas unitarias. Los entregables y la documentación se generan en ambos lados de la V, lo que hace que el plan de pruebas se diseñe en paralelo al desarrollo desde las fases más tempranas. Al igual que la cascada, es un modelo rígido y secuencial, con equipos especializados por fase \cite{academia2012}.
+    \item \textbf{Modelo incremental.} Combina elementos del modelo en cascada aplicados de forma iterativa y escalonada \cite{pressman2015}. El sistema se divide en incrementos funcionales que se desarrollan y entregan en secuencia; el primer incremento cubre la funcionalidad más crítica y cada entrega posterior añade capacidades adicionales. A diferencia de la cascada, los recursos se distribuyen de forma continua a lo largo del proyecto y los equipos son multifuncionales, trabajando especificación, diseño e implementación para cada incremento. La comunicación con el cliente es más frecuente al haber entregas periódicas \cite{sommerville2016}.
+    \item \textbf{Modelo en espiral.} Se diferencia de los anteriores por centrar el proceso en la gestión del riesgo \cite{pressman2015}. El proyecto avanza en iteraciones cíclicas, cada vuelta de la espiral pasa por planificación, análisis de riesgos, desarrollo y evaluación y en cada ciclo el sistema se hace más completo. Los recursos se consumen de manera incremental por ciclo, lo que permite ajustar el alcance según los riesgos identificados. La documentación y los entregables se producen al final de cada iteración. Es apropiado para proyectos grandes, complejos, de larga duración y con alta incertidumbre técnica \cite{sommerville2016}.
+     \item \textbf{Scrum.} Es un marco ágil que organiza el trabajo en ciclos cortos de duración fija llamados sprints, típicamente de dos a cuatro semanas, al final de los cuales se entrega un incremento funcional del producto \cite{schwaber2020}. Define tres roles claros: el Product Owner, que prioriza el trabajo; el Scrum Master, que facilita el proceso; y el equipo de desarrollo, que es pequeño, multifuncional y autogestionado. La documentación es ligera y los entregables son incrementos de software funcional evaluados en cada Sprint Review. La comunicación es intensiva y diaria dentro del equipo. Es recomendado para equipos pequeños  con requisitos cambiantes y acceso continuo al cliente \cite{pressman2015}.
+\end{enumerate}
+
+Con base en la revisión anterior, la siguiente tabla sintetiza las características más relevantes de cada modelo para efectos de la selección metodológica:
+
+
+\begin{table}[h!]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|}
+\hline
+\textbf{Criterio} & \textbf{Cascada} & \textbf{Modelo V} & \textbf{Incremental} & \textbf{Espiral} & \textbf{Scrum} \\
+\hline
+\textbf{Documentación} & Extensa y formal por fase & Extensa, incluye plan de pruebas desde el inicio & Moderada por incremento & Moderada por iteración & Ligera, orientada a entregables funcionales \\
+\hline
+\textbf{Tamaño del proyecto} & Grande & Grande & Mediano & Grande y complejo & Pequeño a mediano \\
+\hline
+\textbf{Número de integrantes} & Equipos grandes y especializados & Equipos grandes y especializados & Equipos medianos multifuncionales & Equipos medianos con perfil en gestión de riesgos & Equipos pequeños (3--9 personas) \\
+\hline
+\textbf{Interacción con el cliente} & Baja, concentrada al inicio y al final & Baja, concentrada al inicio y al final & Media, en cada entrega incremental & Media, al cierre de cada iteración & Alta, continua durante los sprints \\
+\hline
+\textbf{Flexibilidad ante cambios} & Muy baja & Muy baja & Media & Alta por gestión de riesgos & Muy alta \\
+\hline
+\textbf{Testeo} & Al final del desarrollo & Planificado desde el inicio, paralelo al diseño & Al final de cada incremento & Al final de cada iteración & Continuo dentro de cada sprint \\
+\hline
+\textbf{Entrega de valor} & Única, al final del proyecto & Única, al final del proyecto & Parcial y progresiva & Parcial por iteración & Parcial al cierre de cada sprint \\
+\hline
+\end{tabular}
+}
+\caption{Comparación de modelos de ciclo de vida}
+\label{tab:comparacion_modelos}
+\end{table}
+
+Al contrastar estas características con el contexto de Gamma Lab 2.0, se observa que ningún modelo satisface por sí solo las necesidades del proyecto. Por una parte, existen dependencias técnicas claramente secuenciales derivadas de los objetivos específicos: no es posible implementar sin antes diseñar la arquitectura, ni diseñar sin haber identificado y priorizado previamente las brechas. Esto evidencia la necesidad de una estructura por fases y cierto nivel de planificación anticipada.
+
+Sin embargo, el proyecto también presenta condiciones que demandan flexibilidad. El equipo está conformado por cuatro integrantes, los requisitos funcionales continúan definiéndose durante el desarrollo y la interacción con el cliente es frecuente, con retroalimentación constante de la directora del proyecto. Estas características resultan incompatibles con la rigidez documental y la baja capacidad de adaptación de modelos como cascada y modelo en V.
+
+Por otra parte, metodologías puramente ágiles como Scrum se ajustan mejor al tamaño del equipo y a la dinámica iterativa del trabajo, pero no ofrecen por sí solas una estructura para gestionar las dependencias entre las grandes etapas del proyecto.
+
+Sommerville (2016) señala que, en la práctica, los procesos de software reales rara vez adoptan un único modelo de manera pura, sino que combinan elementos de enfoques dirigidos por plan y enfoques ágiles de acuerdo con las características y restricciones particulares de cada proyecto.  Yahya \& Maidin (2022) documentan empíricamente esta tendencia, observando que numerosos proyectos recurren a modelos híbridos que combinan la estructura secuencial de metodologías tradicionales con la flexibilidad iterativa de Scrum, configurando lo que se conoce como \textit{Water-Scrum-Fall}. Este enfoque conserva una organización global por fases, permitiendo gestionar dependencias técnicas y mantener trazabilidad sobre el avance del proyecto, mientras incorpora dinámicas ágiles al interior de cada etapa mediante trabajo iterativo, entregables parciales y retroalimentación continua \cite{yahya2022}.
+
+Por estas razones, se selecciona Water-Scrum-Fall como ciclo de vida del proyecto.
+
+\subsection{Lenguajes y Herramientas}
+
+Dado que Gamma Lab 2.0 corresponde a una evolución directa de Gamma Lab, el desarrollo técnico del proyecto prioriza la continuidad tecnológica y la reutilización de la arquitectura existente. Así se aprovecha el trabajo ya hecho, se mantiene la compatibilidad con los módulos existentes y se evita reescribir el sistema.
+
+Por eso, la mayoría de los lenguajes y herramientas empleados en Gamma Lab se conservan para esta nueva versión. No obstante, Gamma Lab 2.0 incorpora mejoras orientadas a solucionar limitaciones identificadas en la versión anterior, particularmente relacionadas con estabilidad técnica, experiencia de usuario y extensión de funcionalidades para análisis de señales EEG.
+
+La Tabla \ref{tab:herramientas_gammalab} resume el conjunto de tecnologías utilizadas en el desarrollo del proyecto.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{5cm}|p{7cm}|}
+\hline
+\textbf{Categoría} & \textbf{Tecnologías empleadas} \\
+\hline
+Lenguaje de programación & Python \\
+\hline
+Desarrollo de interfaz gráfica & PyQt5, Qt Designer \\
+\hline
+Entorno de desarrollo & Visual Studio Code \\
+\hline
+Control de versiones & GitHub \\
+\hline
+Gestión del proyecto & Tablero Kanban (proporcionado por el departamento) \\
+\hline
+Documentación técnica & LaTex, Microsoft Word \\
+\hline
+Pruebas & Pytest \\
+\hline
+Diseño de interfaz y diagramas & Figma, Draw.io, Canva \\
+\hline
+Comunicación y colaboración & Microsoft Teams, WhatsApp \\
+\hline
+Almacenamiento y respaldo & OneDrive, máquina virtual compartida \\
+\hline
+\end{tabular}
+\caption{Lenguajes y herramientas empleadas en Gamma Lab 2.0}
+\label{tab:herramientas_gammalab}
+\end{table}
+
+\textbf{Python} se mantiene como lenguaje principal del proyecto, dado que Gamma Lab fue originalmente desarrollado en este entorno y cuenta con compatibilidad directa con bibliotecas científicas ampliamente utilizadas en procesamiento de señales, como NumPy, SciPy y PyWavelets, y con lectores de los formatos del laboratorio, como pyABF. Esto permite conservar la base existente e incorporar nuevos análisis sin cambiar de tecnologías.
+
+Para la interfaz gráfica se conserva el uso de \textbf{PyQt5} y \textbf{Qt Designer}, que mantienen la coherencia con la interfaz existente y separan el diseño de la interfaz de la lógica.
+
+En términos de desarrollo colaborativo, el proyecto utiliza \textbf{GitHub} para control de versiones, gestión de ramas y revisión de cambios, complementados con el \textbf{tablero Kanban proporcionado por el departamento} como herramienta de seguimiento de tareas acorde con la dinámica iterativa definida en la metodología del proyecto.
+
+La documentación técnica y académica se escribe en \textbf{LaTeX}, que permite la edición colaborativa y un formato uniforme; \textbf{Microsoft Word} se usa para borradores y trabajo colaborativo informal.
+
+Para diseño y modelado visual se utilizan \textbf{Figma} en prototipado de interfaces, \textbf{Draw.io} para diagramas técnicos y \textbf{Canva} para material gráfico de apoyo.
+
+Finalmente, las pruebas de calidad se incorporan mediante \textbf{Pytest}, mientras que la coordinación del equipo se apoya en \textbf{Microsoft Teams} y \textbf{WhatsApp}. Para respaldo y pruebas compartidas se usan \textbf{OneDrive} y una máquina virtual compartida.
+
+\subsection{Organización del proyecto y Comunicación}
+
+La organización del proyecto es ligera y colaborativa, acorde con el enfoque Water-Scrum-Fall.
+
+A nivel organizacional, el cliente del proyecto corresponde al Laboratorio de Electrofisiología de la Universidad Nacional de Colombia, entidad beneficiaria del desarrollo y principal fuente de requerimientos funcionales y criterios de validación del sistema.
+
+La directora del proyecto actúa como puente de comunicación entre el equipo de desarrollo y el cliente. Sus responsabilidades incluyen coordinar las reuniones con el laboratorio, orientar la toma de decisiones relacionadas con alcance, complejidad técnica y priorización funcional, así como ejercer supervisión técnica y académica sobre el desarrollo del proyecto. 
+
+El equipo de desarrollo está conformado por cuatro integrantes, todos con participación activa en las distintas fases del proyecto. La distribución del trabajo se realiza de manera colaborativa y equitativa, asignando responsabilidades de acuerdo con los frentes funcionales definidos y con revisión cruzada del trabajo entre integrantes.
+
+Uno de los integrantes, como líder del equipo, asume funciones equivalentes al \textit{Scrum Master}: coordinación general, seguimiento del cronograma, organización de reuniones y monitoreo del avance. Este rol no cambia su carga de desarrollo, que es la misma que la de los demás integrantes.
+
+La comunicación formal del proyecto se realiza mediante reuniones periódicas con la directora, orientadas al seguimiento metodológico, revisión de avances y resolución de decisiones técnicas o estratégicas. De forma complementaria, el equipo mantiene canales de comunicación interna para coordinación diaria, seguimiento de tareas y resolución de bloqueos.
+
+La estructura organizacional del proyecto se presenta en la Figura~\ref{fig:organigrama_gammalab}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Organigrama GammaLab 2.0.png}
+    \caption{Organigrama y Flujo de Comunicación del proyecto Gamma Lab 2.0}
+    \label{fig:organigrama_gammalab}
+\end{figure}
+
+
+
+\subsection{Entregables del Proyecto}
+
+El proyecto genera entregables técnicos, funcionales y documentales en las distintas fases del ciclo de vida. Con ellos se evidencia el cumplimiento de cada objetivo específico. Para cada entregable se indican los estándares, especificaciones o modelos que sigue.
+
+\begin{itemize}[label={}]
+    \item \textbf{VFP: Versión Final de Proyecto.}
+    Documento inicial que formaliza el problema, los objetivos, el alcance funcional y los lineamientos estratégicos y metodológicos del proyecto, sirviendo como base de referencia para la construcción del PMP y de los documentos técnicos posteriores. \textit{Estándar:} ISO/IEC/IEEE 29148 \cite{iso29148}.
+
+    \item \textbf{PMP: Plan de Administración del Proyecto.}
+    Define los procesos de dirección del proyecto, la planificación y los mecanismos de seguimiento, estableciendo la estructura organizacional, los roles y el cronograma de trabajo. \textit{Estándar:} PMI PMBOK 7 \cite{pmbok7}.
+
+    \item \textbf{MRCU: Matriz de Requerimientos y Casos de Uso }
+    Consolida la matriz original de requerimientos y casos de uso levantados durante la fase inicial del proyecto, registrando los históricos, conceptos, actores, requerimientos y cada caso de uso con su flujo principal y sus flujos alternos. \textit{Estándares:} ISO/IEC/IEEE 29148 \cite{iso29148} y modelo FURPS+ \cite{eeles2001}.
+
+    \item \textbf{SRS: Especificación de Requerimientos de Software.}
+    Describe formalmente los requerimientos funcionales y no funcionales del sistema, formalizando las entradas, salidas, parámetros configurables y dependencias de cada módulo, incluyendo el nuevo módulo de análisis incorporado en Gamma Lab 2.0. \textit{Estándares:} ISO/IEC/IEEE 29148 \cite{iso29148} y modelo FURPS+ \cite{eeles2001}.
+
+    \item \textbf{SAD: Documento de Arquitectura de Software.}
+    Formaliza las decisiones estructurales del sistema, incluyendo la distribución de componentes, las vistas arquitectónicas y la justificación técnica del diseño adoptado para Gamma Lab 2.0. \textit{Estándares:} ISO/IEC/IEEE 42010 \cite{iso42010}, modelo de vistas 4+1 \cite{kruchten1995} y UML 2.5.1 \cite{omg_uml}.
+
+    \item \textbf{SDD: Documento de Diseño de Software.}
+    Presenta el diseño detallado de los componentes del sistema mediante diagramas de secuencia, diagramas de clases y demás representaciones estructurales, describiendo la organización modular y el comportamiento interno de Gamma Lab 2.0. \textit{Estándar:} UML 2.5.1 \cite{omg_uml}.
+
+    \item \textbf{Mockups.}
+    Representaciones visuales de alta fidelidad de la interfaz de Gamma Lab 2.0, que muestran las mejoras de experiencia de usuario y de navegación, y que se usaron para validar la disposición general de los módulos y los flujos de navegación.
+
+    \item \textbf{Repositorio Final.}
+    Código fuente estructurado, versionado y documentado para facilitar mantenimiento, trazabilidad y futuras extensiones del proyecto. \textit{Estándares:} versionado semántico (SemVer 2.0.0) \cite{semver} y requisitos no funcionales del modelo FURPS+ \cite{eeles2001}.
+
+    \item \textbf{Informe de Pruebas y Validación.}
+    Documentan resultados de pruebas técnicas, análisis comparativo entre Gamma Lab y Gamma Lab 2.0, y validación funcional de nuevas capacidades. \textit{Estándares:} ISO/IEC/IEEE 29119-3 \cite{iso29119-3}, ISO 9241-11 \cite{iso9241-11} y cuestionario SUS \cite{brooke1996}.
+
+    \item \textbf{Manual de uso de Gamma Lab 2.0.}
+    Guía orientada al usuario final que describe instalación, navegación y uso de funcionalidades principales del sistema. \textit{Estándar:} ISO/IEC/IEEE 26514 \cite{iso26514}.
+
+    \item \textbf{Memoria Final del Proyecto.}
+    Consolida el proceso completo de desarrollo, incluyendo contexto, metodología, diseño, implementación, pruebas, resultados y conclusiones. \textit{Estándar:} modelo FURPS+ \cite{eeles2001} para la evaluación de los requisitos no funcionales.
+\end{itemize}
+
+\subsection{Estructura colaborativa y enfoque de trabajo}
+
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabular}{|p{3.5cm}|p{3.5cm}|p{4.5cm}|}
+\hline
+\textbf{Participante} & \textbf{Rol} & \textbf{Descripción del rol} \\ \hline
+
+Laboratorio de Electrofisiología (U. Nacional) & Cliente / Entidad beneficiaria & Define necesidades funcionales, valida resultados y recibe la entrega final del proyecto. \\ \hline
+
+Cécile Gauthier Umaña & Directora del proyecto & Puente de comunicación con el cliente, orienta decisiones estratégicas y supervisa el desarrollo técnico y académico. \\ \hline
+
+Juan Felipe Romero & Scrum Master & Asume funciones de liderazgo y coordinación general del equipo, manteniendo participación activa en el desarrollo técnico del proyecto. \\ \hline
+
+Juan Felipe Romero, Laura Juliana Garzón, Sebastian Almanza y Xiomara Herrera & Scrum Developers & Participan en actividades de diseño, implementación, integración, pruebas y documentación del sistema. \\ \hline
+
+\end{tabular}
+\centering
+\caption{Distribución de roles del proyecto}
+\label{tab:roles_equipo}
+\end{table}
+
+El desarrollo de Gamma Lab 2.0 se ejecuta bajo una dinámica de trabajo colaborativa, en la cual los cuatro integrantes participan activamente en las distintas fases del proyecto y comparten responsabilidad sobre el cumplimiento de los objetivos técnicos definidos. Cada integrante lidera componentes específicos, pero las tareas se redistribuyen según las necesidades de cada fase, el avance del proyecto y la complejidad técnica de los módulos.
+
+El equipo revisa el trabajo de forma cruzada, valida en conjunto las decisiones técnicas y colabora en la integración, las pruebas y la resolución de bloqueos.
+
+La retroalimentación proviene del cliente, principal fuente de requerimientos y de validación funcional, y de la directora del proyecto, que aporta la supervisión técnica y académica.
+
+\section{Administración del Proyecto}
+
+\subsection{Métodos y Herramientas de Estimación}
+
+Para la estimación de actividades del proyecto Gamma Lab 2.0, se adopta un enfoque de estimación \textit{Bottom-Up}, el cual parte de la identificación de tareas específicas y granulares, estima el esfuerzo requerido para cada una de ellas, y posteriormente agrega estas estimaciones para obtener el tiempo total del proyecto. Esta metodología es particularmente adecuada para proyectos en evolución donde se cuenta con experiencia de una versión anterior y donde las dependencias técnicas son claras.
+
+El proceso inició con la definición de las cuatro fases del proyecto, correlacionadas directamente a los cuatro objetivos específicos:
+
+\begin{itemize}
+    \item \textbf{Fase 1: Identificación de brechas de mejora en Gamma Lab} (3 semanas)
+    \item \textbf{Fase 2: Diseño del planteamiento estructural de la solución} (4 semanas)
+    \item \textbf{Fase 3: Implementación técnica} (6 semanas)
+    \item \textbf{Fase 4: Validación y pruebas con el usuario} (3 semanas)
+\end{itemize}
+
+A partir de esta estructura, el equipo identificó las actividades concretas dentro de cada fase, desagregó estas actividades en tareas específicas y estimó el esfuerzo en horas-persona requerido para cada tarea. Esta información se consolidó en una tabla de estimación detallada que refleja la carga de trabajo esperada por fase.
+
+\subsubsection{Supuestos de Estimación}
+
+La estimación se fundamenta en los siguientes supuestos:
+
+\begin{itemize}
+    \item El equipo de desarrollo está compuesto por cuatro desarrolladores que compaginan el proyecto con su carga académica regular, por lo que no se supone una dedicación exclusiva. El esfuerzo mínimo esperado se estima a partir de los créditos académicos: conforme a la normativa colombiana de educación superior (Decreto 1330 de 2019), un crédito académico equivale a 48 horas de trabajo del estudiante.
+    \item Cada desarrollador dispone de un mínimo de 9 horas semanales de disponibilidad efectiva para trabajo de desarrollo, análisis, diseño, codificación y pruebas. El proyecto de grado equivale a 3 créditos académicos (144 horas por integrante), que repartidos en las 16 semanas del proyecto dan esas 9 horas semanales, y suman 576 horas-persona para el equipo.
+    \item La jornada semanal de dedicación será distribuida de manera flexible entre las actividades, con énfasis en mantener sincronización a través de canales de comunicación asíncrona (GitHub, comunicación escrita).
+    \item Se reutilizará conocimiento y código de Gamma Lab, reduciendo el tiempo de aprendizaje inicial.
+    \item La directora del proyecto está disponible para sesiones de revisión semanal y proporciona retroalimentación en plazos acordados.
+    \item El cliente (Laboratorio de Electrofisiología) participa activamente en validaciones de línea base (Fase 1) y en pruebas finales (Fase 4).
+    \item Cada desarrollador dispone de un equipo propio (portátil o de escritorio) con capacidad suficiente para ejecutar el entorno de desarrollo (Python, PyQt5 y VTK) y las pruebas locales, y las herramientas de colaboración (GitHub, Microsoft Teams, Overleaf, OneDrive y el Kanban del departamento) están accesibles para todo el equipo durante la ejecución del proyecto.
+    \item El acceso a la máquina virtual compartida de integración, solicitada en la sección de Infraestructura, será otorgado; de no serlo, las pruebas de integración se ejecutarán en los equipos de los desarrolladores.
+    \item El acceso al equipamiento del Laboratorio para las pruebas de rendimiento y validación se coordina a través de la directora y se concentra en la Fase~4. Por tratarse de un recurso limitado (véase \textit{Restricciones de Equipamiento}), no se supone disponibilidad permanente: esas pruebas se planifican en ventanas acotadas.
+    \item Las metodologías de desarrollo (Water-Scrum-Fall) y las herramientas (Git, el Kanban del departamento, Python, PyQt5) permanecen estables durante la ejecución.
+\end{itemize}
+
+\subsubsection{Estimación de Tiempo por Fases del Proyecto}
+
+La siguiente tabla resume la estimación de duración por fases, con base en el análisis Bottom-Up de actividades y tareas:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{2cm}|p{3cm}|p{2cm}|p{2cm}|p{2cm}|}
+\hline
+\textbf{Fase} & \textbf{Descripción} & \textbf{Duración} & \textbf{Inicio} & \textbf{Cierre} \\
+\hline
+1 & Identificación de brechas & 3 sem & 27 jul & 16 ago \\
+\hline
+2 & Diseño de solución & 4 sem & 19 ago & 13 sep \\
+\hline
+3 & Implementación técnica & 6 sem & 16 sep & 27 oct \\
+\hline
+4 & Validación y pruebas & 3 sem & 28 oct & 20 nov \\
+\hline
+\multicolumn{2}{|l|}{\textbf{Total estimado}} & \textbf{16 sem} & \textbf{27 jul} & \textbf{20 nov} \\
+\hline
+\end{tabular}
+\caption{Resumen de calendarización del proyecto Gamma Lab 2.0}
+\label{tab:calendario}
+\end{table}
+
+\textit{Nota: Las duraciones son semanas calendario entre el inicio y el cierre de cada fase, redondeadas a la semana más cercana (Fase~1: 21 días; Fase~2: 26; Fase~3: 42; Fase~4: 24). Entre las fases 1--2 y 2--3 hay dos días de transición cada una, por lo que el total calendario, del 27 de julio al 20 de noviembre, es de 16 semanas y 5 días.}
+
+\subsubsection{Distribución de Esfuerzo por Fase}
+
+Basado en el análisis Bottom-Up de tareas, la siguiente tabla detalla el esfuerzo estimado (en horas-persona) para cada fase:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.5cm}|p{2.5cm}|p{3cm}|}
+\hline
+\textbf{Fase} & \textbf{Duración (sem)} & \textbf{Esfuerzo Total (h-persona)} \\
+\hline
+Fase 1: Identificación de brechas & 3 & 108 h \\
+\hline
+Fase 2: Diseño de solución & 4 & 144 h \\
+\hline
+Fase 3: Implementación técnica & 6 & 216 h \\
+\hline
+Fase 4: Validación y pruebas & 3 & 108 h \\
+\hline
+\textbf{Total} & \textbf{16} & \textbf{576 h} \\
+\hline
+\end{tabular}
+\caption{Estimación de esfuerzo por fases del proyecto (Bottom-Up)}
+\label{tab:esfuerzo}
+\end{table}
+
+\textit{Nota: El esfuerzo total de 576 horas se distribuye entre 4 desarrolladores, resultando en 144 horas por persona en las 16 semanas, equivalentes a 9 horas semanales promedio por desarrollador. Corresponde a los 3 créditos académicos del proyecto de grado, a 48 horas de trabajo del estudiante por crédito.}
+
+\subsection{Inicio del Proyecto}
+
+\subsubsection{Entrenamiento del Personal}
+
+El equipo de Gamma Lab 2.0 está compuesto por cuatro desarrolladores nuevos, por lo que necesita un plan de transferencia de conocimiento y entrenamiento que les permita:
+
+\begin{itemize}
+    \item Comprender la arquitectura y funcionamiento de Gamma Lab
+    \item Familiarizarse con las tecnologías base (Python, PyQt5, VTK, etc.)
+    \item Alinearse con los estándares de código y de documentación del proyecto
+    \item Entender el dominio técnico (procesamiento de señales EEG, análisis en dominios de tiempo, frecuencia y tiempo-frecuencia)
+\end{itemize}
+
+El plan de entrenamiento se ejecutará durante la Fase 1 (primeras 3 semanas) de manera paralela a las actividades de análisis de brechas. Las actividades incluyen:
+
+\begin{enumerate}
+    \item \textbf{Sesiones de transferencia con equipo de Gamma Lab:} Reuniones semiestructuradas donde el equipo original explica decisiones de diseño, limitaciones técnicas y funcionalidades planificadas pero no implementadas.
+    
+    \item \textbf{Exploración técnica autónoma:} Cada desarrollador realiza una revisión independiente del código fuente, arquitectura y documentación de Gamma Lab, generando notas y preguntas que se resuelven en sesiones grupales.
+    
+    \item \textbf{Capacitación en dominio (EEG y procesamiento de señales):} Sesiones cortas sobre conceptos clave de electroencefalografía, análisis en dominios de tiempo, frecuencia y tiempo-frecuencia, así como sobre las nuevas técnicas que se implementarán (amplitude coupling, paralelización).
+    
+    \item \textbf{Alineación en estándares y herramientas:} Revisión de estándares de código (PEP8), políticas de control de versiones (Git, Pull Requests), estructura de repositorio y convenciones de documentación.
+    
+    \item \textbf{Sesiones de lluvia de ideas colaborativa:} El equipo completo (desarrolladores, directora, y ocasionalmente el cliente) participa en sesiones para alinear la visión del proyecto y clarificar alcances y expectativas.
+\end{enumerate}
+
+\subsubsection{Infraestructura}
+
+Para el desarrollo de Gamma Lab 2.0, se dispone de la siguiente infraestructura técnica y de colaboración:
+
+\textbf{Infraestructura física:}
+\begin{itemize}
+    \item Cada desarrollador cuenta con su propio equipo de desarrollo (laptop o computadora de escritorio) con capacidad suficiente para programación, ejecución de código Python y pruebas locales.
+    \item Se solicita acceso a una máquina virtual compartida que actúe como entorno de integración centralizado, permitiendo verificar compatibilidad multiplataforma y ejecutar pruebas de integración antes de la entrega final.
+\end{itemize}
+
+\textbf{Infraestructura lógica y de colaboración:}
+\begin{itemize}
+    \item \textbf{Control de versiones:} Git con repositorio centralizado en GitHub. La estructura del repositorio se basa en ramas por frente de trabajo (UI/UX, paralelización núcleo, amplitude coupling, paralelización módulo nuevo), con política de Pull Requests obligatoria para integración.
+    
+    \item \textbf{Entorno de desarrollo:} Visual Studio Code, PyCharm o editor de preferencia de cada desarrollador, con extensiones para linting (PEP8), debugging y testing.
+    
+    \item \textbf{Gestión del proyecto:} tablero Kanban proporcionado por el departamento, con columnas: ``To Do'', ``In Progress'', ``In Review'', ``Done''. Sincronización asíncrona diaria a través de comentarios en tarjetas de tareas.
+    
+    \item \textbf{Comunicación:} Microsoft Teams para reuniones semanales formales con la directora; WhatsApp para coordinación ágil y resolución rápida de dudas.
+    
+    \item \textbf{Documentación técnica:} Overleaf para memoria del proyecto en LaTeX; Microsoft Word como herramienta auxiliar para redacción preliminar y colaboración paralela.
+    
+    \item \textbf{Prototipado y diseño:} Figma para diseño visual de la interfaz de usuario, con acceso compartido para revisión y validación iterativa.
+    
+    \item \textbf{Pruebas automatizadas:} Pytest como framework para pruebas unitarias, con configuración para ejecución local en cada desarrollo y en la máquina virtual compartida.
+    
+    \item \textbf{Respaldo y almacenamiento:} OneDrive para documentos y respaldo incremental; GitHub como respaldo de código fuente. Se ejecutará una política semanal de respaldo completo de código, documentación y artefactos del proyecto.
+\end{itemize}
+
+
+
+
+
+\subsection{Asignación de Recursos}
+
+\subsubsection{Equipo de Desarrollo}
+
+El equipo de Gamma Lab 2.0 está conformado por cuatro estudiantes de Ingeniería de Sistemas de la Pontificia Universidad Javeriana, cada uno con una dedicación mínima de 9 horas semanales durante las 16 semanas de ejecución (144 horas por integrante, equivalentes a los 3 créditos académicos del proyecto de grado), en paralelo con su carga académica regular.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{2.8cm}|p{2.5cm}|p{2.5cm}|}
+\hline
+\textbf{Nombre} & \textbf{Rol} & \textbf{Responsabilidad} \\
+\hline
+Juan Felipe Romero Ortiz & Desarrollador + Scrum Master & Frente 1 (UX/UI) \\
+\hline
+Laura Juliana Garzón Arias & Desarrollador & Frente 2 (Paralelización) \\
+\hline
+Xiomara Herrera Suárez & Desarrollador & Frente 3 (Amplitude Coupling) \\
+\hline
+Sebastian Almanza Galvis & Desarrollador & Frente 4 (Paralelización módulo) \\
+\hline
+\end{tabular}
+\caption{Equipo de desarrollo de Gamma Lab 2.0}
+\label{tab:equipo}
+\end{table}
+
+\textbf{Notas sobre asignación de roles:}
+
+\begin{itemize}
+    \item El rol de Scrum Master es asumido por Juan Felipe Romero Ortiz sin que esto implique jerarquía en la toma de decisiones. Sus responsabilidades incluyen agendar reuniones, dar seguimiento al progreso visible en el Kanban del departamento, mantener el enfoque del equipo y facilitar la comunicación con la directora.
+    
+    \item La distribución de tareas en cada sprint se define colectivamente mediante consenso del equipo, considerando las especialidades, la carga actual y las dependencias entre frentes de trabajo.
+    
+    \item Cada desarrollador es responsable de código de calidad (según PEP8), de incluir pruebas unitarias para sus cambios, y de participar activamente en revisión de código de sus compañeros.
+    
+    \item La asignación a frentes de trabajo no es exclusiva; los desarrolladores colaborarán entre frentes según las necesidades de cada sprint.
+\end{itemize}
+
+\subsubsection{Disponibilidad Horaria por Desarrollador}
+
+Cada desarrollador dispone de un mínimo de 9 horas semanales de dedicación efectiva al proyecto. Esta disponibilidad se distribuye de la siguiente manera:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3cm}|p{1.8cm}|p{2cm}|p{2.5cm}|}
+\hline
+\textbf{Desarrollador} & \textbf{Horas/sem} & \textbf{Total (16 sem)} & \textbf{Promedio por fase} \\
+\hline
+Juan Felipe Romero & 9 & 144 h & 36 h \\
+\hline
+Laura Juliana Garzón & 9 & 144 h & 36 h \\
+\hline
+Xiomara Herrera & 9 & 144 h & 36 h \\
+\hline
+Sebastian Almanza & 9 & 144 h & 36 h \\
+\hline
+\textbf{Total equipo} & \textbf{36} & \textbf{576 h} & \textbf{144 h} \\
+\hline
+\end{tabular}
+\caption{Distribución de disponibilidad horaria por desarrollador}
+\label{tab:disponibilidad}
+\end{table}
+
+\textbf{Gestión de disponibilidad:}
+
+\begin{itemize}
+    \item La dedicación es flexible en términos de distribución semanal, permitiendo que algunos desarrolladores trabajen más horas en semanas con dependencias críticas y menos en semanas de menor carga.
+    
+    \item Se espera que los desarrolladores comuniquen anticipadamente cualquier conflicto o reducción temporal en disponibilidad, para permitir que el equipo se reorganice.
+    
+    \item Las reuniones formales (Sprint Planning, Sprint Review, Sprint Retrospective, reuniones con directora) son obligatorias y están fuera de las 9 horas semanales de desarrollo estimadas. Se espera que no superen 2 horas semanales en total.
+    
+    \item La comunicación asíncrona a través de GitHub Issues, Pull Request comments y WhatsApp reduce la necesidad de reuniones en tiempo real y da flexibilidad de horario.
+\end{itemize}
+
+\subsubsection{Directora del Proyecto}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{4cm}|p{3cm}|p{2cm}|}
+\hline
+\textbf{Nombre} & \textbf{Rol} & \textbf{Dedicación} \\
+\hline
+Cécile Gauthier Umaña & Directora + Product Owner & 10\% \\
+\hline
+\end{tabular}
+\caption{Directora del proyecto}
+\label{tab:directora}
+\end{table}
+
+\textbf{Responsabilidades de la directora:}
+
+\begin{itemize}
+    \item Actúa como Product Owner, representando los intereses del cliente (Laboratorio de Electrofisiología) y priorizando el Product Backlog.
+    
+    \item Participa en Sprint Planning y Sprint Review semanales para alineación y validación.
+    
+    \item Proporciona retroalimentación sobre artefactos de diseño, código y documentación en plazos acordados (máximo 48 horas).
+    
+    \item Facilita comunicación entre el equipo de desarrollo y el cliente, recogiendo feedback y necesidades emergentes.
+    
+    \item Vela por el cumplimiento de los estándares de calidad y de los objetivos del proyecto.
+\end{itemize}
+
+\subsubsection{Cliente}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{4cm}|p{3cm}|p{2.5cm}|}
+\hline
+\textbf{Entidad} & \textbf{Rol} & \textbf{Participación} \\
+\hline
+Laboratorio de Electrofisiología - Universidad Nacional de Colombia & Usuario final + Validador & Fases 1, 2, 4 \\
+\hline
+\end{tabular}
+\caption{Cliente del proyecto}
+\label{tab:cliente}
+\end{table}
+
+\textbf{Puntos de contacto con el cliente:}
+
+\begin{itemize}
+    \item \textbf{Fase 1:} Sesión formal de levantamiento de requerimientos, ejecución de pruebas de línea base sobre Gamma Lab.
+    
+    \item \textbf{Fase 2:} Validación de prototipo de interfaz de usuario y especificaciones técnicas del nuevo módulo.
+    
+    \item \textbf{Fase 4:} Participación en pruebas funcionales, validación de amplitude coupling, pruebas de usabilidad y firma de aceptación final.
+\end{itemize}
+
+\subsection{Gestión de Cambios y Control de Alcance}
+
+\subsubsection{Solicitudes de Cambio}
+
+Durante el desarrollo, pueden surgir solicitudes de cambio de requerimientos, modificaciones de diseño o ajustes de alcance. Estas se manejan mediante el siguiente protocolo:
+
+\begin{enumerate}
+    \item \textbf{Identificación:} El cambio es identificado por cualquier miembro del equipo o del cliente.
+    
+    \item \textbf{Documentación:} Se crea una GitHub Issue con descripción clara del cambio, justificación e impacto estimado.
+    
+    \item \textbf{Evaluación:} El equipo y la directora evalúan el impacto en cronograma, recursos y alcance.
+    
+    \item \textbf{Priorización:} El cambio se añade al Product Backlog con prioridad asignada por consenso.
+    
+    \item \textbf{Integración:} El cambio se integra en el sprint siguiente si es de alta prioridad, o se pospone si afecta significativamente el cronograma.
+\end{enumerate}
+
+Cambios solicitados después de la mitad de Fase 3 (después del sprint 10) serán evaluados para versiones futuras, priorizando la entrega a tiempo de los objetivos planteados.
+
+\subsection{Gestión de Riesgos}
+\label{sec:gestion_riesgos}
+
+La gestión de riesgos sigue el dominio de desempeño de incertidumbre de la guía PMBOK, séptima edición \cite{pmbok7}. Un riesgo es un evento incierto que, si ocurre, afecta el cronograma, el alcance o la calidad del proyecto. El proceso tiene cuatro pasos:
+
+\begin{enumerate}
+    \item \textbf{Identificación:} al inicio de cada fase, el equipo revisa los supuestos, las restricciones y el trabajo planeado para detectar riesgos nuevos. Cualquier integrante puede proponer un riesgo en las reuniones semanales.
+
+    \item \textbf{Análisis:} cada riesgo se califica según su probabilidad y su impacto, en una escala de tres niveles. La probabilidad es \textit{alta} si es de esperar que el riesgo ocurra durante el proyecto, \textit{media} si puede ocurrir y \textit{baja} si es poco probable. El impacto es \textit{alto} si compromete un objetivo específico o la fecha de entrega, \textit{medio} si obliga a reprogramar tareas de uno o más \textit{sprints} y \textit{bajo} si se absorbe dentro del mismo \textit{sprint}. Los riesgos con probabilidad e impacto altos se atienden primero.
+
+    \item \textbf{Respuesta:} para cada riesgo se elige una estrategia: \textit{evitar} (eliminar su causa), \textit{mitigar} (reducir su probabilidad o su impacto) o \textit{aceptar} (asumirlo con un plan de contingencia).
+
+    \item \textbf{Seguimiento:} el registro se revisa cada semana en la \textit{Sprint Retrospective}. El \textit{Scrum Master} lo actualiza en la hoja de seguimiento (Tabla~\ref{tab:monitoreo_control}) y escala a la directora los riesgos que comprometan el cronograma o el alcance. Si un riesgo se materializa, su respuesta se ejecuta como acción correctiva o, si modifica el alcance, mediante el protocolo de solicitudes de cambio.
+\end{enumerate}
+
+La Tabla~\ref{tab:registro_riesgos} presenta el registro de riesgos del proyecto.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{1cm}|>{\raggedright\arraybackslash}p{4.4cm}|>{\raggedright\arraybackslash}p{1.3cm}|>{\raggedright\arraybackslash}p{1.3cm}|>{\raggedright\arraybackslash}p{5.8cm}|}
+\hline
+\textbf{ID} & \textbf{Riesgo} & \textbf{Proba\-bilidad} & \textbf{Impacto} & \textbf{Estrategia y respuesta} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Riesgo} & \textbf{Proba\-bilidad} & \textbf{Impacto} & \textbf{Estrategia y respuesta} \\
+\hline
+\endhead
+\caption{Registro de riesgos del proyecto} \label{tab:registro_riesgos} \\
+\endlastfoot
+
+R-01 & Los investigadores del laboratorio tienen poca disponibilidad para las sesiones de validación, usabilidad y aceptación. & Alta & Alto & \textbf{Mitigar:} agendar las sesiones con anticipación a través de la directora, permitir sesiones remotas por Microsoft Teams y grabarlas para no tener que repetirlas. \textbf{Contingencia:} la directora participa en las sesiones como usuaria experta. \\
+\hline
+
+R-02 & El código de Gamma Lab contiene decisiones de diseño sin documentar, lo que retrasa su comprensión y modificación. & Media & Alto & \textbf{Mitigar:} exploración técnica y entrevistas con el equipo original en la Fase~1, inventario de las funciones existentes y pruebas de regresión antes de modificar cada módulo. \\
+\hline
+
+R-03 & Los cambios en el núcleo (liberación de memoria y orquestador de tareas) rompen el funcionamiento de los \textit{plugins} existentes. & Media & Alto & \textbf{Mitigar:} mantener estable el contrato de extensión, integrar los cambios de forma incremental y ejecutar las pruebas automáticas antes de integrar a la rama principal, como exige la \textit{Definition of Done}. \\
+\hline
+
+R-04 & Los resultados del nuevo módulo PAC no coinciden con los del sistema de referencia BOARD-FTD-PACC. & Media & Alto & \textbf{Mitigar:} portar las funciones de la referencia paso a paso, comparar los resultados numéricamente con tolerancias definidas y validar las gráficas con el usuario. \\
+\hline
+
+R-05 & El alcance crece por nuevas solicitudes del laboratorio durante el desarrollo. & Alta & Medio & \textbf{Evitar:} toda solicitud sigue el protocolo de solicitudes de cambio; después del \textit{sprint}~10, las solicitudes nuevas se registran para versiones futuras. \\
+\hline
+
+R-06 & El esfuerzo de una fase se subestima o un integrante se ausenta temporalmente por su carga académica. & Media & Medio & \textbf{Mitigar:} seguir cada semana la velocidad y el \textit{burn-down}, redistribuir tareas y mantener la revisión cruzada para que al menos dos integrantes conozcan cada componente. \\
+\hline
+
+R-07 & Se pierde código o documentación por fallas de los equipos o errores en el manejo de versiones. & Baja & Alto & \textbf{Mitigar:} control de versiones en GitHub con ramas y revisión de cambios, y respaldo de los documentos en OneDrive. \\
+\hline
+
+R-08 & El equipamiento del laboratorio o la máquina virtual compartida no están disponibles para las pruebas. & Media & Medio & \textbf{Aceptar:} las pruebas se ejecutan en los equipos de los desarrolladores y las de rendimiento se concentran en ventanas acordadas con el laboratorio. \\
+\hline
+
+R-09 & Una actualización de las librerías (PyQt5, VTK, PyWavelets) altera el comportamiento del sistema o impide generar el instalador. & Baja & Medio & \textbf{Evitar:} fijar las versiones de las dependencias en \textit{requirements.txt} y probar el instalador en un equipo distinto a los de desarrollo. \\
+\hline
+\end{longtable}
+
+Al cierre del proyecto, la evaluación \textit{post-mortem} revisa qué riesgos se materializaron y qué tan eficaces fueron las respuestas, como insumo para futuras versiones de Gamma Lab.
+
+\subsection{Criterios de Éxito del Proyecto}
+
+El proyecto Gamma Lab 2.0 será considerado exitoso cuando se cumplan los siguientes criterios cuantificables:
+
+\begin{enumerate}
+    \item \textbf{Rendimiento mejorado:} Gamma Lab 2.0 debe procesar señales EEG más rápido que Gamma Lab: se espera una mejora de al menos 20-30\% en los tiempos de procesamiento derivada de la paralelización del sistema.
+    
+    \item \textbf{Nuevas funcionalidades correctas al 100\%:} El módulo de amplitude coupling debe operar sin errores críticos y producir resultados reproducibles y validables. Las pruebas unitarias deben pasar al 100\%.
+    
+    \item \textbf{Corrección de problemas de v1.0:} Los errores identificados en Gamma Lab que fueron priorizados en el Product Backlog (Fase 1) deben ser corregidos y validados por el cliente.
+    
+    \item \textbf{Validación de usuario:} El usuario final (Laboratorio de Electrofisiología) debe confirmar en la Fase 4 que:
+    \begin{itemize}
+        \item Las nuevas funcionalidades responden a sus necesidades.
+        \item El sistema es fácil de usar sin ayuda externa.
+        \item Los resultados del análisis son precisos y confiables.
+        \item La documentación y manuales son claros.
+    \end{itemize}
+    
+    \item \textbf{Cobertura de pruebas:} Mínimo 80\% cobertura de código en pruebas unitarias. Todo código nuevo debe incluir casos de prueba.
+    
+    \item \textbf{Documentación completa:} Memoria del proyecto con todas las secciones requeridas, manuales técnico y de usuario, comentarios en código y docstrings en funciones Python.
+    
+    \item \textbf{Entrega a tiempo:} El proyecto debe cerrar el 20 de noviembre de 2026 con todos los entregables completados según este PMP.
+\end{enumerate}
+
+\subsection{Monitoreo y Métricas de Avance}
+
+\subsubsection{Métrica Clave: Velocidad del Equipo}
+
+La \textit{velocidad} se define como el número de horas-persona completadas (según Definition of Done) por sprint. Esto permite:
+
+\begin{itemize}
+    \item Proyectar si el equipo completará el proyecto a tiempo.
+    \item Identificar cuellos de botella u obstáculos.
+    \item Ajustar la distribución de trabajo en sprints futuros.
+\end{itemize}
+
+\textbf{Seguimiento de velocidad:}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3.5cm}|p{2.5cm}|p{2cm}|p{2cm}|}
+\hline
+\textbf{Métrica} & \textbf{Objetivo} & \textbf{Frecuencia} & \textbf{Responsable} \\
+\hline
+Velocidad por sprint & 36 h/semana & Semanal & Scrum Master \\
+\hline
+Burn-down chart & Progresión lineal & Semanal & Scrum Master \\
+\hline
+Definition of Done & 100\% cumplimiento & Por ítem & Equipo \\
+\hline
+Tasa de defectos & Minimizar & Por sprint & Testing \\
+\hline
+\end{tabular}
+\caption{Métricas clave de monitoreo}
+\label{tab:metricas}
+\end{table}
+
+\subsubsection{Reuniones de Sincronización}
+
+\begin{itemize}
+    \item \textbf{Sprint Planning:} Lunes de cada semana, 30 minutos. Selección de tareas del backlog y distribución entre desarrolladores.
+    
+    \item \textbf{Sincronización asíncrona:} Diariamente a través de comentarios en GitHub Issues. Cada desarrollador actualiza el estado de sus tareas.
+    
+    \item \textbf{Sprint Review:} Viernes de cada semana, 45 minutos. Presentación de incrementos completados a la directora. Retroalimentación.
+    
+    \item \textbf{Sprint Retrospective:} Viernes de cada semana (después de Review), 30 minutos. Análisis interno del equipo sobre qué funcionó bien, qué mejorar, y acciones correctivas para próximo sprint.
+    
+    \item \textbf{Sesiones técnicas:} Según necesidad (no planificadas regularmente). Para resolver decisiones arquitectónicas, resolver bloqueos o validaciones cruzadas entre frentes.
+\end{itemize}
+
+
+\clearpage
+
+
+\section{Monitoreo y Control del Proyecto}
+
+\subsection{Administración de Requerimientos}
+
+\subsubsection*{Descripción del proceso}
+
+La administración de requerimientos en Gamma Lab 2.0 es un proceso iterativo
+que gestiona los cambios de forma ordenada y trazable durante todo el ciclo de
+vida del proyecto. En él participan el equipo de desarrollo, que identifica,
+documenta, revisa y valida los requerimientos funcionales y no funcionales, y la
+directora del proyecto, que aprueba los cambios junto con el equipo.
+
+La gestión de requerimientos comienza en la Fase~1, donde se identifican
+brechas de mejora a través de exploración técnica de Gamma Lab,
+entrevistas semiestructuradas con el equipo original y sesiones formales de
+levantamiento de requerimientos con el cliente. Posteriormente, estos
+requerimientos se modelan en casos de uso, se priorizan en el Product Backlog
+y se documentan formalmente. Cada requerimiento se asocia a una matriz de
+trazabilidad que permite vincularlo con componentes del diseño, código,
+pruebas y entregables.
+
+Durante el desarrollo iterativo (sprints), los requerimientos pueden ser refinados con base a una constante retroalimentación. El proceso de control incluye:
+
+\begin{itemize}
+    \item Un canal formal de solicitud de cambio.
+    \item Evaluación del impacto técnico y temporal sobre el cronograma.
+    \item Aprobación del cambio por consenso del equipo y la directora del proyecto.
+    \item Actualización de todos los artefactos afectados: Product Backlog,
+          documentos, matriz de trazabilidad, prototipos y código.
+\end{itemize}
+
+Los cambios solicitados después de la mitad de la Fase~3 (sprint~10) serán
+evaluados para versiones futuras, priorizando la entrega a tiempo de los
+objetivos planteados.
+
+\subsubsection*{Artefactos por generar}
+
+Durante la administración de requerimientos se generarán los siguientes
+artefactos:
+
+\begin{table}[!ht]
+\centering
+\small
+\begin{tabular}{|p{4cm}|p{10cm}|}
+\hline
+\textbf{Artefacto} & \textbf{Descripción} \\ \hline
+
+Product Backlog inicial & Lista priorizada de brechas y requerimientos identificados, acordados con el cliente al cierre de la Fase~1. \\ \hline
+
+Casos de uso & Diagramas y descripciones narrativas que modelan las interacciones del usuario con el sistema para cada frente de trabajo. \\ \hline
+
+Matriz de trazabilidad & Tabla que relaciona requerimientos con elementos de diseño, código y pruebas para garantizar cobertura completa. \\ \hline
+
+Registro de solicitudes de cambio & Documenta cada solicitud de cambio con su justificación, impacto estimado y estado de resolución. \\ \hline
+
+Historial de versiones & Registro en GitHub que documenta los cambios aceptados en el repositorio y su justificación técnica. \\ \hline
+
+\end{tabular}
+\caption{Artefactos generados durante la administración de requerimientos}
+\label{tab:artefactos_requerimientos}
+\end{table}
+
+\subsection{Monitoreo y Control de Progreso}
+
+El progreso se sigue con control visual, métricas y reportes periódicos, para
+verificar que el desarrollo cumpla los tiempos, entregables y objetivos de la
+planificación.
+
+Se usan tres herramientas:
+
+\begin{itemize}
+    \item \textbf{Diagrama de Gantt:} permite observar la duración y el
+    solapamiento de actividades, así como su estado de avance en relación
+    con la línea temporal del proyecto.
+
+    \item \textbf{Burnup Chart en GitHub:} herramienta gráfica que compara
+    el avance real frente al avance planificado en horas-persona, útil para
+    identificar retrasos o desviaciones respecto a la velocidad objetivo del equipo.
+
+    \item \textbf{Tablero Kanban:} muestra el estado del
+    trabajo (\textit{To Do}, \textit{In Progress}, \textit{In Review},
+    \textit{Done}), facilitando la identificación de bloqueos y la
+    sincronización asíncrona diaria del equipo.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{4.5cm}|p{3cm}|p{2.5cm}|p{3.5cm}|}
+\hline
+\textbf{Actividad} & \textbf{Responsable} & \textbf{Frecuencia} & \textbf{Herramienta} \\ \hline
+
+Actualización del tablero Kanban & Todo el equipo & Diaria & Kanban del departamento \\ \hline
+
+Verificación de velocidad del sprint &  Scrum Master & Semanal & Kanban del departamento \\ \hline
+
+Registro de desvíos y acciones correctivas & Scrum Master & Semanal & Hoja de seguimiento \\ \hline
+
+Sprint Review con la directora & Equipo y Directora & Semanal (viernes) & Burnup Chart \\ \hline
+
+Revisión del avance por fase & Directora del proyecto & Al cierre de fase & Gantt + Checklist \\ \hline
+
+\end{tabular}
+\caption{Actividades de monitoreo y responsables}
+\label{tab:monitoreo_control}
+\end{table}
+
+
+\subsection{Cierre del Proyecto}
+
+El cierre del proyecto comprende las siguientes actividades:
+
+\begin{itemize}
+    \item \textbf{Sprint Review final:} presentación de los resultados
+    comparativos entre Gamma Lab y Gamma Lab~2.0, y validación de las
+    funcionalidades nuevas con la directora del proyecto.
+
+    \item \textbf{Evaluación post-mortem del ciclo:} reflexión grupal sobre
+    aprendizajes, errores y oportunidades de mejora para versiones futuras.
+
+    \item \textbf{Revisión final de entregables:} verificación de
+    completitud, actualización y correcta documentación de todos los
+    artefactos del proyecto.
+
+    \item \textbf{Prueba final del sistema:} ejecutada en condiciones reales
+    de uso con investigadores del Laboratorio de Electrofisiología de la
+    Universidad Nacional de Colombia.
+
+    \item \textbf{Entrega formal del software:} incluye instalador, código
+    fuente organizado, manual técnico y manual de usuario de Gamma Lab~2.0.
+
+    \item \textbf{Firma de aceptación del cliente:} acta de conformidad
+    posterior a la validación del sistema por parte del laboratorio.
+
+    \item \textbf{Consolidación de documentación:} almacenamiento definitivo
+    de todos los entregables en OneDrive y GitHub con tags de versión final.
+\end{itemize}
+
+\subsection{Entrega del Producto}
+
+La entrega de Gamma Lab 2.0 al cliente se realizará durante la semana 17 del calendario
+académico Javeriana 2026-30, correspondiente al cierre de la Fase~4 según el
+calendario del proyecto. Se entregará el código fuente, los manuales
+técnicos y las guías de usuario. El equipo de desarrollo será responsable
+de realizar la instalación del sistema en los equipos del Laboratorio de
+Electrofisiología que cuenten con sistema operativo compatible.
+
+Una vez instalado, se ejecutará una prueba funcional con datos reales del
+laboratorio. Se evaluará también la usabilidad del sistema mediante
+sesiones guiadas y no guiadas con los investigadores, contrastando los
+resultados frente a la línea base establecida en la Fase~1.
+
+
+
+
+
+%--------------------------------------------------------------------
+\begin{thebibliography}{00}
+
+\bibitem{pressman2015}
+R. S. Pressman and B. R. Maxim, \textit{Software Engineering: A Practitioner's Approach}, 8th ed. New York, NY, USA: McGraw-Hill Education, 2015.
+
+\bibitem{schwaber2020}
+K. Schwaber and J. Sutherland, \textit{The Scrum Guide: The Definitive Guide to Scrum: The Rules of the Game}. Scrum.org, 2020. [Online]. Available: https://scrumguides.org/docs/scrumguide/v2020/2020-Scrum-Guide-US.pdf
+
+\bibitem{sommerville2016}
+I. Sommerville, \textit{Software Engineering}, 10th ed. Harlow, England: Pearson Education, 2016.
+
+\bibitem{yahya2022}
+N. Yahya and S. S. Maidin, “The waterfall model with agile Scrum as the hybrid agile model for the software engineering team,” in \textit{2022 10th International Conference on Cyber and IT Service Management (CITSM)}, 2022, pp. 1--6, doi: 10.1109/CITSM56380.2022.9936036.
+
+\bibitem{academia2012}
+Academia.edu, “Comparative study of various process model in software development,” 2012. [Online]. Available: https://www.academia.edu/81531661
+
+\bibitem{pmbok7}
+Project Management Institute, \textit{A Guide to the Project Management Body of Knowledge (PMBOK Guide) and The Standard for Project Management}, 7th ed. Newtown Square, PA, USA: Project Management Institute, 2021. [Online]. Available: \url{https://www.pmi.org/standards/pmbok}
+
+\bibitem{iso29148}
+\textit{Systems and Software Engineering -- Life Cycle Processes -- Requirements Engineering}, ISO/IEC/IEEE 29148:2018, 2nd ed., International Organization for Standardization, Nov. 2018. [Online]. Available: \url{https://www.iso.org/standard/72089.html}
+
+\bibitem{eeles2001}
+P. Eeles, “Capturing architectural requirements,” Rational Software Corporation, Nov. 2001. [Online]. Available: \url{https://web.archive.org/web/20210126025316/https://www.ibm.com/developerworks/rational/library/4706.html}
+
+\bibitem{iso42010}
+\textit{Software, Systems and Enterprise -- Architecture Description}, ISO/IEC/IEEE 42010:2022, 2nd ed., International Organization for Standardization, Nov. 2022. [Online]. Available: \url{https://www.iso.org/standard/74393.html}
+
+\bibitem{kruchten1995}
+P. B. Kruchten, “The 4+1 view model of architecture,” \textit{IEEE Software}, vol. 12, no. 6, pp. 42--50, 1995, doi: 10.1109/52.469759.
+
+\bibitem{omg_uml}
+Object Management Group, \textit{OMG Unified Modeling Language (OMG UML), Version 2.5.1}, OMG Doc. formal/17-12-05, Dec. 2017. [Online]. Available: \url{https://www.omg.org/spec/UML/2.5.1/}
+
+\bibitem{iso29119-3}
+\textit{Software and Systems Engineering -- Software Testing -- Part 3: Test Documentation}, ISO/IEC/IEEE 29119-3:2021, 2nd ed., International Organization for Standardization, Oct. 2021. [Online]. Available: \url{https://www.iso.org/standard/79429.html}
+
+\bibitem{iso9241-11}
+\textit{Ergonomics of Human-System Interaction -- Part 11: Usability: Definitions and Concepts}, ISO 9241-11:2018, 2nd ed., International Organization for Standardization, Mar. 2018. [Online]. Available: \url{https://www.iso.org/standard/63500.html}
+
+\bibitem{brooke1996}
+J. Brooke, “SUS: A quick and dirty usability scale,” in \textit{Usability Evaluation in Industry}, P. W. Jordan, B. Thomas, B. A. Weerdmeester, and I. L. McClelland, Eds. London, U.K.: Taylor \& Francis, 1996, pp. 189--194.
+
+\bibitem{iso26514}
+\textit{Systems and Software Engineering -- Design and Development of Information for Users}, ISO/IEC/IEEE 26514:2022, 1st ed., International Organization for Standardization, Jan. 2022. [Online]. Available: \url{https://www.iso.org/standard/77451.html}
+
+\bibitem{semver}
+T. Preston-Werner, “Semantic Versioning 2.0.0.” [Online]. Available: \url{https://semver.org/spec/v2.0.0.html}
+
+\end{thebibliography}
+\end{document}

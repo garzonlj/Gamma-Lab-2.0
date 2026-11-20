@@ -1,0 +1,465 @@
+import sys
+import numpy as np
+import vtk
+from PyQt5 import QtWidgets, QtCore
+from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from scipy.signal import welch
+
+from core.plugins.interfaces import IPlugin
+from core.plugins.meta import PluginMeta
+from core.utils.vtk_context_menu import VTKContextMenu
+from plugins.analysis.frequency.psd.psd_plugin_ui import Ui_Psd
+from core.utils.adapters import trials_matrix_to_vtk_table
+from core.utils.trial_labels import trials_used
+from core.utils.unidades import etiqueta_psd
+from functools import partial
+from core.utils.submuestreo import agregar_columna
+
+
+def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, ctx=None, log=None):
+    """Welch PSD of every trial: returns (freq, power, fs_eff). Pure, for the TaskService."""
+    log = log or (lambda *a: None)
+    Ns, T = X.shape
+    srt = max(1, int(round(fs / float(target_fs)))) if (target_fs and target_fs > 0) else 1
+    fs_eff = fs / srt
+    Xds = X[::srt, :] if srt > 1 else X
+    Ns_eff = Xds.shape[0]
+
+    if nperseg > Ns_eff:
+        log(f"Warning: nperseg ({nperseg}) > Ns_eff ({Ns_eff}). Adjusting to {Ns_eff}.")
+        nperseg = Ns_eff
+    if noverlap >= nperseg:
+        log("Warning: noverlap >= nperseg. Adjusting to nperseg//2.")
+        noverlap = nperseg // 2
+    if nfft < nperseg:
+        log("Adjusting nfft to nperseg to satisfy SciPy.")
+        nfft = nperseg
+    detrend_arg = False if detrend == "none" else detrend
+    log(f"Welch params: fs_eff={fs_eff}, window={window}, nperseg={nperseg}, "
+        f"noverlap={noverlap}, nfft={nfft}, detrend={detrend_arg}, axis=0")
+
+    freq, power = welch(Xds, fs=fs_eff, window=window, nperseg=nperseg, noverlap=noverlap,
+                        nfft=nfft, detrend=detrend_arg, scaling='density', axis=0)
+    power = np.nan_to_num(power, nan=0.0, posinf=np.inf, neginf=0.0).astype(np.float64)
+    freq = freq.astype(np.float64)
+    log(f"PSD: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T={power.shape[1]}")
+    return freq, power, fs_eff
+
+
+class Psd_plugin(IPlugin):
+    """
+    Power Spectral Density (PSD) plugin with selectable modes:
+    All Trials, Average, Individual. Mirrors other signal plugins.
+    """
+
+    MAX_PLOTS = 200
+    
+    def __init__(self, meta: PluginMeta):
+        super().__init__(meta)
+        self.ui: Ui_Psd | None = None
+
+        self.vtk_interactor: QVTKRenderWindowInteractor | None = None
+        self.vtk_view: vtk.vtkContextView | None = None
+        self.chart: vtk.vtkChartXY | None = None
+        self.vtk_menu: VTKContextMenu | None = None
+
+
+    def stop(self):
+        self._log("stop() - cleanup VTK")
+        if self.vtk_interactor:
+            self.vtk_interactor.Disable()
+        
+    def process(self, data):
+        if self.vtk_interactor:
+            self.vtk_interactor.Enable()
+        self._log(f"[PSD] Process: enable {data}")
+
+    def get_widget(self, parent=None):
+        if self.widget is None:
+            self._log("get_widget(): creating UI")
+            self.ui = Ui_Psd()
+            self.widget = QtWidgets.QWidget(parent)
+            self.ui.setupUi(self.widget)
+            self.alerts.parent = self.widget
+
+            self._log("UI created. plotArea:", bool(self.ui.plotArea),
+                      "panel:", bool(self.ui.layoutWidget),
+                      "splitter:", bool(self.ui.splitter))
+            
+            self._ensure_vtk()
+            self._wire_ui()
+            self._init_defaults()
+
+            try:
+                if self.mainwin:
+                    self.mainwin.show_watermark()
+            except Exception:
+                pass
+
+            QtCore.QTimer.singleShot(0, self._log_sizes)
+        else:
+            self.widget.setParent(parent)
+        return self.widget
+
+    def _log_sizes(self):
+        if self.widget:
+            self._log(f"Widget size={self.widget.size().width()}x{self.widget.size().height()}")
+        if self.ui and self.ui.plotArea:
+            self._log(f"plotArea size={self.ui.plotArea.size().width()}x{self.ui.plotArea.size().height()}")
+    
+
+    def _init_defaults(self):
+        """Set MATLAB-like defaults and a wide plotting range."""
+        self.ui.sampleDensitySpinBox.setValue(1000)
+        try:
+            idx = self.ui.windowComboBox.findText("hamming", QtCore.Qt.MatchFixedString)
+            if idx >= 0:
+                self.ui.windowComboBox.setCurrentIndex(idx)
+        except Exception:
+            pass
+        self.ui.npersegSpinBox.setValue(256)
+        self._sync_noverlap()
+        if hasattr(self.ui, "detrendComboBox"):
+            self.ui.detrendComboBox.setProperty("variant", "input")
+            self.ui.detrendComboBox.setCurrentText("none")
+            
+        self.ui.lowFrequencySpinBox.setValue(0.0)
+        self.ui.highFrequencySpinBox.setValue(500.0)
+        
+        try:
+            midx = self.ui.modeComboBox.findText("Individual", QtCore.Qt.MatchFixedString)
+            if midx >= 0:
+                self.ui.modeComboBox.setCurrentIndex(midx)
+        except Exception:
+            pass
+        self.ui.trialIndexSpinBox.setValue(1)
+
+    def _wire_ui(self):
+        self._log("wire ui")
+        self.ui.calculatePsdButton.clicked.connect(self._on_calculate_clicked)
+        self.ui.clearButton.clicked.connect(self._init_defaults)
+        self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
+        self.ui.highFrequencySpinBox.valueChanged.connect(self._sync_range)
+        self.ui.npersegSpinBox.setRange(1, 100_000_000)
+        self.ui.npersegSpinBox.setKeyboardTracking(False)
+        self.ui.npersegSpinBox.setValue(256)
+        self.ui.noverlapSpinBox.setRange(0, 100_000_000)
+        self.ui.noverlapSpinBox.setValue(128)
+        self.ui.nfftSpinBox.setRange(1, 100_000_000)
+        self.ui.nfftSpinBox.setValue(256)
+        self.ui.sampleDensitySpinBox.setRange(0, 10000)
+        self.ui.sampleDensitySpinBox.setSingleStep(10)
+        self.ui.sampleDensitySpinBox.setValue(1000)
+        self.ui.highFrequencySpinBox.setDecimals(2)
+        self.ui.highFrequencySpinBox.setRange(0.0, 10000)
+        self.ui.highFrequencySpinBox.setSingleStep(1.0)
+        self.ui.highFrequencySpinBox.setValue(40.0)
+        self.ui.lowFrequencySpinBox.setDecimals(2)
+        self.ui.lowFrequencySpinBox.setRange(0.0, 10000)
+        self.ui.lowFrequencySpinBox.setKeyboardTracking(False)
+        self.ui.highFrequencySpinBox.setKeyboardTracking(False)
+        self.ui.lowFrequencySpinBox.setSingleStep(1.0)
+        self.ui.lowFrequencySpinBox.setValue(0.0)
+        
+        self.ui.npersegSpinBox.valueChanged.connect(self._sync_noverlap)
+        
+        self.ui.modeComboBox.currentTextChanged.connect(self._on_mode_changed)
+
+        self.ui.trialIndexSpinBox.setMinimum(1)
+        self.ui.modeComboBox.currentTextChanged.connect(lambda _: self.publish_current_trial())
+        self.ui.trialIndexSpinBox.valueChanged.connect(lambda _: self.publish_current_trial())
+
+    def _on_mode_changed(self, mode_text: str):
+        """Show or hide the individual trial selector."""
+        is_individual = (mode_text == "Individual")
+        self.ui.trialIndexLabel.setVisible(is_individual)
+        self.ui.trialIndexSpinBox.setVisible(is_individual)
+        
+        num_trials = self.ui.trialIndexSpinBox.maximum()
+        self.ui.trialIndexSpinBox.setEnabled(is_individual and num_trials > 0)
+
+    def current_trial_state(self):
+        _, td = self._active_trials_quiet()
+        if td is None:
+            return None
+        total = int(td.trials.shape[1])
+        mode = self.ui.modeComboBox.currentText() if self.ui else "All Trials"
+        if mode == "Individual":
+            return self.build_trial_state("single", position=self.ui.trialIndexSpinBox.value(),
+                                          total=total, channel=td.channel_name)
+        if mode == "Average":
+            return self.build_trial_state("average", total=total, channel=td.channel_name)
+        return self.build_trial_state("all", total=total, channel=td.channel_name)
+
+    def _sync_noverlap(self):
+        """Set noverlap to half of nperseg by default."""
+        nperseg = self.ui.npersegSpinBox.value()
+        self.ui.noverlapSpinBox.setValue(nperseg // 2)
+        self.ui.nfftSpinBox.setValue(nperseg)
+
+    def _ensure_vtk(self, *args):
+        self._log("ensure_vtk(): enter")
+        if self.vtk_interactor:
+             self.ui.plotArea.layout().addWidget(self.vtk_interactor)
+             return
+
+        self.vtk_interactor = QVTKRenderWindowInteractor(self.ui.plotArea)
+        self.ui.plotArea.setLayout(QtWidgets.QVBoxLayout())
+        self.ui.plotArea.layout().setContentsMargins(0, 0, 0, 0)
+        self.ui.plotArea.layout().addWidget(self.vtk_interactor)
+        self._log("ensure_vtk(): interactor embedded")
+
+        self.vtk_view = vtk.vtkContextView()
+        self.vtk_view.SetRenderWindow(self.vtk_interactor.GetRenderWindow())
+        self.vtk_view.GetRenderer().SetBackground(0.98, 0.98, 0.98)
+
+        try:
+            self.vtk_interactor.Initialize()
+        except Exception:
+            pass
+        self._log("ensure_vtk(): scheduled init")
+
+
+    def _on_calculate_clicked(self):
+        self._log("_on_calculate_clicked()")
+
+        fs, X, ch_name = self._load_trials_from_store()
+        if X is None or fs is None:
+            self._notify("PSD: no trials in active signal.")
+            self.ui.trialIndexSpinBox.setEnabled(False)
+            self.ui.trialIndexSpinBox.setRange(1, 1)
+            return
+            
+        if self.ui.sampleDensitySpinBox.value() <= 0:
+             self.ui.sampleDensitySpinBox.setValue(fs)
+        if self.ui.lowFrequencySpinBox.value() >= self.ui.highFrequencySpinBox.value():
+            self.ui.lowFrequencySpinBox.setValue(0.0)
+            self.ui.highFrequencySpinBox.setValue(fs/2.0)
+            
+        num_trials = X.shape[1]
+        self.ui.trialIndexSpinBox.setRange(1, max(1, num_trials))
+        is_individual = (self.ui.modeComboBox.currentText() == "Individual")
+        self.ui.trialIndexSpinBox.setEnabled(is_individual)
+
+
+        try:
+            target_fs = float(self.ui.sampleDensitySpinBox.value())
+            lo = float(self.ui.lowFrequencySpinBox.value())
+            hi = float(self.ui.highFrequencySpinBox.value())
+            
+            window = self.ui.windowComboBox.currentText()
+            nperseg = self.ui.npersegSpinBox.value()
+            noverlap = self.ui.noverlapSpinBox.value()
+            nfft = self.ui.nfftSpinBox.value()
+            
+            detrend = self.ui.detrendComboBox.currentText()
+            
+            mode = self.ui.modeComboBox.currentText()
+            trial_idx = self.ui.trialIndexSpinBox.value() - 1
+
+            if lo > hi:
+                lo, hi = hi, lo
+            
+            if nperseg <= 1:
+                raise ValueError("N-per-seg must be > 1.")
+            if noverlap < 0:
+                raise ValueError("N-overlap cannot be negative.")
+            
+        except Exception as e:
+            self.alerts.warning(f"Parameter error: {str(e)}", "Invalid parameters")
+            return
+
+        p = dict(mode=mode, trial_idx=trial_idx, num_trials=num_trials, lo=lo, hi=hi, ch_name=ch_name)
+        self.run_task(calcular_psd, partial(self._on_psd_done, p),
+                      on_failed=lambda m: self.alerts.error(f"Could not compute PSD: {m}"),
+                      X=X, fs=fs, target_fs=target_fs, window=window, nperseg=nperseg,
+                      noverlap=noverlap, nfft=nfft, detrend=detrend)
+
+    def _on_psd_done(self, p, resultado):
+        mode, trial_idx, num_trials = p["mode"], p["trial_idx"], p["num_trials"]
+        lo, hi, ch_name = p["lo"], p["hi"], p["ch_name"]
+        freq, power_all_trials, fs_eff = resultado
+
+        power_to_plot = None
+        plot_title = ""
+        
+        used = None
+        if mode == "All Trials":
+            power_to_plot = power_all_trials
+            used = trials_used(None, num_trials, "all")
+            plot_title = f"PSD (All Trials) - {ch_name} — {used['label']}"
+            if num_trials > self.MAX_PLOTS:
+                plot_title += f", se dibujan {self.MAX_PLOTS}"
+            
+        elif mode == "Average":
+            power_to_plot = np.mean(power_all_trials, axis=1, keepdims=True)
+            used = trials_used(None, num_trials, "average")
+            plot_title = f"PSD (Average) - {ch_name} — {used['label']}"
+            
+        elif mode == "Individual":
+            if not (0 <= trial_idx < num_trials):
+                self._notify(f"Trial {trial_idx + 1} out of range (1–{num_trials}).", "warning")
+                return
+            power_to_plot = power_all_trials[:, trial_idx:trial_idx+1]
+            used = trials_used([trial_idx + 1], num_trials, "single")
+            plot_title = f"PSD - {ch_name} — {used['label']}"
+            
+
+        if power_to_plot is not None:
+            self._plot_psd(freq, power_to_plot, plot_title, lo, hi, ch_name)
+            self._trials_used = used
+            self._notify(f"PSD ({mode}) ready with {used['label']}: fs_eff={fs_eff:.2f} Hz, {freq.size} bins")
+            self.publish_current_trial()
+            self.mark_project_dirty()
+        else:
+            self._notify(f"Calculation mode '{mode}' not recognized.", "error")
+
+    def get_analysis_params(self) -> dict:
+        return {
+            "sample_density": self.ui.sampleDensitySpinBox.value(),
+            "low_freq": self.ui.lowFrequencySpinBox.value(),
+            "high_freq": self.ui.highFrequencySpinBox.value(),
+            "window": self.ui.windowComboBox.currentText(),
+            "nperseg": self.ui.npersegSpinBox.value(),
+            "noverlap": self.ui.noverlapSpinBox.value(),
+            "nfft": self.ui.nfftSpinBox.value(),
+            "detrend": self.ui.detrendComboBox.currentText(),
+            "mode": self.ui.modeComboBox.currentText(),
+            "trial_index": self.ui.trialIndexSpinBox.value() - 1,
+            "trials_used": self._trials_used,
+        }
+
+    def apply_analysis_params(self, params: dict):
+        self.ui.sampleDensitySpinBox.setValue(params.get("sample_density", self.ui.sampleDensitySpinBox.value()))
+        self.ui.lowFrequencySpinBox.setValue(params.get("low_freq", self.ui.lowFrequencySpinBox.value()))
+        self.ui.highFrequencySpinBox.setValue(params.get("high_freq", self.ui.highFrequencySpinBox.value()))
+
+        idx = self.ui.windowComboBox.findText(params.get("window", ""))
+        if idx >= 0:
+            self.ui.windowComboBox.setCurrentIndex(idx)
+
+        self.ui.npersegSpinBox.setValue(params.get("nperseg", self.ui.npersegSpinBox.value()))
+        self.ui.noverlapSpinBox.setValue(params.get("noverlap", self.ui.noverlapSpinBox.value()))
+        self.ui.nfftSpinBox.setValue(params.get("nfft", self.ui.nfftSpinBox.value()))
+
+        didx = self.ui.detrendComboBox.findText(params.get("detrend", ""))
+        if didx >= 0:
+            self.ui.detrendComboBox.setCurrentIndex(didx)
+
+        midx = self.ui.modeComboBox.findText(params.get("mode", ""))
+        if midx >= 0:
+            self.ui.modeComboBox.setCurrentIndex(midx)
+
+        trial_index = int(params.get("trial_index", 0)) + 1
+        self.ui.trialIndexSpinBox.setRange(1, max(self.ui.trialIndexSpinBox.maximum(), trial_index))
+        self.ui.trialIndexSpinBox.setValue(trial_index)
+
+        self._on_calculate_clicked()
+
+    def _sync_range(self):
+        lo = float(self.ui.lowFrequencySpinBox.value())
+        hi = float(self.ui.highFrequencySpinBox.value())
+        if lo > hi:
+            self.ui.highFrequencySpinBox.setValue(lo)
+        self._log(f"range sync: low={self.ui.lowFrequencySpinBox.value()}, "
+                  f"high={self.ui.highFrequencySpinBox.value()}")
+
+    def _load_trials_from_store(self):
+        if not self.mainwin:
+            return None, None, None
+
+        if self.get_active_signal() is None:
+            return None, None, None
+
+        td = self.get_active_trials()
+
+        if td is None or td.trials.size == 0:
+            return None, None, None
+
+        fs = float(getattr(td, "sampling_rate", 0.0))
+        X = np.asarray(getattr(td, "trials", None), dtype=np.float64)
+        ch = getattr(td, "channel_name", "")
+        self._unidad_psd = getattr(td, "unit", "") or ""
+        if X is None or X.ndim != 2 or fs <= 0:
+            self._log("Invalid TrialDataset (fs<=0 or trials not 2D).")
+            return None, None, None
+
+        self._log(f"Trials: Ns={X.shape[0]}, T={X.shape[1]}, fs={fs}")
+        return fs, X, ch
+
+    def _compute_psd(self, X: np.ndarray, fs: float, target_fs: float,
+                     window: str, nperseg: int, noverlap: int, nfft: int, detrend: str):
+        
+        return calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, log=self._log)
+
+    def _plot_psd(self, freq: np.ndarray, power: np.ndarray, 
+                   plot_title: str, lo: float, hi: float, ch_name: str):
+        """
+        Build a vtkTable and draw power curves.
+        'power' is (Nf, T) or (Nf, 1).
+        Applies frequency filter and auto-fit Y limits.
+        """
+        if self.vtk_view is None:
+            self._ensure_vtk()
+
+        sel = (freq >= lo) & (freq <= hi)
+        freq_v = freq[sel]
+        power_v = power[sel, :]
+
+        num_curves = power_v.shape[1]
+        MAX_PLOTS = self.MAX_PLOTS
+        if num_curves > MAX_PLOTS:
+            self._log(f"There are {num_curves} trials → showing {MAX_PLOTS}")
+            power_v = power_v[:, :MAX_PLOTS]
+
+        table = trials_matrix_to_vtk_table(freq_v, power_v)
+
+        scene = self.vtk_view.GetScene()
+        scene.ClearItems()
+        self.chart = vtk.vtkChartXY()
+        scene.AddItem(self.chart)
+
+        ax_b = self.chart.GetAxis(vtk.vtkAxis.BOTTOM)
+        ax_l = self.chart.GetAxis(vtk.vtkAxis.LEFT)
+        ax_b.SetGridVisible(True); ax_l.SetGridVisible(True)
+        ax_b.SetTitle("Frequency (Hz)")
+        ax_l.SetTitle(etiqueta_psd(getattr(self, "_unidad_psd", "")))
+        
+        if power_v.size > 0:
+            y_max_data = np.max(power_v)
+            y_max_limit = y_max_data * 1.10 
+            y_min_limit = 0.0 
+            
+            ax_l.SetMinimum(y_min_limit)
+            ax_l.SetMaximum(y_max_limit)
+            self._log(f"Auto Y fit: range=[{y_min_limit:.2e}, {y_max_limit:.2e}]")
+
+        try:
+            self.chart.SetTitle(plot_title)
+        except Exception:
+            pass
+        
+        num_cols = table.GetNumberOfColumns()
+        self._log(f"Plotting {num_cols-1} PSD curves.")
+        
+        line_width = 0.5 if num_curves > 1 else 2.0
+        
+        for c in range(1, num_cols):
+            plot = agregar_columna(self.chart, table, c)
+            plot.SetWidth(line_width) 
+
+        try:
+            self.vtk_menu = VTKContextMenu(self.chart, self.vtk_interactor,
+                                           self.active_signal.name, ch_name,
+                                           self.meta.id, parent=self.widget)
+
+        except Exception as e:
+            self.alerts.error(f"Error creating the context menu.\n {str(e)}")
+
+        self.vtk_view.GetRenderWindow().Render()
+
+        try:
+            if self.mainwin:
+                self.mainwin.hide_watermark()
+        except Exception:
+            pass

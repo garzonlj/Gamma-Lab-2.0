@@ -1,0 +1,10 @@
+id: "relative_psd"
+name: "Relative PSD"
+category: "Analysis"
+subcategory: "Frequency"
+version: "1.0"
+icon: "icn_Relative_psd.png"
+logic_class: "Relative_psd_plugin"
+ui_class: ""
+description: "Calculates the relative Power Spectral Density, providing absolute and relative power for each frequency band, with options to configure the window, detrending method, and calculation mode."
+saves_analysis: true

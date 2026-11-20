@@ -1,0 +1,143 @@
+import numpy as np
+import pywt
+from scipy.interpolate import interp1d
+
+from core.utils.parallel import map_ordenado
+
+
+def _sin_log(*args):
+    pass
+
+
+VOCES_POR_OCTAVA = 16
+
+ESCALAS_POR_BLOQUE = 16
+
+
+def eje_frecuencias(fmin, fmax, escala_log=False):
+    """Lineal: descendente, 2 filas por Hz. Logarítmica: ascendente, VOCES_POR_OCTAVA filas por octava."""
+    if escala_log:
+        n = int(round(np.log2(fmax / fmin) * VOCES_POR_OCTAVA)) + 1
+        return np.geomspace(fmin, fmax, max(n, 2))
+    return np.linspace(fmin, fmax, 2 * int(max(1, fmax - fmin)))[::-1]
+
+
+def tasa_efectiva(fs_calculado, fs):
+    """La tasa que de verdad queda al submuestrear, y el factor usado.
+
+    El factor tiene que ser entero, así que una densidad que no divida a la del
+    archivo no se puede alcanzar: pedir 3.000 Hz sobre 10.000 da factor 3 y deja
+    la señal en 3.333,3 Hz. Tratarla como si fuera de 3.000 corre **todo** el eje
+    de frecuencias un 11 % (problema nº 18). MATLAB calcula `srate/srt`, esta
+    misma tasa, y `fft_average` tambien; el wavelet era el unico que no.
+    """
+    if fs <= 0:
+        raise ValueError(f"La densidad de muestreo debe ser mayor que cero (se recibió {fs:g}).")
+    factor = max(1, int(round(fs_calculado / fs)))
+    return fs_calculado / factor, factor
+
+
+def compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles, escala_log=False, t0=0.0, ctx=None):
+    """Escalograma |CWT| de Morlet. Con `ctx` informa el avance por bloques de
+    frecuencias y atiende la cancelación entre bloques; si se cancela devuelve None."""
+    if fs <= 0:
+        raise ValueError(f"La densidad de muestreo debe ser mayor que cero (se recibió {fs}).")
+    if fmin <= 0:
+        raise ValueError(f"La frecuencia baja debe ser mayor que cero (se recibió {fmin}).")
+    if fmax <= fmin:
+        raise ValueError(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
+
+    fs_efectiva, factor = tasa_efectiva(fs_calculado, fs)
+
+    if fmax > fs_efectiva / 2:
+        raise ValueError(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
+                         f"la mitad de la densidad efectiva ({fs_efectiva:g} Hz).")
+
+    sig = sig[::factor]
+
+    if len(sig) < 4:
+        raise ValueError(
+            f"La señal tiene {len(sig)} muestras después del submuestreo; se necesitan al menos 4.")
+
+    freq_axis = eje_frecuencias(fmin, fmax, escala_log)
+    wavelet = f"cmor{num_cycles}-1.0"
+    central_freq = pywt.central_frequency(wavelet)
+    scales = central_freq * fs_efectiva / freq_axis
+
+    bloques = [scales[i:i + ESCALAS_POR_BLOQUE] for i in range(0, len(scales), ESCALAS_POR_BLOQUE)]
+
+    def un_bloque(escalas):
+        coef, _ = pywt.cwt(sig, escalas, wavelet, sampling_period=1/fs_efectiva, method="fft")
+        return np.abs(coef)
+
+    partes = map_ordenado(un_bloque, bloques, ctx=ctx, etiqueta="Transformada wavelet: bloque",
+                          bytes_por_item=24 * ESCALAS_POR_BLOQUE * len(sig))
+    if partes is None:
+        return None
+    scalogram = np.vstack(partes)
+    time_axis = t0 + np.arange(len(sig)) / fs_efectiva
+
+    return scalogram, time_axis, freq_axis
+
+
+def normalize_tf(tf, method="z-score", log=None):
+    log = log or _sin_log
+    try:
+        base_mean = np.mean(tf, axis=1, keepdims=True)
+        base_std = np.std(tf, axis=1, ddof=0, keepdims=True)
+        base_min = np.min(tf)
+        base_max = np.max(tf)
+
+        if method == "z-score":
+            return (tf - base_mean) / (base_std + 1e-12)
+
+        elif method == "percent change":
+            return ((tf - base_mean) / (base_mean + 1e-12)) * 100
+
+        elif method == "relative power":
+            return tf / (base_mean + 1e-12)
+
+        elif method == "min-max":
+            denom = (base_max - base_min) if (base_max - base_min) != 0 else 1.0
+            return (tf - base_min) / denom
+
+        else:
+            raise ValueError(f"Método de normalización no reconocido: {method}.")
+    except Exception as e:
+        log("Error en normalize_tf:", e)
+        raise
+
+
+def scale_log(scalogram, freqs, log=None):
+    log = log or _sin_log
+    freqs_numeric = np.asarray(freqs, dtype=np.float64)
+    positive_mask = freqs_numeric > 0
+    if not np.any(positive_mask):
+        raise ValueError("scale_log: no hay frecuencias positivas.")
+
+    fmin = np.min(freqs_numeric[positive_mask])
+    fmax = np.max(freqs_numeric)
+
+    n_freqs_new = scalogram.shape[0]
+
+    log_fmin = np.log10(fmin)
+    log_fmax = np.log10(fmax)
+
+    log_freqs_new = np.linspace(log_fmin, log_fmax, n_freqs_new)
+    freqs_new = 10**log_freqs_new
+
+    scalogram_new = np.zeros_like(scalogram)
+
+    freqs_orig_sorted = np.sort(freqs_numeric)
+
+    for i in range(scalogram.shape[1]):
+        data_col = np.flipud(scalogram[:, i])
+        try:
+            interp_func = interp1d(freqs_orig_sorted, data_col, kind='linear',
+                                   fill_value='extrapolate')
+            scalogram_new[:, i] = interp_func(freqs_new)
+        except Exception as e:
+            log(f"scale_log: falló la interpolación en el índice de tiempo {i}:", e)
+            scalogram_new[:, i] = 0.0
+
+    return scalogram_new, freqs_new

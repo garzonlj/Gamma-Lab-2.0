@@ -1,0 +1,299 @@
+# -*- coding: utf-8 -*-
+
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+from app.view.widgets.editable_label import EditableLabel
+
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(858, 479)
+        MainWindow.setToolTipDuration(-1)
+        MainWindow.setStyleSheet("")
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
+        self.centralwidget.setSizePolicy(sizePolicy)
+        self.centralwidget.setObjectName("centralwidget")
+        self.verticalLayout_8 = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout_8.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_8.setSpacing(0)
+        self.verticalLayout_8.setObjectName("verticalLayout_8")
+
+        self.titleBar = QtWidgets.QWidget(self.centralwidget)
+        self.titleBar.setObjectName("titleBar")
+        self.titleBar.setMinimumHeight(52)
+        self.titleBar.setMaximumHeight(52)
+        titleBarLayout = QtWidgets.QHBoxLayout(self.titleBar)
+        titleBarLayout.setContentsMargins(20, 8, 20, 8)
+        titleBarLayout.setSpacing(10)
+
+        self.titleLogo = QtWidgets.QLabel(self.titleBar)
+        self.titleLogo.setObjectName("titleLogo")
+        self.titleLogo.setMaximumSize(QtCore.QSize(28, 28))
+        self.titleLogo.setPixmap(QtGui.QPixmap("assets/logos/app-logo.png").scaled(
+            28, 28, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+        self.titleLogo.setScaledContents(True)
+        titleBarLayout.addWidget(self.titleLogo)
+
+        self.titleLabTextLabel = QtWidgets.QLabel(self.titleBar)
+        self.titleLabTextLabel.setObjectName("titleLabTextLabel")
+        titleBarLayout.addWidget(self.titleLabTextLabel)
+
+        titleBarLayout.addSpacing(20)
+
+        self.titleFileNameLabel = QtWidgets.QLabel(self.titleBar)
+        self.titleFileNameLabel.setObjectName("titleFileNameLabel")
+        titleBarLayout.addWidget(self.titleFileNameLabel)
+
+        self.titleSeparatorLabel = QtWidgets.QLabel(self.titleBar)
+        self.titleSeparatorLabel.setObjectName("titleSeparatorLabel")
+        self.titleSeparatorLabel.setText("-")
+        self.titleSeparatorLabel.setVisible(False)
+        titleBarLayout.addWidget(self.titleSeparatorLabel)
+
+        self.titleProjectNameLabel = EditableLabel(self.titleBar)
+        self.titleProjectNameLabel.setObjectName("titleProjectNameLabel")
+        self.titleProjectNameLabel.label.setObjectName("titleProjectNameLabelText")
+        self.titleProjectNameLabel.edit.setObjectName("titleProjectNameLabelEdit")
+        self.titleProjectNameLabel.setVisible(False)
+        titleBarLayout.addWidget(self.titleProjectNameLabel)
+
+        titleBarLayout.addSpacing(12)
+
+        self.titleTrialLabel = QtWidgets.QLabel(self.titleBar)
+        self.titleTrialLabel.setObjectName("titleTrialLabel")
+        self.titleTrialLabel.setProperty("severity", "info")
+        self.titleTrialLabel.setVisible(False)
+        titleBarLayout.addWidget(self.titleTrialLabel)
+
+        titleBarLayout.addStretch(1)
+
+        self.searchBar = QtWidgets.QWidget(self.titleBar)
+        self.searchBar.setObjectName("searchBar")
+        self.searchBar.setMinimumWidth(340)
+        self.searchBar.setMaximumWidth(420)
+
+        searchBarLayout = QtWidgets.QHBoxLayout(self.searchBar)
+        searchBarLayout.setContentsMargins(8, 0, 10, 0)
+        searchBarLayout.setSpacing(0)
+        
+        self.searchIconLabel = QtWidgets.QLabel(self.searchBar)
+        self.searchIconLabel.setObjectName("searchIconLabel")
+        self.searchIconLabel.setPixmap(
+            QtGui.QPixmap("assets/icons/home/icon_search.png").scaled(
+                16, 16, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation
+            )
+        )
+
+        self.searchIconLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Fixed,
+            QtWidgets.QSizePolicy.Preferred
+        )
+        searchBarLayout.addWidget(self.searchIconLabel)
+
+        self.searchLineEdit = QtWidgets.QLineEdit(self.searchBar)
+        self.searchLineEdit.setObjectName("searchLineEdit")
+
+        self.searchLineEdit.setLayoutDirection(QtCore.Qt.LeftToRight)
+
+        self.searchLineEdit.setAlignment(QtCore.Qt.AlignLeft)
+
+        self.searchLineEdit.setTextMargins(0, 0, 0, 0)
+
+        self.searchLineEdit.setFrame(False)
+        self.searchLineEdit.setMinimumWidth(0)
+
+        self.searchLineEdit.setAlignment(
+        QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
+
+        self.searchLineEdit.setSizePolicy(
+        QtWidgets.QSizePolicy.Expanding,
+        QtWidgets.QSizePolicy.Fixed
+        )
+
+        searchBarLayout.addWidget(self.searchLineEdit, 1)
+
+        titleBarLayout.addWidget(self.searchBar)
+        titleBarLayout.addStretch(1)
+
+        self.verticalLayout_8.addWidget(self.titleBar)
+
+        self.verticalLayout_6 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_6.setSpacing(0)
+        self.verticalLayout_6.setObjectName("verticalLayout_6")
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setContentsMargins(30, 0, 30, -1)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.btn_file = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_file.setObjectName("btn_file")
+        self.horizontalLayout.addWidget(self.btn_file)
+        self.bnt_home = QtWidgets.QPushButton(self.centralwidget)
+        self.bnt_home.setObjectName("bnt_home")
+        self.horizontalLayout.addWidget(self.bnt_home)
+        self.btn_preprocessing = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_preprocessing.setObjectName("btn_preprocessing")
+        self.horizontalLayout.addWidget(self.btn_preprocessing)
+        self.btn_analysis = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_analysis.setObjectName("btn_analysis")
+        self.horizontalLayout.addWidget(self.btn_analysis)
+        self.verticalLayout_6.addLayout(self.horizontalLayout)
+        self.gridLayout = QtWidgets.QGridLayout()
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setSpacing(0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.static_sideBar = QtWidgets.QWidget(self.centralwidget)
+        self.static_sideBar.setMaximumSize(QtCore.QSize(60, 16777215))
+        self.static_sideBar.setObjectName("static_sideBar")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.static_sideBar)
+        self.verticalLayout.setContentsMargins(0, 8, 0, 8)
+        self.verticalLayout.setSpacing(4)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.nav_explorer_btn = QtWidgets.QToolButton(self.static_sideBar)
+        self.nav_explorer_btn.setIcon(QtGui.QIcon("assets/iconos/archivos.png"))
+        self.nav_explorer_btn.setIconSize(QtCore.QSize(32, 32))
+        self.nav_explorer_btn.setCheckable(False)
+        self.nav_explorer_btn.setObjectName("nav_explorer_btn")
+        self.verticalLayout.addWidget(self.nav_explorer_btn, 0, QtCore.Qt.AlignHCenter)
+        self.nav_results_btn = QtWidgets.QToolButton(self.static_sideBar)
+        self.nav_results_btn.setIcon(QtGui.QIcon("assets/iconos/resultados.png"))
+        self.nav_results_btn.setIconSize(QtCore.QSize(32, 32))
+        self.nav_results_btn.setCheckable(False)
+        self.nav_results_btn.setObjectName("nav_results_btn")
+        self.verticalLayout.addWidget(self.nav_results_btn, 0, QtCore.Qt.AlignHCenter)
+        spacerItem = QtWidgets.QSpacerItem(17, 382, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem)
+        self.help_nav_btn = QtWidgets.QToolButton(self.static_sideBar)
+        self.help_nav_btn.setIcon(QtGui.QIcon("assets/iconos/help.png"))
+        self.help_nav_btn.setIconSize(QtCore.QSize(22, 22))
+        self.help_nav_btn.setCheckable(False)
+        self.help_nav_btn.setObjectName("help_nav_btn")
+        self.verticalLayout.addWidget(self.help_nav_btn, 0, QtCore.Qt.AlignHCenter)
+        self.gridLayout.addWidget(self.static_sideBar, 0, 0, 1, 1)
+        self.splitter_3 = QtWidgets.QSplitter(self.centralwidget)
+        self.splitter_3.setOrientation(QtCore.Qt.Horizontal)
+        self.splitter_3.setObjectName("splitter_3")
+        self.widget_3 = QtWidgets.QWidget(self.splitter_3)
+        self.widget_3.setObjectName("widget_3")
+        self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.widget_3)
+        self.verticalLayout_7.setContentsMargins(9, 0, 9, 20)
+        self.verticalLayout_7.setObjectName("verticalLayout_7")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.label = QtWidgets.QLabel(self.widget_3)
+        self.label.setObjectName("label")
+        self.horizontalLayout_3.addWidget(self.label)
+        self.verticalLayout_7.addLayout(self.horizontalLayout_3)
+        self.line_3 = QtWidgets.QFrame(self.widget_3)
+        self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_3.setObjectName("line_3")
+        self.verticalLayout_7.addWidget(self.line_3)
+        self.explorer_QWidget = QtWidgets.QWidget(self.widget_3)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.explorer_QWidget.sizePolicy().hasHeightForWidth())
+        self.explorer_QWidget.setSizePolicy(sizePolicy)
+        self.explorer_QWidget.setMinimumSize(QtCore.QSize(0, 20))
+        self.explorer_QWidget.setObjectName("explorer_QWidget")
+        self.verticalLayout_7.addWidget(self.explorer_QWidget)
+
+        self.contentColumn = QtWidgets.QWidget(self.splitter_3)
+        self.contentColumn.setObjectName("contentColumn")
+        contentColumnLayout = QtWidgets.QVBoxLayout(self.contentColumn)
+        contentColumnLayout.setContentsMargins(0, 0, 0, 0)
+        contentColumnLayout.setSpacing(0)
+
+        self.buttonContainer = QtWidgets.QWidget(self.contentColumn)
+        self.buttonContainer.setObjectName("buttonContainer")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.buttonContainer)
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2.setSpacing(0)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        contentColumnLayout.addWidget(self.buttonContainer)
+
+        self.workspaceSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical, self.contentColumn)
+        self.workspaceSplitter.setObjectName("workspaceSplitter")
+        contentColumnLayout.addWidget(self.workspaceSplitter, 1)
+
+        self.workspace = QtWidgets.QWidget(self.workspaceSplitter)
+        self.workspace.setMinimumSize(QtCore.QSize(200, 0))
+        self.workspace.setObjectName("workspace")
+
+        self.resultsPanel = QtWidgets.QWidget(self.workspaceSplitter)
+        self.resultsPanel.setObjectName("resultsPanel")
+        self.resultsPanel.setVisible(False)
+        self.resultsPanel.setMinimumHeight(60)
+        resultsPanelLayout = QtWidgets.QVBoxLayout(self.resultsPanel)
+        resultsPanelLayout.setContentsMargins(0, 0, 0, 0)
+        resultsPanelLayout.setSpacing(0)
+
+        self.resultsHeader = QtWidgets.QWidget(self.resultsPanel)
+        self.resultsHeader.setObjectName("resultsHeader")
+        resultsHeaderLayout = QtWidgets.QHBoxLayout(self.resultsHeader)
+        resultsHeaderLayout.setContentsMargins(10, 4, 6, 4)
+        resultsHeaderLayout.setSpacing(6)
+
+        self.resultsTitleLabel = QtWidgets.QLabel("RESULTS", self.resultsHeader)
+        self.resultsTitleLabel.setObjectName("resultsTitleLabel")
+        resultsHeaderLayout.addWidget(self.resultsTitleLabel)
+        resultsHeaderLayout.addStretch(1)
+
+        self.resultsMenuBtn = QtWidgets.QToolButton(self.resultsHeader)
+        self.resultsMenuBtn.setObjectName("resultsMenuBtn")
+        self.resultsMenuBtn.setText("•••")
+        self.resultsMenuBtn.setAutoRaise(True)
+        resultsHeaderLayout.addWidget(self.resultsMenuBtn)
+
+        self.resultsCloseBtn = QtWidgets.QToolButton(self.resultsHeader)
+        self.resultsCloseBtn.setObjectName("resultsCloseBtn")
+        self.resultsCloseBtn.setText("✕")
+        self.resultsCloseBtn.setAutoRaise(True)
+        resultsHeaderLayout.addWidget(self.resultsCloseBtn)
+
+        resultsPanelLayout.addWidget(self.resultsHeader)
+
+        self.resultsDivider = QtWidgets.QFrame(self.resultsPanel)
+        self.resultsDivider.setFrameShape(QtWidgets.QFrame.HLine)
+        self.resultsDivider.setObjectName("resultsDivider")
+        resultsPanelLayout.addWidget(self.resultsDivider)
+
+        self.resultsTabs = QtWidgets.QTabWidget(self.resultsPanel)
+        self.resultsTabs.setObjectName("resultsTabs")
+        self.resultsTabs.setTabPosition(QtWidgets.QTabWidget.North)
+        resultsPanelLayout.addWidget(self.resultsTabs)
+
+        self.workspaceSplitter.setStretchFactor(0, 1)
+        self.workspaceSplitter.setStretchFactor(1, 0)
+        self.workspaceSplitter.setSizes([600, 220])
+
+        self.gridLayout.addWidget(self.splitter_3, 0, 1, 1, 1)
+        self.verticalLayout_6.addLayout(self.gridLayout)
+        self.verticalLayout_8.addLayout(self.verticalLayout_6)
+        MainWindow.setCentralWidget(self.centralwidget)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.titleLabTextLabel.setText(_translate("MainWindow", "LAB"))
+        self.titleFileNameLabel.setText(_translate("MainWindow", "No signal loaded"))
+        self.searchLineEdit.setPlaceholderText(_translate("MainWindow", "search function by name"))
+        self.btn_file.setText(_translate("MainWindow", "File"))
+        self.bnt_home.setText(_translate("MainWindow", "Home"))
+        self.btn_preprocessing.setText(_translate("MainWindow", "Preprocessing"))
+        self.btn_analysis.setText(_translate("MainWindow", "Analysis"))
+
+        self.nav_explorer_btn.setToolTip(_translate("MainWindow", "Explorer"))
+        self.nav_results_btn.setToolTip(_translate("MainWindow", "Results"))
+        self.help_nav_btn.setToolTip(_translate("MainWindow", "Help"))
+        self.label.setText(_translate("MainWindow", "EXPLORER"))
