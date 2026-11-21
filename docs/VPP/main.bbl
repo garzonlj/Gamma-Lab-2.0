@@ -95,6 +95,40 @@
       \endverb
       \keyw{Comparative analysis,Dry contact and non-contact electrodes,Electrode-skin interface,Electroencephalography,Long-term recording,Semi-dry electrodes}
     \endentry
+    \entry{buzsaki_theta_2005}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=72b0bf5742116fc6a342b11c06d067b4}{%
+           family={Buzsáki},
+           familyi={B\bibinitperiod},
+           given={György},
+           giveni={G\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{72b0bf5742116fc6a342b11c06d067b4}
+      \strng{fullhash}{72b0bf5742116fc6a342b11c06d067b4}
+      \strng{fullhashraw}{72b0bf5742116fc6a342b11c06d067b4}
+      \strng{bibnamehash}{72b0bf5742116fc6a342b11c06d067b4}
+      \strng{authorbibnamehash}{72b0bf5742116fc6a342b11c06d067b4}
+      \strng{authornamehash}{72b0bf5742116fc6a342b11c06d067b4}
+      \strng{authorfullhash}{72b0bf5742116fc6a342b11c06d067b4}
+      \strng{authorfullhashraw}{72b0bf5742116fc6a342b11c06d067b4}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Hippocampus}
+      \field{number}{7}
+      \field{title}{Theta rhythm of navigation: {Link} between path integration and landmark navigation, episodic and semantic memory}
+      \field{volume}{15}
+      \field{year}{2005}
+      \field{pages}{827\bibrangedash 840}
+      \range{pages}{14}
+      \verb{doi}
+      \verb 10.1002/hipo.20113
+      \endverb
+    \endentry
     \entry{chaddad_electroencephalography_2023}{article}{}{}
       \name{author}{4}{}{%
         {{hash=81b52282c80cd6962974edc1367a62e0}{%

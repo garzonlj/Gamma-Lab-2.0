@@ -71,7 +71,7 @@
 %=====================================================================
 \newcommand{\tituloProyecto}{GAMMA LAB 2.0}
 \newcommand{\tituloCorto}{GAMMA LAB 2.0}   % el que va en el encabezado
-\newcommand{\grupo}{Grupo 12}
+\newcommand{\grupo}{ISIST-2610-12}
 
 \newcommand{\autorUno}{Juan Felipe Romero Ortiz}
 \newcommand{\autorDos}{Laura Juliana Garzón Arias}
@@ -82,8 +82,8 @@
 LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
 
 \newcommand{\director}{Ing. Cécile Gauthier Umaña}
-\newcommand{\juradoUno}{Ing. Nombre del Primer Jurado}
-\newcommand{\juradoDos}{Ing. Nombre del Segundo Jurado}
+\newcommand{\juradoUno}{Ing. Leonardo Flórez}
+\newcommand{\juradoDos}{Ing. Alexander Caicedo}
 
 \newcommand{\universidad}{PONTIFICIA UNIVERSIDAD JAVERIANA}
 \newcommand{\universidadNombre}{Pontificia Universidad Javeriana} % en mayuscula/minuscula
@@ -492,7 +492,7 @@ dominios de tiempo, frecuencia y tiempo-frecuencia.
 
 \subsection{Trasfondo}
 
-Gamma Lab 2.0 busca ampliar y estabilizar una herramienta que ya opera sobre un área concreta: la actividad eléctrica del cerebro registrada mediante \textit{EEG}. Para comprender el alcance de esta ampliación, es necesario partir de la naturaleza de la señal que se analiza. Esta actividad es la manifestación macroscópica de la comunicación entre neuronas, que se transmiten información mediante impulsos eléctricos \cite{morris2025}. Cuando estos impulsos se sincronizan a gran escala, se organizan en oscilaciones que un EEG registra y que la comunidad científica clasifica en bandas de frecuencia estandarizadas \cite{nunez2017}: Delta (0,5-4\,Hz) y Theta (4-8\,Hz), predominantes en estados de sueño profundo o de conciencia reducida \cite{kropotov2009}; Alpha (8-13\,Hz), asociada a la relajación en vigilia \cite{nunez2017}; Beta (13-30\,Hz), vinculada a la atención activa \cite{nunez2017}; y Gamma (mayor a 30\,Hz), asociada a procesos de integración neuronal y cómputo cognitivo complejo \cite{normaleeg2019}. Estas oscilaciones constituyen, por tanto, uno de los principales elementos sobre los que se estructura el análisis de señales EEG y, en particular, el procesamiento realizado por la herramienta.
+Gamma Lab 2.0 busca ampliar y estabilizar una herramienta que ya opera sobre un área concreta: la actividad eléctrica del cerebro registrada mediante \textit{EEG}. Para comprender el alcance de esta ampliación, es necesario partir de la naturaleza de la señal que se analiza. Esta actividad es la manifestación macroscópica de la comunicación entre neuronas, que se transmiten información mediante impulsos eléctricos \cite{morris2025}. Cuando estos impulsos se sincronizan a gran escala, se organizan en oscilaciones que un EEG registra y que la comunidad científica clasifica en bandas de frecuencia estandarizadas \cite{nunez2017}: Delta (0,5-4\,Hz), predominante en el sueño profundo y en estados de conciencia reducida \cite{kropotov2009}; Theta (4-8\,Hz), asociada a la memoria y a la navegación espacial \cite{buzsaki2005}; Alpha (8-13\,Hz), asociada a la relajación en vigilia \cite{nunez2017}; Beta (13-30\,Hz), vinculada a la atención activa \cite{nunez2017}; y Gamma (mayor a 30\,Hz), asociada a procesos de integración neuronal y cómputo cognitivo complejo \cite{normaleeg2019}. Estas oscilaciones constituyen, por tanto, uno de los principales elementos sobre los que se estructura el análisis de señales EEG y, en particular, el procesamiento realizado por la herramienta.
 
 Sin embargo, para estudiar estas oscilaciones no basta con analizar la señal desde una única perspectiva. Una misma señal EEG puede estudiarse desde diferentes dominios de análisis, en donde cada uno permite caracterizar un aspecto particular de su comportamiento:
 
@@ -899,7 +899,7 @@ Análisis & Incluía análisis en tiempo, frecuencia y tiempo-frecuencia & Incor
 \subsubsection{Comportamiento del sistema}
 
 % ------------------------------------------------------------------
-En esta secciónse documenta algunos de los flujos más importantes del sistema.
+En esta sección se documentan algunos de los flujos más importantes del sistema.
 Los flujos documentados a continuación son:
 
 \begin{itemize}
@@ -1229,7 +1229,7 @@ En la versión 1.0 de Gamma Lab, los botones de las técnicas no tenían un orde
 
 \subsubsubsection{Clasificación de avisos}
 
-En la clasificación anterior, todos los avisos de la aplicación eran el mismo cuadro de diálogo modal del sistema (\textit{QMessageBox}). Una confirmación como "\textit{Image exported successfully}" interrumpía al usuario igual que un error: había que cerrar la ventana antes de seguir trabajando. Lo único que distinguía un aviso de otro era el ícono estándar del sistema. En la práctica, el usuario aprendía a cerrar todos los mensajes sin leerlos, y los importantes se perdían entre los informativos. Ahora los avisos se clasifican en tres niveles de severidad, y cada nivel se presenta de forma distinta según cuánto debe interrumpir al usuario:
+En la versión anterior, todos los avisos de la aplicación eran el mismo cuadro de diálogo modal del sistema (\textit{QMessageBox}). Una confirmación como "\textit{Image exported successfully}" interrumpía al usuario igual que un error: había que cerrar la ventana antes de seguir trabajando. Lo único que distinguía un aviso de otro era el ícono estándar del sistema. En la práctica, el usuario aprendía a cerrar todos los mensajes sin leerlos, y los importantes se perdían entre los informativos. Ahora los avisos se clasifican en tres niveles de severidad, y cada nivel se presenta de forma distinta según cuánto debe interrumpir al usuario:
 
 \begin{table}[h]
 \centering
@@ -1822,6 +1822,9 @@ A partir de los resultados obtenidos, se identifican las siguientes líneas de t
   \item \textbf{Extender la herramienta a un entorno multiusuario}, de modo que varios investigadores puedan compartir proyectos y resultados.
   \item \textbf{Implementar una tienda de \textit{plugins}}, propuesta desde la primera versión de Gamma Lab, que facilite publicar e incorporar nuevas técnicas de análisis y fomente la colaboración entre laboratorios.
   \item \textbf{Desarrollar un módulo de análisis estadístico} que permita comparar estadísticamente los resultados obtenidos dentro de la herramienta.
+  \item \textbf{Agregar una prueba de significancia estadística al PAC}, que compare el acoplamiento medido contra datos sustitutos para distinguir el acoplamiento real del aparente \cite{aru2015}. En esta versión esa valoración queda a cargo del investigador.
+  \item \textbf{Aplicar un filtro \textit{antialias} antes de submuestrear}, para que el contenido por encima de la nueva frecuencia de Nyquist no se pliegue sobre las frecuencias bajas. En esta versión el filtro se omitió para coincidir con BOARD-FTD-PACC.
+  \item \textbf{Reducir la diferencia de \textit{PSD Average} frente a BOARD-FTD-PACC}, concentrada entre 1 y 3\,Hz, que deja la correlación en 0,93, por debajo del umbral de 0,95.
 \end{itemize}
 
 %=====================================================================
@@ -1874,6 +1877,8 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 \bibitem{nunez2017} P. L. Nunez, "Electroencephalography (EEG)," \textit{Reference Module in Neuroscience and Biobehavioral Psychology}, Elsevier, 2017, isbn: 9780128093245, doi: 10.1016/B978-0-12-809324-5.03049-2. [En línea]. Disponible: \url{https://linkinghub.elsevier.com/retrieve/pii/B9780128093245030492}.
 
 \bibitem{kropotov2009} J. D. Kropotov, "Slow, Infra-Slow Potentials, and Delta Rhythms," en \textit{Quantitative EEG, Event-Related Potentials and Neurotherapy}, Elsevier, 2009, pp. 11-28, isbn: 9780123745125, doi: 10.1016/B978-0-12-374512-5.00001-3. [En línea]. Disponible: \url{https://linkinghub.elsevier.com/retrieve/pii/B9780123745125000013}.
+
+\bibitem{buzsaki2005} G. Buzsáki, ``Theta rhythm of navigation: Link between path integration and landmark navigation, episodic and semantic memory,'' \textit{Hippocampus}, vol. 15, n.\textsuperscript{o} 7, pp. 827--840, 2005, doi: 10.1002/hipo.20113.
 
 \bibitem{normaleeg2019} "Normal EEG variants," en \textit{Handbook of Clinical Neurology}, vol. 160, Elsevier, 2019, pp. 143-160, isbn: 9780444640321, doi: 10.1016/B978-0-444-64032-1.00009-6. [En línea]. Disponible: \url{https://linkinghub.elsevier.com/retrieve/pii/B9780444640321000096}.
 

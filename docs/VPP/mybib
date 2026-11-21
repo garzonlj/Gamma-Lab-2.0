@@ -191,3 +191,15 @@
 	keywords = {Cross-frequency analysis, Event-related potentials, Phase coherence, Phase–amplitude coupling, Synaptic analysis },
 	pages = {12},
 }
+
+@article{buzsaki_theta_2005,
+	title = {Theta rhythm of navigation: {Link} between path integration and landmark navigation, episodic and semantic memory},
+	volume = {15},
+	doi = {10.1002/hipo.20113},
+	language = {en},
+	number = {7},
+	journal = {Hippocampus},
+	author = {Buzsáki, György},
+	year = {2005},
+	pages = {827--840},
+}
