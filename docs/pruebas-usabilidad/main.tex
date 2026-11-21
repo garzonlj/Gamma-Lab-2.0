@@ -16,28 +16,6 @@
 \usepackage{colortbl}
 \usepackage{xcolor}
 
-% ── Encabezado y pie de página ────────────────────────────────────────────
-\pagestyle{fancy}
-\fancyhf{}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\footrulewidth}{0pt}
-
-% Encabezado tipo tabla (simulado con fancyhdr)
-\fancyhead[L]{%
-  \begin{tabular}{@{}l@{}}
-    \textbf{PONTIFICIA UNIVERSIDAD JAVERIANA} \\
-    \textbf{Gamma Lab 2.0} \\
-    Documento de Registro de Pruebas de Usabilidad \quad ISSIIS
-  \end{tabular}%
-}
-\fancyhead[R]{%
-  \begin{tabular}{r@{}}
-    Hoja \thepage\ de \pageref{LastPage} \\
-    Versión plantilla 1.0 \\
-    Fecha documento jul 2026
-  \end{tabular}%
-}
-
 \usepackage{lastpage}
 
 % ── Configuración de hyperref ─────────────────────────────────────────────
@@ -50,6 +28,30 @@
 }
 
 % ══════════════════════════════════════════════════════════════════════════
+
+%------------------- Encabezado y pie de pagina (formato Memoria) ---
+\usepackage{fancyhdr}
+\geometry{headheight=52pt, headsep=14pt, footskip=32pt}
+\providecommand{\logoUniversidad}{LogoJaveriana}
+\providecommand{\logoProyecto}{GammaLab2.0}
+\providecommand{\imgSegura}[3]{% {archivo}{alto}{ancho reserva}
+  \IfFileExists{#1.png}{\includegraphics[height=#2]{#1.png}}{%
+  \IfFileExists{#1.pdf}{\includegraphics[height=#2]{#1.pdf}}{%
+  \IfFileExists{#1.jpg}{\includegraphics[height=#2]{#1.jpg}}{%
+  \textcolor{gray!60}{\framebox[#3]{\rule{0pt}{#2}\scriptsize logo}}}}}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{%
+  \raisebox{-0.35\height}{\imgSegura{\logoUniversidad}{1.05cm}{2.2cm}}%
+  \hspace{0.5cm}%
+  \raisebox{-0.35\height}{\imgSegura{\logoProyecto}{0.85cm}{1.6cm}}%
+}
+\fancyhead[R]{\textbf{Pruebas de Usabilidad: GAMMA LAB 2.0}}
+\fancyfoot[R]{\textbf{Página \thepage}}
+\renewcommand{\headrulewidth}{1.1pt}
+\renewcommand{\footrulewidth}{1.1pt}
+%---------------------------------------------------------------------
+
 \begin{document}
 
 % ── Portada ───────────────────────────────────────────────────────────────

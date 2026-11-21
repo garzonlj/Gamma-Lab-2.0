@@ -41,11 +41,6 @@
 
 \newcolumntype{L}[1]{>{\small\RaggedRight\arraybackslash}p{#1}}
 
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{Gamma Lab -- Informe de rendimiento (línea base v1.0)}
-\fancyhead[R]{\thepage}
-\renewcommand{\headrulewidth}{0.4pt}
 
 \titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
 \titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
@@ -54,6 +49,30 @@
 \large Kernel, plugins, cómputo numérico y renderizado VTK -- pensado para comparar contra Gamma Lab 2.0}
 \author{Auditoría de rendimiento}
 \date{16 de agosto de 2026}
+
+%------------------- Encabezado y pie de pagina (formato Memoria) ---
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\geometry{headheight=52pt, headsep=14pt, footskip=32pt}
+\providecommand{\logoUniversidad}{LogoJaveriana}
+\providecommand{\logoProyecto}{GammaLab2.0}
+\providecommand{\imgSegura}[3]{% {archivo}{alto}{ancho reserva}
+  \IfFileExists{#1.png}{\includegraphics[height=#2]{#1.png}}{%
+  \IfFileExists{#1.pdf}{\includegraphics[height=#2]{#1.pdf}}{%
+  \IfFileExists{#1.jpg}{\includegraphics[height=#2]{#1.jpg}}{%
+  \textcolor{gray!60}{\framebox[#3]{\rule{0pt}{#2}\scriptsize logo}}}}}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{%
+  \raisebox{-0.35\height}{\imgSegura{\logoUniversidad}{1.05cm}{2.2cm}}%
+  \hspace{0.5cm}%
+  \raisebox{-0.35\height}{\imgSegura{\logoProyecto}{0.85cm}{1.6cm}}%
+}
+\fancyhead[R]{\textbf{Informe de Rendimiento: GAMMA LAB 2.0}}
+\fancyfoot[R]{\textbf{Página \thepage}}
+\renewcommand{\headrulewidth}{1.1pt}
+\renewcommand{\footrulewidth}{1.1pt}
+%---------------------------------------------------------------------
 
 \begin{document}
 
