@@ -1739,8 +1739,8 @@ En términos generales, cada componente participa en la operación de acuerdo co
 
 Dos hallazgos relevantes para la planificaci\'on de la implementaci\'on:
 \begin{itemize}[nosep]
-    \item Los paquetes \texttt{measure/} (Amplitude, Slope) y \texttt{faq/} (manual PDF est\'atico) existen en el c\'odigo pero \textbf{ninguno} de los 23 casos de uso los cubre; por ello, se muestran en gris neutro para delimitar la frontera del alcance actual.
-    \item \texttt{TooltipHelper} depende de los plugins de preprocesamiento y an\'alisis por igual (CU-010): en la versión 1.0 su ausencia no era aislada, sino transversal a $\sim$15 plugins que carecían de \textit{tooltips}, salvo dos excepciones puntuales ya presentes en \texttt{TrialsPlugin} y \texttt{RelativePSDPlugin}.
+    \item Los paquetes \texttt{measure/} (Amplitude, Difference, Slope) y \texttt{faq/} (manual PDF est\'atico) existen en el c\'odigo pero \textbf{ninguno} de los 23 casos de uso los cubre; por ello, se muestran en gris neutro para delimitar la frontera del alcance actual.
+    \item \texttt{TooltipHelper} depende de los plugins de preprocesamiento y an\'alisis por igual (CU-010): en la versión 1.0 su ausencia no era aislada, sino transversal: 14 de los 16 plugins carecían de \textit{tooltips}, y las dos excepciones puntuales eran \texttt{TrialsPlugin} y \texttt{RelativePSDPlugin}.
 \end{itemize}
 
 \subsection{Vista de Procesos}

@@ -54,6 +54,7 @@
 \usepackage{ragged2e}
 \usepackage[normalem]{ulem}
 \usepackage{float}
+\usepackage{needspace}  % evita que un título quede solo al final de una página
 % hyperref debe cargarse despues de float; plainpages=false evita que las
 % paginas romanas y arabigas compartan destino en el PDF.
 \usepackage[hidelinks,plainpages=false]{hyperref}
@@ -278,6 +279,7 @@ A mi tutora de tesis, \textit{Cécile Gauthier}, por su orientación, dedicació
 Finalmente, me agradezco a mí mismo por no abandonar el camino, por continuar incluso cuando el cansancio y las dudas parecían ganar terreno, y por encontrar la manera de seguir adelante cuando las circunstancias no eran las más sencillas. Hoy entiendo que llegar hasta aquí no significa que todo haya sido fácil, sino que cada dificultad también hizo parte de lo que me permitió crecer. Este logro representa mucho más que el final de una etapa académica: es el resultado de muchos esfuerzos, de personas que me quieren y de una versión de mí que, a pesar de todo, decidió no rendirse.
 
 \vspace{1cm}
+\needspace{6\baselineskip}
 \noindent{\bfseries \autorDos:}
 \vspace{0.3cm}
 
@@ -298,6 +300,7 @@ A nuestra tutora, por creer en nosotros y en lo que podíamos lograr. Gracias po
 Y por último, a esa voz dentro de mí que nunca me ha permitido rendirme. A la que, en los momentos de duda, me recuerda que sí puedo, y que siempre me impulsa a ir un poco más allá de lo que creía posible. Gracias por no soltarme nunca.
 
 \vspace{1cm}
+\needspace{6\baselineskip}
 \noindent{\bfseries \autorTres:}
 \vspace{0.3cm}
 
@@ -309,7 +312,7 @@ A mi papá, que fue la persona que me motivó a meterme a Ingeniería de Sistema
 
 A Majo, mi novia, que desde que la conozco ha sacado lo mejor de mí. Vio ese potencial que ni siquiera yo sabía que tenía, ayudándome a crecer y a convertirme en el futuro profesional que estoy construyendo. A mi suegra Liz, que, además de haberme dado mi primera experiencia laboral, me ha acogido como a un hijo y me ha dado diferentes perspectivas de lo que es la vida. A mi abuelo, que siempre ha sido parte de mi motivación para seguir adelante cada día.
 
-También a nuestra directora, Cecile, por confiarnos este proyecto tan hermoso y darnos ese apoyo durante este año.
+También a nuestra directora, Cécile, por confiarnos este proyecto tan hermoso y darnos ese apoyo durante este año.
 
 A todos mis amigos, que gracias a ellos pude disfrutar este período académico. No quiero olvidar a mis compañeros de tesis (Juan Felipe, Xiomara y Laura), que me han acompañado durante este último año y han sido un grupo fenomenal. Todo este trabajo se logró realizar gracias a que todos pusimos de nuestra parte.
 
@@ -320,6 +323,7 @@ La verdad, solo me quedan agradecimientos para todas las personas que fueron par
 Estos cuatro años han sido los mejores de mi vida. He vivido muchas cosas y me siento profundamente orgulloso de decir que soy Javeriano.
 
 \vspace{1cm}
+\needspace{6\baselineskip}
 \noindent{\bfseries \autorCuatro:}
 \vspace{0.3cm}
 
@@ -350,7 +354,7 @@ Gamma Lab 2.0 es la segunda versión de una plataforma de \textit{software} libr
 
 La solución se desarrolló sobre la arquitectura de \textit{microkernel} basada en \textit{plugins} de la versión original, conservando su implementación en Python y fortaleciendo los servicios del núcleo. Entre las principales mejoras se incorporaron un orquestador de tareas para ejecutar cálculos en segundo plano, mecanismos de gestión de recursos y persistencia de proyectos, así como una reorganización de la interfaz para facilitar la interacción con la herramienta. Además, se corrigieron funcionalidades existentes y se amplió el alcance analítico mediante la incorporación del análisis de acoplamiento fase-amplitud (PAC), incluyendo el índice de modulación y el acoplamiento fase-fase (PPC) para el estudio de relaciones entre canales.
 
-La solución se evaluó mediante 921 pruebas automáticas, comparaciones numéricas con el sistema de referencia BOARD-FTD-PACC y sesiones de validación con investigadores del laboratorio. Los resultados no registraron fallas inesperadas en las pruebas automáticas y la evaluación de usabilidad alcanzó puntuaciones de 87,5 y 92,5 sobre 100. En conjunto, Gamma Lab 2.0 representa un avance en la estabilidad, usabilidad y capacidad de análisis de la herramienta, proporcionando una base tecnológica más adecuada para las exigencias de la investigación electrofisiológica. Asimismo, su arquitectura extensible y distribución como \textit{software} libre favorecen la continuidad del desarrollo y la colaboración entre instituciones académicas.
+La solución se evaluó mediante 921 pruebas automáticas, comparaciones numéricas con el sistema de referencia BOARD-FTD-PACC y sesiones de validación con expertos. Los resultados no registraron fallas inesperadas en las pruebas automáticas y la evaluación de usabilidad alcanzó puntuaciones de 87,5 y 92,5 sobre 100. En conjunto, Gamma Lab 2.0 representa un avance en la estabilidad, usabilidad y capacidad de análisis de la herramienta, proporcionando una base tecnológica más adecuada para las exigencias de la investigación electrofisiológica. Asimismo, su arquitectura extensible y distribución como \textit{software} libre favorecen la continuidad del desarrollo y la colaboración entre instituciones académicas.
 
 \textbf{Palabras clave:} electroencefalografía (EEG), procesamiento de señales, acoplamiento entre frecuencias, \textit{software} científico, arquitectura \textit{microkernel}, Python.
 \end{abstract}
@@ -661,11 +665,11 @@ El diseño de Gamma Lab 2.0 consideró cinco necesidades arquitectónicas que or
   \item La ejecución de los análisis debía independizarse del hilo principal de la interfaz. Para ello, se planteó un mecanismo centralizado de ejecución en segundo plano, con distribución del trabajo entre varios hilos y gestión del progreso, los errores y la cancelación de las tareas.
   \item La gestión de los datos debía garantizar un acceso controlado y una administración explícita de los recursos. En respuesta, se definió un esquema de almacenamiento compartido que contempla la sincronización de accesos, la propiedad de los datos y la liberación de memoria al finalizar su uso.
   \item Los servicios utilizados por distintos \textit{plugins} debían mantener un estado común y evitar instancias independientes. Por esta razón, se estableció su centralización en el núcleo, de modo que los diferentes módulos pudieran acceder a los mismos recursos y configuraciones.
-  \item La lógica de cálculo debía separarse de los elementos encargados de la interfaz y la visualización. Esta decisión llevó a reorganizar los \textit{plugins} para que las operaciones numéricas pudieran ejecutarse y validarse de manera independiente de su representación gráfica.
+  \item La lógica de cálculo debía separarse de los elementos encargados de la interfaz y la visualización. Esta decisión llevó a reorganizar los \textit{plugins} con cómputo pesado para que las operaciones numéricas pudieran ejecutarse y validarse de manera independiente de su representación gráfica.
   \item La aplicación debía permitir conservar el contexto de trabajo y facilitar su ejecución en distintos entornos. Para ello, se incorporó el concepto de proyecto, junto con mecanismos de persistencia y recuperación de sesiones, gestión de rutas y distribución de la aplicación.
 \end{itemize}
 
-Sobre estos criterios se estructuró la solución, manteniendo los componentes centrales del \textit{microkernel} y ampliando las capacidades de los módulos existentes. La arquitectura conserva los dieciséis \textit{plugins} originales e incorpora tres nuevos: PAC, PPC y \textit{Modulation Index}. Además, el diseño contempla una mayor cobertura de pruebas automatizadas incluyendo pruebas de concurrencia, cancelación, persistencia, liberación de memoria, instalación y rendimiento.
+Sobre estos criterios se estructuró la solución, manteniendo los componentes centrales del \textit{microkernel} y ampliando las capacidades de los módulos existentes. La arquitectura conserva los dieciséis \textit{plugins} originales e incorpora cuatro nuevos: PAC, PPC, \textit{Modulation Index} y \textit{Difference}. Además, el diseño contempla un conjunto más amplio de pruebas automatizadas, que en la versión final llegó a 921 pruebas, entre ellas las de concurrencia, cancelación, persistencia, liberación de memoria, instalación y rendimiento.
 
 La Tabla~\ref{tab:comparacion_arquitectura} presenta una comparación de las principales características arquitectónicas y técnicas de Gamma Lab y la solución diseñada para Gamma Lab 2.0.
 
@@ -687,7 +691,7 @@ Almacén de datos & Sin sincronización ni liberación de memoria & Sincronizado
 \hline
 Servicios compartidos & Instancias independientes por módulo & Instancia única registrada en el núcleo \\
 \hline
-Organización de \textit{plugins} & Cálculo y vista en la misma clase & Cálculo separado de la interfaz y la vista \\
+Organización de \textit{plugins} & Cálculo y vista en la misma clase & Cálculo separado de la interfaz y la vista en 9 de los 20 \textit{plugins} \\
 \hline
 Persistencia & Inexistente & Proyectos \textit{.glab} con esquema versionado \\
 \hline
@@ -695,14 +699,14 @@ Distribución & \textit{Scripts} de arranque y rutas relativas & Instalador para
 \hline
 \textit{Plugins} & 16 & 20 (PAC, PPC, \textit{Modulation Index} y \textit{Difference}) \\
 \hline
-Archivos de pruebas & 14 & 80 \\
+Archivos de pruebas & 14 & 81 \\
 \hline
 \end{tabularx}
 \caption{Comparación arquitectónica entre Gamma Lab y Gamma Lab 2.0}
 \label{tab:comparacion_arquitectura}
 \end{table}
 
-Las decisiones de diseño se materializan en una estructura de paquetes que organiza el código fuente de Gamma Lab 2.0 en tres áreas principales: la interfaz gráfica, el núcleo y las extensiones. El núcleo concentra los servicios compartidos, los modelos de datos y las utilidades comunes, mientras que las extensiones agrupan las funcionalidades de procesamiento y análisis, separando la lógica de cálculo de sus componentes gráficos. La Figura~\ref{fig:estructura-archivos} presenta la organización resultante del código y la distribución de sus principales módulos y servicios.
+Las decisiones de diseño se materializan en una estructura de paquetes que organiza el código fuente de Gamma Lab 2.0 en tres áreas principales: la interfaz gráfica, el núcleo y las extensiones. El núcleo concentra los servicios compartidos, los modelos de datos y las utilidades comunes, mientras que las extensiones agrupan las funcionalidades de procesamiento y análisis. Nueve de las veinte extensiones separan la lógica de cálculo de sus componentes gráficos en un módulo \textit{compute} propio; las de frecuencia (FFT, PSD y sus variantes) todavía tienen el cálculo dentro de la clase del \textit{plugin}. La Figura~\ref{fig:estructura-archivos} presenta la organización resultante del código y la distribución de sus principales módulos y servicios.
 
 \begin{figure}[H]
 \centering
@@ -743,7 +747,7 @@ Gamma-Lab-2.0/
 
 \subsubsection{Orquestador de Tareas}
 
-La incorporación del orquestador implicó una reestructuración importante de la arquitectura de Gamma Lab 2.0, debido a su relación con otros componentes del sistema. Por su carácter transversal, resulta pertinente detallar su diseño y organización. Este mecanismo se integró al núcleo mediante el servicio \textit{TaskService}, encargado de organizar y gestionar el ciclo de vida de las tareas.
+La incorporación del orquestador implicó una reestructuración importante de la arquitectura de Gamma Lab 2.0, debido a su relación con otros componentes del sistema. Por su carácter transversal, resulta pertinente detallar su diseño y organización. Este mecanismo se integró al núcleo mediante el servicio \textit{TaskService}, encargado de organizar y gestionar el ciclo de vida de las tareas. En los diagramas de arquitectura y de clases este componente aparece como \textit{TaskOrchestrator}; ambos nombres designan el mismo orquestador, y \textit{TaskService} es la clase que lo implementa en el código.
 
 El diseño del orquestador se basa en la gestión de \textit{tareas}, representadas por funciones de Python junto con sus argumentos. Cada tarea se caracteriza por cinco propiedades: (1) pura, pues ejecuta un cálculo y devuelve un resultado sin modificar directamente el estado compartido; (2) cerrada, pues recibe mediante parámetros todos los datos necesarios para su ejecución; (3) independiente de la interfaz, pues no depende de componentes de Qt ni de VTK; (4) interrumpible, pues puede atender solicitudes de cancelación durante su procesamiento; y (5) capaz de declarar su costo, pues proporciona información sobre sus requerimientos computacionales para ajustar la distribución de recursos.
 
@@ -804,7 +808,7 @@ La integración del orquestador con los demás componentes se establece mediante
 
 La estructura lógica de Gamma Lab 2.0 se organiza en seis grupos de componentes: núcleo, servicios del sistema, presentación, contrato de extensión, extensiones y modelo de datos. El núcleo, representado por \texttt{Kernel}, centraliza el registro y acceso a los servicios y administra las extensiones mediante \texttt{PluginManager}, encargado de descubrirlas y cargarlas. Esta organización permite que los módulos funcionales accedan a las capacidades comunes de la aplicación a través de un punto central de coordinación.
 
-Los servicios del sistema proporcionan las operaciones necesarias para el funcionamiento de los demás componentes. \texttt{SettingsService} administra la configuración, \texttt{FileIOService} centraliza la lectura de señales en distintos formatos y \texttt{ExportService} permite generar archivos de imagen y resultados tabulares. Por su parte, \texttt{ProjectService} gestiona el almacenamiento y la recuperación de los proyectos, mientras que \texttt{DataStore} mantiene el estado compartido de la sesión. La ejecución de las operaciones de procesamiento se coordina mediante \texttt{TaskOrchestrator}, que recibe las solicitudes de las extensiones, administra su ejecución y entrega cada resultado al hilo de la interfaz, el único que escribe en el almacén de datos.
+Los servicios del sistema proporcionan las operaciones necesarias para el funcionamiento de los demás componentes. \texttt{SettingsService} administra la configuración, \texttt{FileIOService} centraliza la lectura de señales en distintos formatos y \texttt{ExportService} permite generar archivos de imagen y resultados tabulares. Por su parte, \texttt{ProjectService} gestiona el almacenamiento y la recuperación de los proyectos, mientras que \texttt{DataStore} mantiene el estado compartido de la sesión. La ejecución de las operaciones de procesamiento se coordina mediante \texttt{TaskOrchestrator}, implementado en el código como \texttt{TaskService}, que recibe las solicitudes de las extensiones, administra su ejecución y entrega cada resultado al hilo de la interfaz, el único que escribe en el almacén de datos.
 
 La presentación se organiza alrededor de \texttt{MainWindow}, que constituye la interfaz principal para la navegación entre las funcionalidades y la gestión de los proyectos. Estas funcionalidades se implementan mediante extensiones (\textit{plugins}), que cumplen el contrato definido por \texttt{IPlugin}. Esta interfaz establece las operaciones comunes para integrar cada módulo con el sistema, proporcionar su componente gráfico, ejecutar sus procesos y acceder a los datos de trabajo. En conjunto, las extensiones permiten gestionar las señales electrofisiológicas y realizar operaciones de procesamiento, segmentación y análisis sobre ellas.
 
@@ -1277,9 +1281,9 @@ La lectura de los distintos formatos de señal se resolvió mediante la integrac
 
 La verificación del código se automatizó con el \textit{framework} de pruebas \textit{pytest}, mediante un conjunto de pruebas organizado en tres categorías: servicios del núcleo, \textit{plugins} y rendimiento. En cuanto a la distribución, la aplicación se empaquetó con PyInstaller, herramienta que genera un ejecutable autónomo que incorpora el intérprete y la totalidad de las dependencias, de manera que el usuario final no requiere una instalación previa de Python. A partir de dicho ejecutable, se elaboró con Inno Setup un instalador para el sistema operativo Windows, el cual registra la aplicación en el sistema y asocia los archivos de proyecto (.glab), de modo que estos se abren directamente con Gamma Lab 2.0.
 
-Para la gestión del trabajo colaborativo se adoptó la metodología Kanban, conforme a los lineamientos establecidos por la carrera para el desarrollo de los proyectos de grado. El tablero se implementó en una hoja de cálculo de Microsoft Excel, en la cual las actividades del proyecto se registraron y organizaron según su estado de avance, de modo que cada tarea transitaba por las distintas etapas del flujo de trabajo hasta su finalización.
+Para la gestión del proyecto se adoptó el ciclo de vida híbrido \textit{Water-Scrum-Fall} definido en el plan de gestión del proyecto (PMP, Anexo~\ref{anx:pmp}). El proyecto avanzó de forma secuencial por cuatro fases, una por cada objetivo específico: identificación de brechas, diseño de la solución, implementación y validación con el usuario. Dentro de cada fase, el trabajo se organizó en \textit{sprints} de una semana, con una planeación los lunes y una revisión de los avances con la directora los viernes. El tablero Kanban proporcionado por el departamento, con las columnas \textit{To Do}, \textit{In Progress}, \textit{In Review} y \textit{Done}, se usó como herramienta para el seguimiento de las tareas: cada integrante actualizaba a diario el estado de las suyas mediante comentarios en sus tarjetas.
 
-De manera complementaria, el control de versiones se gestionó con Git, empleando GitHub como repositorio remoto compartido por los integrantes del equipo.
+El control de versiones se gestionó con Git, empleando GitHub como repositorio remoto compartido por los integrantes del equipo, donde también se gestionaron las ramas y la revisión de cambios.
 
 \subsection{Producto}
 
@@ -1434,7 +1438,7 @@ Además, cada defecto corregido durante el desarrollo dio lugar a una \textbf{pr
 
 \subsubsection{Pruebas de los módulos de análisis}
 
-Como el cálculo de cada módulo está separado de su presentación, puede probarse sin interfaz gráfica. Para ello se emplearon señales sintéticas de respuesta conocida. Por ejemplo, con una oscilación lenta que modula la amplitud de otra más rápida con una fase preferente fijada, la prueba verifica que el análisis recupere esa propiedad. También se evaluó la respuesta ante entradas que comprometen el resultado, como bandas fuera del rango de Nyquist, canales no alineados o \textit{trials} demasiado cortos.
+En los nueve módulos cuyo cálculo está separado de su presentación, este puede probarse sin interfaz gráfica. Para ello se emplearon señales sintéticas de respuesta conocida. Por ejemplo, con una oscilación lenta que modula la amplitud de otra más rápida con una fase preferente fijada, la prueba verifica que el análisis recupere esa propiedad. También se evaluó la respuesta ante entradas que comprometen el resultado, como bandas fuera del rango de Nyquist, canales no alineados o \textit{trials} demasiado cortos.
 
 Las pruebas de integración comprueban que cada \textit{plugin} delegue su cálculo en el servicio de tareas, exporte sus resultados y recupere sus parámetros al abrir un proyecto. Los defectos corregidos en los análisis también cuentan con pruebas de regresión, como la densidad de muestreo igual a cero o la lectura de archivos .mat en versión 7.3.
 
@@ -1759,8 +1763,8 @@ Los resultados anteriores dejan las siguientes limitaciones:
 \begin{itemize}
   \item \textbf{\textit{PSD Average}:} diferencia residual entre 1 y 3\,Hz, debida al método de cálculo de cada herramienta (SciPy en Gamma Lab 2.0 y MATLAB en BOARD-FTD-PACC).
   \item \textbf{\textit{Wavelet}:} los valores absolutos difieren de BOARD-FTD-PACC por un factor de escala conocido.
-  \item \textbf{Fluidez con tres canales:} la mediana supera los 24 cuadros por segundo exigidos, pero el peor cuadro de algunas corridas baja de ese valor.
-  \item \textbf{Primera apertura de PAC:} puede detener la interfaz entre 270 y 480\,ms, por encima del límite de 300\,ms. Las aperturas siguientes cumplen.
+  \item \textbf{Fluidez con tres canales:} la mediana alcanza o supera los 24 cuadros por segundo exigidos, pero el peor cuadro de algunas corridas baja de ese valor.
+  \item \textbf{Primera apertura de PAC:} puede detener la interfaz entre 270 y 480\,ms, según la corrida, y superar así el límite de 300\,ms. Las aperturas siguientes cumplen.
   \item \textbf{Instalación:} al no tener firma digital, el instalador genera un aviso de Windows que el usuario debe confirmar.
   \item \textbf{Pantallas pequeñas:} por debajo de 1366 píxeles de ancho, el área de gráficas se reduce notablemente.
   \item \textbf{Frecuencia de muestreo de archivos \textit{.mat}:} no se toma del encabezado; por acuerdo con la directora, el usuario la ingresa de forma manual.
@@ -1801,9 +1805,9 @@ Gamma Lab 2.0 refleja la importancia de la Ingeniería de Sistemas en la evoluci
 
 Se identificaron las brechas de la primera versión a partir de las pruebas con usuarios del laboratorio y de la revisión del código. Se agruparon en cuatro frentes: errores funcionales, experiencia de navegación, estabilidad de la arquitectura y alcance analítico. Entre los hallazgos estructurales estaban la falta de liberación de memoria entre cargas y la ejecución de los análisis sobre el hilo de la interfaz.
 
-Se diseñó una solución que conserva la arquitectura \textit{microkernel} y la fortalece en tres puntos: un orquestador de tareas en el núcleo, servicios compartidos centralizados y la separación entre cálculo y presentación en cada módulo. Sobre esa base se incorporó la gestión de proyectos \textit{.glab}.
+Se diseñó una solución que conserva la arquitectura \textit{microkernel} y la fortalece en tres puntos: un orquestador de tareas en el núcleo, servicios compartidos centralizados y la separación entre cálculo y presentación, que hoy siguen nueve de las veinte extensiones. Sobre esa base se incorporó la gestión de proyectos \textit{.glab}.
 
-Se implementó Gamma Lab 2.0, con 20 \textit{plugins} y 81 requisitos especificados (45 funcionales y 36 no funcionales). Se agregaron el análisis PAC en cuatro modos, el índice de modulación y el acoplamiento fase-fase entre canales (PPC). También se corrigieron las fallas de la versión anterior y la aplicación se empaquetó en un instalador para Windows.
+Se implementó Gamma Lab 2.0, con 20 \textit{plugins} y 81 requisitos especificados (45 funcionales y 36 no funcionales). Se agregaron el análisis PAC en cuatro modos, el índice de modulación, el acoplamiento fase-fase entre canales (PPC) y la medida por derivada (\textit{Difference}). También se corrigieron las fallas de la versión anterior y la aplicación se empaquetó en un instalador para Windows.
 
 Se validó la solución con 921 pruebas automáticas, sin ninguna fallida. Cinco de los ocho análisis comparados resultaron equivalentes a BOARD-FTD-PACC, y las diferencias de los otros tres están medidas. Se cumplen, además, 25 de los 27 requisitos de rendimiento, confiabilidad y soporte. Con el usuario se aceptaron 43 de los 45 requisitos funcionales y uno más de forma parcial, ninguno se rechazó, y el cuestionario de usabilidad alcanzó 87,5 y 92,5 sobre 100.
 

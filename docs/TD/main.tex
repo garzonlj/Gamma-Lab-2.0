@@ -379,7 +379,7 @@ Las 393 pruebas de este frente se aprobaron. Destacan cuatro conjuntos. Las prue
 Estas pruebas verifican el cálculo de cada módulo de análisis y su integración en la extensión correspondiente, con independencia de la comparación frente al sistema de referencia, que se trata en la Sección~\ref{sec:td_validacion}.
 
 \subsection{Implementación}
-Cada módulo de análisis separa el cálculo, que recibe y devuelve arreglos numéricos, de la lógica de la interfaz. Esa separación permite probar el cálculo sin interfaz gráfica: las pruebas emplean señales sintéticas con respuesta conocida, por ejemplo una oscilación lenta que modula la amplitud de una rápida con una fase preferente fijada, y verifican que el resultado reproduce esa propiedad. Las pruebas de integración comprueban que cada extensión envía su cálculo al servicio de tareas, exporta sus resultados y restaura sus parámetros desde el proyecto.
+Nueve de las veinte extensiones separan el cálculo, que recibe y devuelve arreglos numéricos, de la lógica de la interfaz en un módulo \textit{compute} propio; las de frecuencia (FFT, PSD y sus variantes) todavía tienen el cálculo dentro de la clase del \textit{plugin}. En los módulos con esa separación, el cálculo se prueba sin interfaz gráfica: las pruebas emplean señales sintéticas con respuesta conocida, por ejemplo una oscilación lenta que modula la amplitud de una rápida con una fase preferente fijada, y verifican que el resultado reproduce esa propiedad. Las pruebas de integración comprueban que cada extensión envía su cálculo al servicio de tareas, exporta sus resultados y restaura sus parámetros desde el proyecto.
 
 \subsection{Resultados}
 
@@ -666,7 +666,7 @@ NFR-P-17 (R81) & Listo en 8 s o menos & Medición: 3,1 s hasta la ventana lista 
 \end{longtable}
 \end{center}
 
-Dos requisitos presentan matices. En NFR-P-05 la mediana de cuadros por segundo supera el límite de 24 en todas las corridas, pero el peor cuadro de algunas corridas cae por debajo de ese valor. En NFR-P-10 la interfaz responde dentro de los 300\,ms en el uso normal, pero la primera apertura del módulo PAC en una sesión puede congelarla entre 270 y 480\,ms, por la carga inicial de sus componentes.
+Dos requisitos presentan matices. En NFR-P-05 la mediana de cuadros por segundo alcanza o supera el límite de 24 en todas las corridas, pero el peor cuadro de algunas corridas cae por debajo de ese valor. En NFR-P-10 la interfaz responde dentro de los 300\,ms en el uso normal, pero la primera apertura del módulo PAC en una sesión puede congelarla entre 270 y 480\,ms, por la carga inicial de sus componentes.
 
 \subsection{Resultados de los requisitos de confiabilidad y soporte}
 
@@ -1442,7 +1442,7 @@ El participante califica cada afirmación de las Tablas~\ref{tab:td_sus} y~\ref{
 \end{longtable}
 \end{center}
 
-El cuestionario de la Tabla~\ref{tab:td_sus}, con una puntuación de 87,5, lo respondió Jonathan Muñoz, investigador externo al laboratorio que participó en la sesión del \fechasesionanterior{}. El de la Tabla~\ref{tab:td_sus_2}, con una puntuación de 92,5, lo respondió Cécile Gauthier, Directora de la tesis Gamma Lab 2.0. Ambas puntuaciones se ubican cerca o por encima de la media que Bangor, Kortum y Miller asocian con el adjetivo ``excelente'' (85,6) \cite{bangor2009}. Al provenir de solo dos participantes, el resultado indica una valoración alta del sistema, pero no permite generalizarla.
+El cuestionario de la Tabla~\ref{tab:td_sus}, con una puntuación de 87,5, lo respondió Jonathan Muñoz, investigador externo al laboratorio que participó en la sesión del \fechasesionanterior{}. El de la Tabla~\ref{tab:td_sus_2}, con una puntuación de 92,5, lo respondió Cécile Gauthier, Directora de la tesis Gamma Lab 2.0. Ambas puntuaciones se ubican por encima de la media que Bangor, Kortum y Miller asocian con el adjetivo ``excelente'' (85,6) \cite{bangor2009}. Al provenir de solo dos participantes, el resultado indica una valoración alta del sistema, pero no permite generalizarla.
 
 \subsection{Conclusiones de las pruebas de usabilidad}
 El Laboratorio de Electrofisiología, cliente del proyecto, compartió la siguiente valoración de Gamma Lab 2.0:
@@ -3528,7 +3528,7 @@ NFR-S-05 & R77 & Nuevo \textit{plugin} sin modificar el núcleo & Pruebas autom�
 \end{longtable}
 \end{center}
 \capitulo{CONCLUSIONES}
-La suite automática de Gamma Lab 2.0 consta de 921 pruebas, de las cuales 916 se aprobaron y 5 se mantienen como fallos esperados con su causa documentada; ninguna falla. Frente a la versión 1.0, cuyo TD reportó 60 pruebas unitarias \cite{td2025}, la cobertura se amplió a todos los servicios del núcleo, a los módulos nuevos de análisis y a los requisitos no funcionales.
+La suite automática de Gamma Lab 2.0 consta de 921 pruebas, de las cuales 916 se aprobaron y 5 se mantienen como fallos esperados con su causa documentada; ninguna falla. Frente a la versión 1.0, cuyo TD reportó 60 pruebas unitarias \cite{td2025}, las pruebas se extendieron a todos los servicios del núcleo, a los módulos nuevos de análisis y a los requisitos no funcionales.
 La validación frente a BOARD-FTD-PACC confirma la equivalencia de \textit{Average}, ERP, FFT, \textit{FFT Average} y PSD. En la transformada \textit{wavelet} las diferencias se explican por una convención de amplitud distinta, medida y documentada, y no por errores de cálculo. En \textit{PSD Average} la corrección de la tendencia acercó el resultado a la referencia, pero queda una diferencia entre 1 y 3\,Hz debida al método de cálculo de cada herramienta (SciPy en Gamma Lab 2.0 y MATLAB en BOARD-FTD-PACC). Los requisitos de rendimiento se cumplen con dos matices: el peor cuadro durante la interacción con tres canales y la primera apertura del módulo PAC.
 
 Las pruebas con el usuario se hicieron en una sesión anterior con Jonathan Muñoz, investigador externo al laboratorio, el \fechasesionanterior{}; en una sesión guiada con Francisco Alejandro Múnera Galarza, profesor del Laboratorio de Electrofisiología, el \fechasesion{}, y en una sesión complementaria con el mismo participante, ese mismo día. Se trataron los diez casos de usabilidad, ocho de ellos sin fallas; las puntuaciones SUS fueron de 87,5 y 92,5, y 43 de los 45 requisitos funcionales se aceptaron y uno más de forma parcial, sin que ninguno se rechazara. Las fallas observadas en las medidas sobre todos los \textit{trials} y en la apertura de proyectos se corrigieron después de la sesión. El cliente describió Gamma Lab 2.0 como una herramienta que reúne en un solo programa los análisis que el laboratorio requiere y automatiza los procedimientos repetitivos que antes se hacían a mano.
