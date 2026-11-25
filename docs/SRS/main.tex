@@ -97,6 +97,29 @@
 % Evita lineas que se salen del margen
 \setlength{\emergencystretch}{3em}
 
+%------------------- Encabezado y pie de pagina (formato Memoria) ---
+\usepackage{fancyhdr}
+\geometry{headheight=52pt, headsep=14pt, footskip=32pt}
+\providecommand{\logoUniversidad}{LogoJaveriana}
+\providecommand{\logoProyecto}{GammaLab2.0}
+\providecommand{\imgSegura}[3]{% {archivo}{alto}{ancho reserva}
+  \IfFileExists{#1.png}{\includegraphics[height=#2]{#1.png}}{%
+  \IfFileExists{#1.pdf}{\includegraphics[height=#2]{#1.pdf}}{%
+  \IfFileExists{#1.jpg}{\includegraphics[height=#2]{#1.jpg}}{%
+  \textcolor{gray!60}{\framebox[#3]{\rule{0pt}{#2}\scriptsize logo}}}}}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{%
+  \raisebox{-0.35\height}{\imgSegura{\logoUniversidad}{1.05cm}{2.2cm}}%
+  \hspace{0.5cm}%
+  \raisebox{-0.35\height}{\imgSegura{\logoProyecto}{0.85cm}{1.6cm}}%
+}
+\fancyhead[R]{\textbf{SRS: GAMMA LAB 2.0}}
+\fancyfoot[R]{\textbf{Página \thepage}}
+\renewcommand{\headrulewidth}{1.1pt}
+\renewcommand{\footrulewidth}{1.1pt}
+%---------------------------------------------------------------------
+
 \begin{document}
 
 % --- Portada ---
@@ -1630,7 +1653,7 @@ FR-PAC-03 & R15 & El sistema debe seleccionar la banda de frecuencia correspondi
 \hline
 FR-PAC-04 & R16 & El sistema debe permitir definir el intervalo temporal (o los trials) sobre el cual se ejecutará el análisis PAC. \\
 \hline
-FR-PAC-05 & R17 & El sistema debe calcular, para la banda de fase seleccionada y el rango de amplitud seleccionado, un mapa de acoplamiento fase-frecuencia mediante transformada \\
+FR-PAC-05 & R17 & El sistema debe calcular, para la banda de fase seleccionada y el rango de amplitud seleccionado, un mapa de acoplamiento fase-frecuencia mediante transformada wavelet. \\
 \hline
 FR-PAC-06 & R18 & El sistema debe representar los resultados del análisis PAC mediante un mapa fase-frecuencia (fase en el eje X, frecuencia de amplitud en el eje Y). \\
 \hline

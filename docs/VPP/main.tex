@@ -41,12 +41,6 @@
 }
 
 % ─── Encabezado / pie de página ──────────────────────────────────────────────
-\pagestyle{fancy}
-\fancyhf{}
-\rhead{\small Propuesta de Proyecto de Grado}
-\lhead{\small Pontificia Universidad Javeriana}
-\cfoot{\small Página \thepage\ de \pageref{LastPage}}
-\renewcommand{\headrulewidth}{0.4pt}
 
 % ─── Hipervínculos ────────────────────────────────────────────────────────────
 \hypersetup{
@@ -54,7 +48,7 @@
   linkcolor=black,
   urlcolor=blue,
   pdfauthor={Juan Felipe Romero Ortiz, Laura Juliana Garzón Arias, Xiomara Herrera Suárez, Sebastián Almanza Galvis},
-  pdftitle={Propuesta de Proyecto de Grado: Gamma Lab 2.0}
+  pdftitle={VFP: Gamma Lab 2.0}
 }
 
 % ─── Títulos de sección ───────────────────────────────────────────────────────
@@ -67,57 +61,171 @@
 \definecolor{tablerow}{RGB}{217,225,242}
 
 % ══════════════════════════════════════════════════════════════════════════════
+
+%------------------- Encabezado y pie de pagina (formato Memoria) ---
+\usepackage{fancyhdr}
+\geometry{headheight=52pt, headsep=14pt, footskip=32pt}
+\providecommand{\logoUniversidad}{LogoJaveriana}
+\providecommand{\logoProyecto}{GammaLab2.0}
+\providecommand{\imgSegura}[3]{% {archivo}{alto}{ancho reserva}
+  \IfFileExists{#1.png}{\includegraphics[height=#2]{#1.png}}{%
+  \IfFileExists{#1.pdf}{\includegraphics[height=#2]{#1.pdf}}{%
+  \IfFileExists{#1.jpg}{\includegraphics[height=#2]{#1.jpg}}{%
+  \textcolor{gray!60}{\framebox[#3]{\rule{0pt}{#2}\scriptsize logo}}}}}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{%
+  \raisebox{-0.35\height}{\imgSegura{\logoUniversidad}{1.05cm}{2.2cm}}%
+  \hspace{0.5cm}%
+  \raisebox{-0.35\height}{\imgSegura{\logoProyecto}{0.85cm}{1.6cm}}%
+}
+\fancyhead[R]{\textbf{VFP: GAMMA LAB 2.0}}
+\fancyfoot[R]{\textbf{Página \thepage}}
+\renewcommand{\headrulewidth}{1.1pt}
+\renewcommand{\footrulewidth}{1.1pt}
+%---------------------------------------------------------------------
+
 \begin{document}
-\pagenumbering{arabic}
+%=====================================================================
+%  PORTADA (misma estructura que la Memoria: caratula + paginas i a iii)
+%  Los datos usan \providecommand: si el documento ya los define, se
+%  respetan sus valores.
+%=====================================================================
+\providecommand{\tituloProyecto}{GAMMA LAB 2.0}
+\providecommand{\grupo}{ISIST-2610-12}
+\providecommand{\autorUno}{Juan Felipe Romero Ortiz}
+\providecommand{\autorDos}{Laura Juliana Garzón Arias}
+\providecommand{\autorTres}{Sebastián Almanza Galvis}
+\providecommand{\autorCuatro}{Xiomara Herrera Suárez}
+\providecommand{\leyendaGrado}{MEMORIA DE PROYECTO DE GRADO REALIZADO PARA CUMPLIR UNO DE
+LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
+\providecommand{\director}{Ing. Cécile Gauthier Umaña}
+\providecommand{\juradoUno}{Ing. Leonardo Flórez}
+\providecommand{\juradoDos}{Ing. Alexander Caicedo}
+\providecommand{\universidad}{PONTIFICIA UNIVERSIDAD JAVERIANA}
+\providecommand{\universidadNombre}{Pontificia Universidad Javeriana}
+\providecommand{\facultad}{FACULTAD DE INGENIERÍA}
+\providecommand{\programa}{PROGRAMA DE INGENIERÍA DE SISTEMAS}
+\providecommand{\ciudad}{BOGOTÁ, D.C.}
+\providecommand{\anio}{2026}
+\providecommand{\fechaLarga}{Noviembre, 2026}
+\providecommand{\rector}{P. Luis Fernando Múnera Congote, S.J.}
+\providecommand{\decano}{Ing. Diego Alejandro Patiño Guevara, Ph.D.}
+\providecommand{\directorDepto}{Ing. César Julio Bustacara Medina, Ph.D.}
+\providecommand{\directorCarrera}{Ing. Andrea del Pilar Rueda Olarte}
 
-% ─── Página de portada ────────────────────────────────────────────────────────
+\pagenumbering{alph}% la caratula no comparte destino PDF con la pagina 1
+\begingroup\setlength{\parskip}{0pt}% sin espacio extra entre parrafos en la portada
+
+%---------------------------------------------------------------------
+%  CARATULA (pagina sin numeracion)
+%---------------------------------------------------------------------
 \thispagestyle{empty}
+\begin{center}
+  \vspace*{1cm}
+  {\large \grupo}\par\vspace{1.2cm}
+  {\LARGE\bfseries \tituloProyecto}\par\vspace{1cm}
+  {\Large\bfseries Versión Final de Proyecto}\par\vspace{0.3cm}
+  {\large\bfseries (VFP)}\par\vspace{2cm}
+  \autorUno\par
+  \autorDos\par
+  \autorTres\par
+  \autorCuatro\par
+  \vfill
+  \universidad\par
+  \facultad\par
+  \programa\par
+  \ciudad\par
+  \anio\par
+  \vspace{1cm}
+\end{center}
+\clearpage
 
-\begin{table}[H]
-    \centering
-    % El caption se pone al final para que aparezca abajo
-    \noindent
-    \begin{tabular}{|p{\textwidth}|}
-    \hline
-    \textbf{TÍTULO}\\
-    Gamma Lab 2.0 \\
-    \hline
-    \textbf{OBJETIVO GENERAL}\\
-    Agregar nuevas funciones y corrección de errores de la aplicación Gamma Lab \\
-    \hline
-    \textbf{ESTUDIANTES} \\
-    \begin{tabular}{|p{6.5cm}|p{7.5cm}|}
-        \hline
-        \textbf{Nombre} & \textbf{Correo Javeriano} \\
-        \hline
-        Juan Felipe Romero Ortiz & \href{mailto:juanromeroo@javeriana.edu.co}{juanromeroo@javeriana.edu.co} \\
-        Laura Juliana Garzón Arias & \href{mailto:garzonlj@javeriana.edu.co}{garzonlj@javeriana.edu.co} \\
-        Xiomara Herrera Suárez & \href{mailto:x\_herrera@javeriana.edu.co}{x\_herrera@javeriana.edu.co} \\
-        Sebastián Almanza Galvis & \href{mailto:s.almanzag@javeriana.edu.co}{s.almanzag@javeriana.edu.co} \\
-        \hline
-    \end{tabular} \\
-    \hline
-    \textbf{DIRECTORA} \\
-    \begin{tabular}{|p{6.5cm}|p{7.5cm}|}
-        \hline
-        \textbf{Nombre} & \textbf{Correo} \\
-        \hline
-        Cécile Gauthier Umaña &
-        \href{mailto:gauthier\_ce01@javeriana.edu.co}{gauthier\_ce01@javeriana.edu.co} \\
-        \hline
-    \end{tabular} \\
-    \hline
-    \end{tabular}
-    
-    \vspace{0.3cm} % Espacio opcional entre la tabla y el título
-    \caption{Información general del proyecto y equipo de trabajo}
-    \label{tab:informacion_general}
-\end{table}
+%---------------------------------------------------------------------
+%  PAGINAS PRELIMINARES (numeracion romana: i, ii, iii, ...)
+%---------------------------------------------------------------------
+\pagenumbering{roman}
 
+%------------------------ PORTADA (pagina i) -------------------------
+\begin{center}
+  {\Large\bfseries \tituloProyecto}\par
+  \vspace{1.4cm}
 
+  {\bfseries Autores:}\par
+  \vspace{0.5cm}
+  \autorUno\par
+  \autorDos\par
+  \autorTres\par
+  \autorCuatro\par
+  \vspace{1.4cm}
 
+  \leyendaGrado\par
+  \vspace{1.4cm}
+
+  {\bfseries Directora}\par
+  \vspace{0.4cm}
+  \director\par
+  \vspace{1.2cm}
+
+  {\bfseries Jurados del Trabajo Final de Grado}\par
+  \vspace{0.4cm}
+  \juradoUno\par
+  \juradoDos\par
+  \vspace{1.8cm}
+
+  \universidad\par\vspace{0.6cm}
+  \facultad\par\vspace{0.6cm}
+  \programa\par\vspace{0.6cm}
+  \ciudad\par\vspace{0.6cm}
+  \fechaLarga\par
+\end{center}
+\clearpage
+
+%--------------------- AUTORIDADES (pagina ii) -----------------------
+\begin{center}
+  {\bfseries \universidad}\par
+  {\bfseries \facultad}\par
+  {\bfseries \programa}\par
+  \vspace{6cm}
+
+  {\bfseries Rector de la \universidadNombre}\par
+  \vspace{0.4cm}
+  \rector\par
+  \vspace{0.9cm}
+
+  {\bfseries Decano de la Facultad de Ingeniería}\par
+  \vspace{0.4cm}
+  \decano\par
+  \vspace{0.9cm}
+
+  {\bfseries Director del Departamento de Ingeniería de Sistemas}\par
+  \vspace{0.4cm}
+  \directorDepto\par
+  \vspace{0.9cm}
+
+  {\bfseries Directora de Carrera de Ingeniería de Sistemas}\par
+  \vspace{0.4cm}
+  \directorCarrera\par
+\end{center}
+\clearpage
+
+%------------------ NOTA REGLAMENTARIA (pagina iii) ------------------
+\noindent{\bfseries Artículo 23 de la Resolución No. 1 de Junio de 1946}
+\vspace{1cm}
+
+{\itshape\noindent
+``La Universidad no se hace responsable de los conceptos emitidos por sus alumnos en sus
+proyectos de grado. Sólo velará porque no se publique nada contrario al dogma y la moral
+católica y porque no contengan ataques o polémicas puramente personales. Antes bien, que se
+vean en ellos el anhelo de buscar la verdad y la Justicia''\par}
+\clearpage
+%=====================================================================
+%  FIN DE LA PORTADA (cierra el grupo abierto en la caratula)
+\endgroup
+%=====================================================================
 
 \newpage
+\pagenumbering{arabic}
 
 
 

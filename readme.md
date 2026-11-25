@@ -35,6 +35,9 @@ Es la forma recomendada y **no requiere Python**.
 
 En esa misma página, https://garzonlj.github.io/webGammaLab/, hay una guía paso a paso con capturas.
 
+### Videos tutoriales
+Puedes ver videos tutoriales sobre cómo usar Gamma Lab en esta [lista de reproducción de YouTube](https://youtube.com/playlist?list=PLSRjfDRrG__0&si=K1epuIKp2207kqMw).
+
 ### Avisos de Windows
 El instalador no está firmado digitalmente, por lo que Windows puede mostrar *"Windows protegió su PC"*. Elige *Más información* y luego *Ejecutar de todas formas*. Algunos antivirus también pueden retrasarlo o pedir confirmación.
 
@@ -135,6 +138,7 @@ Crea una carpeta dentro de `plugins/` con su `properties.yml`, su lógica y su i
 ## Documentación
 
 - Manual de usuario: [docs/MU/main.pdf](docs/MU/main.pdf) (también accesible desde el plugin Help)
+- Videos tutoriales: [lista de reproducción de YouTube](https://youtube.com/playlist?list=PLSRjfDRrG__0&si=K1epuIKp2207kqMw)
 - Requerimientos (SRS): [docs/SRS/main.pdf](docs/SRS/main.pdf)
 - Arquitectura (SAD): [docs/SAD/main.pdf](docs/SAD/main.pdf)
 - Diseño (SDD): [docs/SDD/main.pdf](docs/SDD/main.pdf)
