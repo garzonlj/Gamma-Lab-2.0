@@ -228,3 +228,47 @@ def test_sin_interfaz_se_asume_grados():
     assert p._en_grados() is True
     p.ui = object()
     assert p._en_grados() is True
+
+
+class _PintorEspia:
+    """Guarda las poligonales que dibuja la brújula, sin abrir ninguna ventana."""
+
+    def __init__(self):
+        from unittest.mock import Mock
+        self.lineas, self._otro = [], Mock()
+
+    def GetPen(self):
+        return self._otro
+
+    GetBrush = GetTextProp = GetPen
+
+    def DrawString(self, *_):
+        pass
+
+    def DrawPoly(self, puntos, n):
+        self.lineas.append(np.asarray(puntos, dtype=np.float64).reshape(n, 2))
+
+
+@pytest.mark.parametrize("magnitud", [0.0089, 0.05, 0.4])
+def test_la_punta_de_la_flecha_es_proporcional_al_vector(magnitud):
+    """Con los 16 vectores por grupo la punta se escalaba con ellos y no con el
+    vector medio. Si el acoplamiento es débil medía varias veces más que la
+    flecha, y sus aletas parecían señalar el lado contrario."""
+    from plugins.analysis.time_frequency.pac.pac_plugin import BrujulaPolar
+
+    vector = magnitud * np.exp(1j * np.deg2rad(223.7))
+    grupos = 0.37 * np.exp(1j * np.deg2rad(np.arange(16) * 21.6))
+    brujula = BrujulaPolar(vector, extra=grupos, titulo="x")
+    brujula._rect = (0.0, 0.0, 620.0, 400.0)
+    pintor = _PintorEspia()
+    brujula._pintar(pintor)
+
+    flecha, *aletas = pintor.lineas[-3:]
+    centro, punta = flecha
+    largo = np.linalg.norm(punta - centro)
+    direccion = np.rad2deg(np.arctan2(*(punta - centro)[::-1])) % 360.0
+    assert direccion == pytest.approx(223.7, abs=0.01)
+    for aleta in aletas:
+        assert np.allclose(aleta[0], punta)
+        assert np.linalg.norm(aleta[1] - aleta[0]) == pytest.approx(0.12 * largo)
+        assert np.dot(aleta[1] - centro, punta - centro) > 0, "la aleta cruza el centro"

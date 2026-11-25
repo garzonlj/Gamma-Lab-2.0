@@ -99,7 +99,7 @@ def test_intercambiar_los_canales_cambia_el_resultado():
 
 
 NUMERICOS = ("mapa", "frecuencias", "fases", "histograma", "mapa_tf", "tiempo_tf",
-             "ciclos_full", "ciclos_theta", "ciclos_gamma", "promedio_theta",
+             "ciclos_full", "ciclos_theta", "ciclos_gamma", "promedio_ciclos", "promedio_theta",
              "promedio_full", "vectores_por_grupo", "senal", "senal_filtrada", "tiempo")
 
 

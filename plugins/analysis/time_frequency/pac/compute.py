@@ -279,7 +279,13 @@ def _recorte_por_valles(av):
 
 @dataclass
 class ResultadoPsel:
-    """Todo lo que `f_Phase_PAC_Pdetect` calcula y dibuja."""
+    """Todo lo que `f_Phase_PAC_Pdetect` calcula y dibuja.
+
+    Hay **dos** promedios del ritmo lento y no son intercambiables:
+    `promedio_ciclos` mide lo mismo que `ciclos_theta` (de valle a valle) y es el
+    que se dibuja encima de los ciclos; `promedio_theta` es el tramo de pico a
+    pico, del largo de `tiempo_tf`, que va debajo del mapa tiempo/frecuencia.
+    """
     mapa: np.ndarray
     frecuencias: np.ndarray
     fases: np.ndarray
@@ -291,6 +297,7 @@ class ResultadoPsel:
     ciclos_full: np.ndarray
     ciclos_theta: np.ndarray
     ciclos_gamma: np.ndarray
+    promedio_ciclos: np.ndarray
     promedio_theta: np.ndarray
     promedio_full: np.ndarray
     n_ciclos: int
@@ -442,6 +449,7 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
 
     ct1, ct2 = _recorte_por_valles(av)
     av = av[ct1:ct2 + 1]
+    promedio_ciclos = av
     av_full = av_full[ct1:ct2 + 1]
     ciclos_full = ciclos_full[ct1:ct2 + 1]
     ciclos_theta = ciclos_theta[ct1:ct2 + 1]
@@ -521,7 +529,8 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
         vectores_por_grupo=vectores_por_grupo,
         mapa_tf=zscore_por_fila(acumulado_tf), tiempo_tf=tiempo_tf,
         ciclos_full=ciclos_full, ciclos_theta=ciclos_theta, ciclos_gamma=ciclos_gamma,
-        promedio_theta=av, promedio_full=av_full, n_ciclos=n_ciclos,
+        promedio_ciclos=promedio_ciclos, promedio_theta=av, promedio_full=av_full,
+        n_ciclos=n_ciclos,
         vpp=float(av.max() - av.min()), vpp_full=float(av_full.max() - av_full.min()),
         vrms=float(np.sqrt(np.mean(av_full ** 2))),
         ciclos_descartados=descartados, fs_efectiva=fs_efectiva,

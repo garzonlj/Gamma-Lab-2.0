@@ -121,7 +121,6 @@ class BrujulaPolar:
         if borde <= 4.0:
             return
         escala = borde / magnitudes[-1]
-        lado = rmax * escala
 
         pluma = painter.GetPen()
         painter.GetBrush().SetOpacity(0)
@@ -172,7 +171,7 @@ class BrujulaPolar:
             px, py = cx + v.real * escala, cy + v.imag * escala
             self._poli(painter, [cx, px], [cy, py])
             theta = np.angle(v)
-            largo = 0.12 * lado
+            largo = 0.12 * abs(v) * escala
             for desvio in (+2.6, -2.6):
                 self._poli(painter, [px, px + largo * np.cos(theta + desvio)],
                            [py, py + largo * np.sin(theta + desvio)])
@@ -785,7 +784,7 @@ class Pac_plugin(IPlugin):
 
         for etiqueta, pila, promedio, color in (
                 (f"Ciclos en la banda de fase{de_fase}",
-                 r.ciclos_theta, r.promedio_theta, (200, 30, 30)),
+                 r.ciclos_theta, r.promedio_ciclos, (200, 30, 30)),
                 (f"Ciclos sin filtrar{de_amp}",
                  r.ciclos_full, r.promedio_full, (200, 30, 30)),
                 (f"Ciclos en gamma (25-129 Hz){de_amp}",

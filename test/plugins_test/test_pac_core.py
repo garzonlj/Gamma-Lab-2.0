@@ -797,6 +797,44 @@ def test_psel_devuelve_las_tres_pilas_de_ciclos(psel):
     assert psel.ciclos_gamma.shape[0] > psel.ciclos_theta.shape[0]
 
 
+def test_psel_los_dos_promedios_del_ritmo_lento_son_tramos_distintos(psel):
+    """`promedio_ciclos` acompana a los ciclos y `promedio_theta` es su tramo de
+    pico a pico. Confundirlos dibujaba el promedio medio ciclo corrido."""
+    assert np.allclose(psel.promedio_ciclos, psel.ciclos_theta.mean(axis=1))
+    picos, _ = find_peaks(psel.promedio_ciclos)
+    tramo = psel.promedio_ciclos[picos[0]:picos[1] + 1]
+    assert picos[0] > 0 and np.array_equal(psel.promedio_theta, tramo)
+
+
+def test_psel_dibuja_cada_promedio_alineado_con_sus_ciclos(psel, monkeypatch):
+    """El promedio se dibuja desde la muestra 0, igual que los ciclos: si no mide
+    lo mismo que ellos sale corrido, y con medio ciclo parece invertido."""
+    from unittest.mock import Mock
+
+    from plugins.analysis.time_frequency.pac.pac_plugin import Pac_plugin
+
+    paneles = {}
+
+    def espia(_self, pila, promedio, etiqueta, _color):
+        paneles[etiqueta] = (pila, promedio)
+        return Mock()
+
+    monkeypatch.setattr(Pac_plugin, "_grafico_ciclos", espia)
+    for nombre in ("_grafico_senal", "_grafico_mapa_log", "_grafico_histograma",
+                   "_grafico_brujula", "_ajustar_alto_del_lienzo", "_reacomodar"):
+        monkeypatch.setattr(Pac_plugin, nombre, lambda *a, **k: Mock())
+    plugin = object.__new__(Pac_plugin)
+    plugin.ui = None
+    plugin._context_view = Mock()
+    plugin.render_psel(psel, dibujar=False)
+
+    con_promedio = {e: v for e, v in paneles.items() if v[1] is not None}
+    assert set(con_promedio) == {"Ciclos en la banda de fase", "Ciclos sin filtrar"}
+    for etiqueta, (pila, promedio) in con_promedio.items():
+        assert promedio.size == pila.shape[0], f"{etiqueta}: largos distintos"
+        assert np.allclose(promedio, pila.mean(axis=1)), f"{etiqueta}: promedio corrido"
+
+
 def test_psel_devuelve_el_mapa_tiempo_frecuencia_promedio(psel):
     assert psel.mapa_tf.shape[0] == psel.frecuencias.size
     assert psel.mapa_tf.shape[1] == psel.tiempo_tf.size
