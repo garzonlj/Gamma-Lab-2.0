@@ -15,6 +15,8 @@ y no deben cambiar:
 | `highFrequencySpinBox` | `QDoubleSpinBox` | `F max` |
 | `windowSpinBox` | `QDoubleSpinBox` | `wd`, la ventana **mínima** en segundos |
 | `cyclesSpinBox` | `QDoubleSpinBox` | ciclos de la gaussiana (`ps_StDevCycles`) |
+| `scaleCheckBox` | `QCheckBox` | eje de frecuencias con la escala de `scaleComboBox`; sin marcar, lineal |
+| `scaleComboBox` | `QComboBox` | tipo de escala; lo llena el plugin, como en Wavelet |
 | `colorRangeCheckBox` | `QCheckBox` | fija a mano el rango de color del mapa (R33) |
 | `colorMinSpinBox`, `colorMaxSpinBox` | `QDoubleSpinBox` | mínimo y máximo de ese rango |
 
@@ -111,6 +113,30 @@ class Ui_Ppc(object):
         self.cyclesSpinBox = self._decimal(
             "Gaussian cycles", "Cycles of the Gabor wavelet. More cycles give a sharper frequency "
                                "and a blurrier time resolution.")
+
+        self.scaleSectionLabel = self._etiqueta("Frequency axis")
+        self.scaleLayout = QtWidgets.QHBoxLayout()
+        self.scaleLabel = QtWidgets.QLabel("Scale", self.layoutWidget)
+        self.scaleLabel.setProperty("variant", "input")
+        self.scaleLayout.addWidget(self.scaleLabel)
+        self.scaleCheckBox = QtWidgets.QCheckBox(self.layoutWidget)
+        self.scaleCheckBox.setObjectName("scaleCheckBox")
+        self.scaleCheckBox.setToolTip(
+            "Draw the frequency axis with the scale chosen below; unchecked, the axis is linear. "
+            "It only changes the drawing: there is no need to generate again.")
+        self.scaleLayout.addWidget(self.scaleCheckBox)
+        self.scaleLayout.setAlignment(self.scaleCheckBox, QtCore.Qt.AlignRight)
+        self.paramsLayout.addLayout(self.scaleLayout)
+
+        self.scaleTypeLayout = QtWidgets.QHBoxLayout()
+        self.typeScaleLabel = QtWidgets.QLabel("Type", self.layoutWidget)
+        self.typeScaleLabel.setProperty("variant", "input")
+        self.scaleTypeLayout.addWidget(self.typeScaleLabel)
+        self.scaleComboBox = QtWidgets.QComboBox(self.layoutWidget)
+        self.scaleComboBox.setObjectName("scaleComboBox")
+        self.scaleComboBox.setToolTip("Type of scale of the frequency axis.")
+        self.scaleTypeLayout.addWidget(self.scaleComboBox)
+        self.paramsLayout.addLayout(self.scaleTypeLayout)
 
         self.colorLabel = self._etiqueta("Map color")
         self.colorLayout = QtWidgets.QVBoxLayout()

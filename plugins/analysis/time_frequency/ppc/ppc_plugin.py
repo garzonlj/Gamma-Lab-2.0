@@ -33,6 +33,46 @@ from plugins.analysis.time_frequency.ppc.ppc_plugin_ui import Ui_Ppc
 from plugins.analysis.time_frequency.pac.compute import remuestrear_en_log
 
 
+def etiqueta_de_frecuencia(hz):
+    """El rótulo de una marca del eje de frecuencias: entero desde 1 Hz, una cifra
+    significativa por debajo. Redondear todo a entero rotulaba 0,32 y 0,1 Hz como «0»."""
+    return str(int(round(hz))) if hz >= 1 else f"{hz:.1g}"
+
+
+FILAS_LINEALES_MAX = 2048
+
+
+def remuestrear_en_lineal(mapa, frecuencias, n_max=FILAS_LINEALES_MAX):
+    """Lleva las filas del mapa a una rejilla uniforme en Hz, para el eje lineal.
+
+    El cálculo reparte las frecuencias en logaritmo (`compute.filas_por_decada`),
+    así que en Hz quedan apiñadas abajo y separadas arriba. La rejilla usa el
+    paso de las dos filas más juntas —así no se pierde ninguna— con un tope de
+    `n_max` filas; por encima del tope las más bajas se juntan, que es lo que
+    hace cualquier eje lineal con frecuencias bajas. Cada fila de la rejilla toma
+    la fila calculada más cercana, igual que `remuestrear_en_log`: interpolar
+    inventaría valores que el cálculo no dio.
+
+    Devuelve `(matriz, f_min, f_max)` con las filas en orden ascendente.
+    """
+    m = np.asarray(mapa, dtype=np.float64)
+    f = np.asarray(frecuencias, dtype=np.float64).ravel()
+    if m.ndim != 2 or f.size != m.shape[0]:
+        raise ValueError(f"El eje tiene {f.size} frecuencias y la matriz forma {m.shape}.")
+    if f.size < 2:
+        raise ValueError("Hacen falta al menos 2 frecuencias para remuestrear.")
+    orden = np.argsort(f)
+    f, m = f[orden], m[orden]
+    paso = float(np.min(np.diff(f)))
+    n = int(np.ceil((f[-1] - f[0]) / paso - 1e-9)) + 1 if paso > 0 else f.size
+    n = int(min(max(n, f.size), n_max))
+    destino = np.linspace(f[0], f[-1], n)
+    pos = np.clip(np.searchsorted(f, destino), 1, f.size - 1)
+    izquierda, derecha = pos - 1, pos
+    elegida = np.where(destino - f[izquierda] <= f[derecha] - destino, izquierda, derecha)
+    return m[elegida], float(f[0]), float(f[-1])
+
+
 def cortar_canales(ds, receta, canales, ctx=None):
     """Corta los trials de `canales` con la receta de otro canal. Puro: no escribe en `ds`; corre en el servicio de tareas."""
     nombres = list(ds.channel_names)
@@ -58,7 +98,9 @@ class Ppc_plugin(IPlugin):
         "f_max_hz": 500.0,
         "ventana_min_s": cp.VENTANA_MINIMA_S,
         "ciclos": cp.CICLOS_PPC,
+        "escala_log": True,
     }
+    ESCALAS = ["Log"]
 
     def __init__(self, meta):
         super().__init__(meta)
@@ -84,12 +126,15 @@ class Ppc_plugin(IPlugin):
             self.ui = Ui_Ppc()
             self.ui.setupUi(self.widget)
             self.alerts.parent = self.widget
+            self.ui.scaleComboBox.addItems(self.ESCALAS)
             self._valores_por_defecto()
             self.ui.clearButton.clicked.connect(self._valores_por_defecto)
             self.ui.createPpcButton.clicked.connect(self.on_create_ppc)
             for señal in (self.ui.colorRangeCheckBox.toggled, self.ui.colorMinSpinBox.editingFinished,
                           self.ui.colorMaxSpinBox.editingFinished):
                 señal.connect(self._redibujar_color)
+            self.ui.scaleCheckBox.toggled.connect(self._cambiar_escala)
+            self.ui.scaleComboBox.currentIndexChanged.connect(self._cambiar_escala)
             self._llenar_canales()
         else:
             self.widget.setParent(parent)
@@ -127,6 +172,9 @@ class Ppc_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(self.DEFECTOS["f_max_hz"])
         self.ui.windowSpinBox.setValue(self.DEFECTOS["ventana_min_s"])
         self.ui.cyclesSpinBox.setValue(self.DEFECTOS["ciclos"])
+        self.ui.scaleComboBox.setCurrentIndex(0)
+        self.ui.scaleCheckBox.setChecked(self.DEFECTOS["escala_log"])
+        self.ui.scaleComboBox.setEnabled(self.DEFECTOS["escala_log"])
         self.ui.colorRangeCheckBox.setChecked(False)
 
     def _canales_disponibles(self):
@@ -414,30 +462,58 @@ class Ppc_plugin(IPlugin):
             return self.trial_state_from_used(self._trials_used)
         return super().current_trial_state()
 
+    def _escala_log(self):
+        """Si el eje de frecuencias va en logaritmo. Sin panel, como siempre: sí."""
+        ui = self.ui
+        if ui is None or getattr(ui, "scaleCheckBox", None) is None:
+            return True
+        return ui.scaleCheckBox.isChecked() and ui.scaleComboBox.currentText() == "Log"
+
+    def _cambiar_escala(self, *_):
+        """Redibuja el último mapa con la escala elegida, sin volver a calcular.
+
+        La rejilla de frecuencias del cálculo es siempre logarítmica
+        (`compute.filas_por_decada`); la escala solo decide cómo se dibuja.
+        """
+        if self.ui is None:
+            return
+        self.ui.scaleComboBox.setEnabled(self.ui.scaleCheckBox.isChecked())
+        if self._calculando or not self._ultimo or self._context_view is None:
+            return
+        try:
+            self.render_resultado(self._ultimo["resultado"])
+            self._actualizar_menu()
+        except Exception as e:
+            self._log("render_resultado:", e)
+
     def render_resultado(self, r):
-        """Un mapa de frecuencia logarítmica contra tiempo, con barra de color.
+        """Un mapa de frecuencia contra tiempo, con barra de color.
 
         Las celdas que no se pudieron medir (NaN) van **transparentes**, como
         en el índice de modulación: pintarlas con un color de la escala las
         disfrazaría de «sin acoplamiento» cuando lo que pasa es que ahí no hay
-        medida. El remuestreo a eje logarítmico es el mismo de PAC.
+        medida. El eje de frecuencias va en logaritmo o lineal según la casilla
+        *Scale*: el remuestreo logarítmico es el mismo de PAC y el lineal es
+        `remuestrear_en_lineal`.
         """
         escena = self._context_view.GetScene()
         escena.ClearItems()
 
+        log = self._escala_log()
         mapa = np.asarray(r.mapa, dtype=np.float64)
-        datos, log_min, log_max = remuestrear_en_log(mapa, r.frecuencias)
+        remuestrear = remuestrear_en_log if log else remuestrear_en_lineal
+        datos, y_min, y_max = remuestrear(mapa, r.frecuencias)
         datos = np.ascontiguousarray(datos, dtype=np.float32)
         n_freq, n_t = datos.shape
 
         t = np.asarray(r.tiempos, dtype=np.float64)
         paso_t = (t[-1] - t[0]) / max(1, n_t - 1) if n_t > 1 else 1.0
-        paso_y = (log_max - log_min) / max(1, n_freq - 1)
+        paso_y = (y_max - y_min) / max(1, n_freq - 1)
 
         img = vtk.vtkImageData()
         img.SetDimensions(n_t, n_freq, 1)
         img.SetSpacing(paso_t, paso_y, 1.0)
-        img.SetOrigin(float(t[0]), log_min, 0.0)
+        img.SetOrigin(float(t[0]), y_min, 0.0)
         img.GetPointData().SetScalars(numpy_support.numpy_to_vtk(
             datos.ravel(), deep=True, array_type=vtk.VTK_FLOAT))
         img.Modified()
@@ -457,19 +533,20 @@ class Ppc_plugin(IPlugin):
         eje_x.SetBehavior(vtk.vtkAxis.FIXED)
         eje_x.SetRange(float(t[0]), float(t[-1] + paso_t))
         eje_y = chart.GetAxis(vtk.vtkAxis.LEFT)
-        eje_y.SetTitle("Frequency (Hz) - Log")
+        eje_y.SetTitle("Frequency (Hz) - Log" if log else "Frequency (Hz)")
         eje_y.SetBehavior(vtk.vtkAxis.FIXED)
-        eje_y.SetRange(log_min, log_max)
+        eje_y.SetRange(y_min, y_max)
 
-        posiciones = vtk.vtkDoubleArray()
-        etiquetas = vtk.vtkStringArray()
-        v = np.ceil(log_min / self.PASO_MARCA_LOG - 1e-9) * self.PASO_MARCA_LOG
-        while v <= log_max + 1e-9:
-            posiciones.InsertNextValue(float(v))
-            etiquetas.InsertNextValue(str(int(round(10 ** v))))
-            v += self.PASO_MARCA_LOG
-        if posiciones.GetNumberOfTuples():
-            eje_y.SetCustomTickPositions(posiciones, etiquetas)
+        if log:
+            posiciones = vtk.vtkDoubleArray()
+            etiquetas = vtk.vtkStringArray()
+            v = np.ceil(y_min / self.PASO_MARCA_LOG - 1e-9) * self.PASO_MARCA_LOG
+            while v <= y_max + 1e-9:
+                posiciones.InsertNextValue(float(v))
+                etiquetas.InsertNextValue(etiqueta_de_frecuencia(10 ** v))
+                v += self.PASO_MARCA_LOG
+            if posiciones.GetNumberOfTuples():
+                eje_y.SetCustomTickPositions(posiciones, etiquetas)
 
         chart.SetAutoSize(True)
         escena.AddItem(chart)
@@ -558,6 +635,8 @@ class Ppc_plugin(IPlugin):
             "f_max": self.ui.highFrequencySpinBox.value(),
             "window": self.ui.windowSpinBox.value(),
             "cycles": self.ui.cyclesSpinBox.value(),
+            "scale_enabled": self.ui.scaleCheckBox.isChecked(),
+            "scale_mode": self.ui.scaleComboBox.currentText(),
             **guardar_rango(self.ui),
         }
 
@@ -574,6 +653,9 @@ class Ppc_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(params.get("f_max", d["f_max_hz"]))
         self.ui.windowSpinBox.setValue(params.get("window", d["ventana_min_s"]))
         self.ui.cyclesSpinBox.setValue(params.get("cycles", d["ciclos"]))
+        idx = self.ui.scaleComboBox.findText(params.get("scale_mode", self.ESCALAS[0]))
+        self.ui.scaleComboBox.setCurrentIndex(max(idx, 0))
+        self.ui.scaleCheckBox.setChecked(bool(params.get("scale_enabled", d["escala_log"])))
         restaurar_rango(self.ui, params)
         self._restaurando = True
         self.on_create_ppc()
